@@ -1,0 +1,47 @@
+# FlowFreeze
+
+FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence prototype for an upay BD sponsored hackathon. It is designed to help an authorized analyst trace suspicious transfers, estimate potentially tainted e-money, anticipate likely next movement, and review a proportionate intervention recommendation.
+
+> **Prototype boundary:** FlowFreeze uses synthetic data and simulates interventions. It does not autonomously confiscate, reverse, refund, or legally freeze money. Any real hold capability requires provider, legal, and regulatory validation.
+
+## Build plan
+
+See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and definition of done.
+
+## Planned stack
+
+- Backend and ML: Python, FastAPI, pandas, scikit-learn, NetworkX
+- Frontend: React, Vite, Tailwind CSS
+- MVP storage: SQLite
+- Demo data: synthetic only
+
+## Safety and data
+
+- Never use real customer data, NID details, wallet numbers, production credentials, or secret keys.
+- Keep predictions separate from policy decisions and show evidence and uncertainty.
+- Require analyst review for every simulated intervention.
+- Clearly label all synthetic metrics; they are not upay production statistics.
+
+## Status
+
+Step 2 is complete: the repository layout is scaffolded and the seeded synthetic-data generator produces the CSVs and local SQLite database.
+
+## Generate demo data
+
+Requires Python 3.11 or later. In PowerShell, create the environment and install the pinned project dependencies:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+The generator itself uses only Python's standard library, so it can also run before installing the project dependencies once Python is available.
+
+```powershell
+python -m data_generator.generate --seed 42
+```
+
+This writes `transactions.csv`, `wallets.csv`, `incidents.csv`, `ground_truth.csv`, `generation_metadata.json`, and `flowfreeze.db` under `data/`. Reusing the same seed reproduces the profile attributes and scenario data. See [data/README.md](data/README.md) and [the data dictionary](docs/DATA_DICTIONARY.md) for details.
+
+The current generated set has eight canonical scenarios. It is enough to exercise the data shape and demo paths; it is **not large enough to claim model performance**. We will expand and validate the synthetic population before training models.

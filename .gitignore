@@ -1,0 +1,38 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local database and generated data
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+data/generated/
+
+# Model artifacts generated locally
+ml/artifacts/*.joblib
+ml/artifacts/*.pkl
+ml/artifacts/*.model
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,7 @@
+{
+  "synthetic": true,
+  "seed": 42,
+  "scenario_count": 8,
+  "next_move_window_minutes": 5,
+  "warning": "Generated demo data only; not upay production data or customer behavior."
+}
