@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-Step 2 is complete: the repository layout is scaffolded and the seeded synthetic-data generator produces the CSVs and local SQLite database.
+Steps 1–2 are complete, and Step 3 now includes a balance-checked transaction replay engine and a reset command for the deterministic demo data.
 
 ## Generate demo data
 
@@ -45,3 +45,17 @@ python -m data_generator.generate --seed 42
 This writes `transactions.csv`, `wallets.csv`, `incidents.csv`, `ground_truth.csv`, `generation_metadata.json`, and `flowfreeze.db` under `data/`. Reusing the same seed reproduces the profile attributes and scenario data. See [data/README.md](data/README.md) and [the data dictionary](docs/DATA_DICTIONARY.md) for details.
 
 The current generated set has eight canonical scenarios. It is enough to exercise the data shape and demo paths; it is **not large enough to claim model performance**. We will expand and validate the synthetic population before training models.
+
+## Replay or reset a scenario
+
+Replay only the events visible by the incident's `analysis_at` time:
+
+```powershell
+python -m core.simulator SCN-06-FANOUT-CASHOUT
+```
+
+Reset all synthetic CSVs and the local database to the default seed:
+
+```powershell
+python -m demo.reset_demo --seed 42
+```

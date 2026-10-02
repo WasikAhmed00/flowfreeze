@@ -34,6 +34,9 @@ Baseline comparison and metrics
 |---|---|
 | `data_generator/` | Generate seeded wallets, transactions, incidents, scenario labels, and ground truth. |
 | `data/` | Store generated CSVs and local SQLite database; generated/local files should be ignored where appropriate. |
+| `backend/db.py` | Resolve the configured SQLite path and provide row-based connections to the generated database. |
+| `core/simulator.py` | Replay a scenario in event-time order, validate balance chains, enforce an `as_of` cutoff, and collect cash-out events. |
+| `demo/reset_demo.py` | Recreate CSV and SQLite demo state from the configured seed. |
 | `ml/features.py` | Build only decision-time features; exclude future outcomes and ground-truth labels. |
 | `ml/train.py`, `predict.py`, `evaluate.py`, `explain.py` | Train, score, measure, and explain models. |
 | `core/graph.py` | Construct time-stamped wallet transfer graph and trace paths. |
@@ -60,6 +63,7 @@ Baseline comparison and metrics
 - Ground truth and future transactions are used for evaluation only and must not leak into inference features.
 - Graph edges and predictions should carry timestamps and a stated observation window.
 - Every value-preserved metric must specify its scenario assumptions and compare identical scenario inputs across baseline and FlowFreeze.
+- A synthetic cash-out is recorded as a terminal ledger event; its `cash_destination` is not a digitally reachable customer wallet.
 
 ## MVP runtime
 
