@@ -26,3 +26,7 @@ The test cases are variants of the same eight scenario families present in train
 ## Human oversight and safeguards
 
 Scores are labeled synthetic in the API and UI. The intervention policy is an independent, configurable layer and does not issue provider commands. A human analyst must review evidence and approve or modify any simulated proposal. Missing models or scores should produce monitoring/review behavior, not an inferred low risk. The demo must use generated identifiers and data only.
+
+## End-to-end policy experiment
+
+`python -m core.baseline --split test` compares direct-recipient-only and traced-network policy proposals on the same held-out scenarios. It uses remaining generator taint labels only for counterfactual outcome scoring; it assumes an instantaneous intervention at `analysis_at`. It is not measured loss prevention and it does not validate model quality beyond the separately reported held-out classifier metrics. See `docs/END_TO_END_EVALUATION.md` for the recorded results and detailed assumptions.

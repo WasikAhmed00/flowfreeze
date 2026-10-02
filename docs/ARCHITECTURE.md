@@ -46,7 +46,7 @@ Baseline comparison and metrics
 | `ml/train.py`, `predict.py`, `evaluate.py`, `explain.py` | Train, score, measure, and explain models. |
 | `core/taint.py` | Propagate a proportional estimate of potentially tainted value. |
 | `core/intervention.py`, `policy.yaml` | Apply configurable business rules and produce an explainable bounded recommendation. |
-| `core/simulator.py`, `baseline.py` | Replay scenarios and compare the recommendation strategy to direct-recipient-only baseline. |
+| `core/simulator.py`, `core/baseline.py` | Replay scenarios and measure an end-to-end direct-recipient-only vs. traced-network counterfactual on the same held-out cases. |
 | `backend/` | Expose analysis, incident, decision, simulation, metrics, and demo APIs; persist audit records. |
 | `frontend/` | Present incidents, graph, evidence, taint, predictions, recommendation, analyst controls, and outcomes. |
 | `docs/` | Maintain architecture, data dictionary, model card, responsible-AI, API, limitations, and demo materials. |

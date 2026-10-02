@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 5 synthetic fraud/next-move training and evaluation, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, and Step 8 analyst frontend are implemented. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md) and [responsible AI notes](docs/RESPONSIBLE_AI.md) before interpreting them.
+The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 5 synthetic fraud/next-move training and evaluation, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, Step 8 analyst frontend, and Step 9 end-to-end synthetic benchmark are implemented. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md), [responsible AI notes](docs/RESPONSIBLE_AI.md), and [end-to-end evaluation report](docs/END_TO_END_EVALUATION.md) before interpreting results.
 
 ## Generate demo data
 
@@ -85,13 +85,16 @@ python -m ml.train --seed 42
 python -m ml.evaluate
 python -m ml.explain --rows 825
 python -m ml.predict SCN-06-FANOUT-CASHOUT-0001
+python -m core.baseline --split test
 ```
 
 Training writes local ignored `.joblib` model artifacts and a reviewable `ml/artifacts/metrics.json`. Model scores are automatically available to the analysis API when those local model files exist. The validation split selects the fraud model/threshold and fits next-move probability calibration; held-out test results are reported separately. `ground_truth.csv` supplies labels only and is not used by inference feature generation. Metrics are limited to held-out variants from the same eight synthetic scenario families and do not establish real-world or upay BD performance; details are in the [model card](docs/MODEL_CARD.md).
 
+The Step 9 benchmark runs both direct-recipient-only and FlowFreeze policy strategies over the same held-out cases. It writes `ml/artifacts/end_to_end_metrics.json`, which the Evaluation page displays alongside its assumptions. Value preserved and legitimate value affected are counterfactual estimates based on generated remaining-taint labels and an instant-action assumption; they are not observed outcomes. See [the benchmark report](docs/END_TO_END_EVALUATION.md).
+
 ## Build a simulated intervention recommendation
 
-The policy in `core/policy.yaml` is JSON syntax, which is also valid YAML, so the policy can be loaded without an extra parser dependency. This CLI accepts optional scores so the policy can be explored before the ML models are implemented; omitted scores are treated as unavailable and fail closed to monitoring/review.
+The policy in `core/policy.yaml` is JSON syntax, which is also valid YAML, so the policy can be loaded without an extra parser dependency. This CLI accepts optional scores for independent policy exploration; omitted scores are unavailable and fail closed to monitoring/review. The API pipeline uses local trained synthetic model artifacts automatically when present.
 
 ```powershell
 python -m core.intervention SCN-06-FANOUT-CASHOUT-0001 --fraud-risk 0.82 --p-forward 0.20 --p-cashout 0.65 --p-no-movement 0.15
