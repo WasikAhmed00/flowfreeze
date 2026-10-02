@@ -289,7 +289,7 @@ def _json_ready(value: Any) -> Any:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Trace downstream wallets for a synthetic FlowFreeze scenario.")
-    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT")
+    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT-0001")
     parser.add_argument("--at", dest="as_of", help="Optional timezone-aware ISO 8601 replay cutoff")
     parser.add_argument("--database", help="SQLite database path")
     parser.add_argument("--hops", type=int, default=5)

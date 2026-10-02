@@ -44,14 +44,14 @@ python -m data_generator.generate --seed 42
 
 This writes `transactions.csv`, `wallets.csv`, `incidents.csv`, `ground_truth.csv`, `generation_metadata.json`, and `flowfreeze.db` under `data/`. Reusing the same seed reproduces the profile attributes and scenario data. See [data/README.md](data/README.md) and [the data dictionary](docs/DATA_DICTIONARY.md) for details.
 
-The current generated set has eight canonical scenarios. It is enough to exercise the data shape and demo paths; it is **not large enough to claim model performance**. We will expand and validate the synthetic population before training models.
+The generator produces 100 varied cases per scenario family by default, with benign historical activity and case-level train/validation/test splits. This supports initial synthetic model experiments, but it is **not evidence of upay production performance**. Results will depend on the synthetic assumptions and must be labeled accordingly.
 
 ## Replay or reset a scenario
 
 Replay only the events visible by the incident's `analysis_at` time:
 
 ```powershell
-python -m core.simulator SCN-06-FANOUT-CASHOUT
+python -m core.simulator SCN-06-FANOUT-CASHOUT-0001
 ```
 
 Reset all synthetic CSVs and the local database to the default seed:
@@ -63,7 +63,7 @@ python -m demo.reset_demo --seed 42
 Trace downstream paths visible at the incident analysis time:
 
 ```powershell
-python -m core.graph SCN-06-FANOUT-CASHOUT --hops 5 --window-minutes 30
+python -m core.graph SCN-06-FANOUT-CASHOUT-0001 --hops 5 --window-minutes 30
 ```
 
 Trace amounts are gross transaction amounts; the graph does not label every amount on a path as tainted. Proportional attribution belongs to the next processing layer.
@@ -71,7 +71,7 @@ Trace amounts are gross transaction amounts; the graph does not label every amou
 Estimate proportional reported-fund attribution at the same incident analysis time:
 
 ```powershell
-python -m core.taint SCN-06-FANOUT-CASHOUT
+python -m core.taint SCN-06-FANOUT-CASHOUT-0001
 ```
 
 The estimate and its assumptions are described in [TAINT_METHODOLOGY.md](docs/TAINT_METHODOLOGY.md). It is not a fraud finding or a determination of ownership.

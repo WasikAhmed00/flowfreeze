@@ -1,7 +1,20 @@
 {
   "synthetic": true,
   "seed": 42,
-  "scenario_count": 8,
+  "scenario_family_count": 8,
+  "cases_per_scenario_family": 100,
+  "case_count": 800,
+  "split_case_counts": {
+    "train": 560,
+    "validation": 120,
+    "test": 120
+  },
+  "split_unit": "scenario_id (all wallet and transaction rows for a case stay together)",
+  "split_ratios": {
+    "train": 0.7,
+    "validation": 0.15,
+    "test": 0.15
+  },
   "next_move_window_minutes": 5,
-  "warning": "Generated demo data only; not upay production data or customer behavior."
+  "warning": "Generated demo/training data only; not upay production data or customer behavior."
 }

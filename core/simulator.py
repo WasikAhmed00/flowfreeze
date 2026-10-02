@@ -332,7 +332,7 @@ class TransactionSimulator:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Replay one synthetic FlowFreeze incident.")
-    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT")
+    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT-0001")
     parser.add_argument("--at", dest="as_of", help="Optional timezone-aware ISO 8601 replay cutoff")
     parser.add_argument("--database", type=Path, help="SQLite database path; defaults to DATABASE_URL or data/flowfreeze.db")
     args = parser.parse_args()

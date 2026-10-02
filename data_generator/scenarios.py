@@ -1,4 +1,4 @@
-"""Small, deterministic scenario library; all identities and values are synthetic."""
+"""Canonical scenario families used to generate varied synthetic case instances."""
 
 SCENARIOS = [
     {
@@ -44,7 +44,7 @@ SCENARIOS = [
         "incident_type": "suspected_fraud",
         "source": "W1",
         "wallets": {"VICTIM": ("individual", 60000), "W1": ("individual", 400), "AGENT1": ("agent", 300000), "CASH1": ("cash_destination", 0)},
-        "events": [(0, "VICTIM", "W1", 25000, "transfer"), (2, "W1", "CASH1", 20000, "cashout")],
+        "events": [(0, "VICTIM", "W1", 25000, "transfer"), (6, "W1", "CASH1", 20000, "cashout")],
     },
     {
         "scenario_id": "SCN-06-FANOUT-CASHOUT",

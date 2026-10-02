@@ -51,6 +51,7 @@ One row per synthetic reported case.
 | `analysis_at` | ISO 8601 datetime | Synthetic snapshot time for graph/risk analysis; future transactions must be excluded from inference at this time. |
 | `reported_amount` | decimal/integer minor units | Amount associated with report in BDT. |
 | `incident_type` | category | For example `suspected_fraud` or `wrong_recipient_dispute`; these are distinct case types. |
+| `scenario_type` | category | Synthetic scenario family used for stratified case-level data splits. |
 | `status` | category | Workflow status, for example `new`, `analyzing`, `review_pending`, `resolved`. |
 | `scenario_id` | string | Synthetic scenario grouping key. |
 
@@ -62,7 +63,7 @@ One row per wallet per incident scenario. Generator/evaluation labels only. Do n
 |---|---|---|
 | `scenario_id` | string | Synthetic scenario grouping key. |
 | `scenario_type` | category | Synthetic scenario family. |
-| `split` | category | Scenario-family assignment to `train`, `validation`, or `test`; evaluation metadata only. |
+| `split` | category | Scenario-instance assignment to `train`, `validation`, or `test`; every row for a scenario stays in one split. Evaluation metadata only. |
 | `wallet_id` | string | Synthetic wallet represented by this label row. |
 | `fraud_flag` | boolean | Whether the generated scenario is labeled fraudulent. |
 | `fraud_source_wallet` | string | Generated wallet designated as the source. |

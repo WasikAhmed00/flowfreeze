@@ -263,7 +263,7 @@ def _json_ready(value: Any) -> Any:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Estimate proportional reported-fund attribution for a synthetic scenario.")
-    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT")
+    parser.add_argument("scenario_id", help="Scenario ID, such as SCN-06-FANOUT-CASHOUT-0001")
     parser.add_argument("--at", dest="as_of", help="Optional timezone-aware ISO 8601 replay cutoff")
     parser.add_argument("--database", help="SQLite database path")
     args = parser.parse_args()

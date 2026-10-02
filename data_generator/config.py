@@ -7,15 +7,7 @@ DEFAULT_DATA_DIR = PROJECT_ROOT / "data"
 DEFAULT_RANDOM_SEED = 42
 DEFAULT_BASE_TIME = "2026-09-01T09:00:00+00:00"
 NEXT_MOVE_WINDOW_MINUTES = 5
-
-SPLIT_BY_SCENARIO_FAMILY = {
-    # Keeping scenario families together prevents near-duplicate flows crossing splits.
-    "direct_fraud": "train",
-    "fanout": "train",
-    "multi_hop": "train",
-    "mixed_balance": "train",
-    "rapid_cashout": "validation",
-    "fanout_cashout": "test",
-    "false_positive": "validation",
-    "wrong_recipient": "test",
-}
+DEFAULT_CASES_PER_SCENARIO = 100
+# Every scenario family is represented in each split. Whole case IDs stay in
+# exactly one split so wallet/transaction rows from a case cannot leak across.
+SPLIT_RATIOS = {"train": 0.70, "validation": 0.15, "test": 0.15}
