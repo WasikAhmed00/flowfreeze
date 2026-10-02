@@ -36,6 +36,7 @@ Baseline comparison and metrics
 | `data/` | Store generated CSVs and local SQLite database; generated/local files should be ignored where appropriate. |
 | `backend/db.py` | Resolve the configured SQLite path and provide row-based connections to the generated database. |
 | `core/simulator.py` | Replay a scenario in event-time order, validate balance chains, enforce an `as_of` cutoff, and collect cash-out events. |
+| `core/graph.py` | Build a directed, time-stamped multigraph and return downstream paths, fan-out, rapid-forwarding, and cash-out evidence within explicit limits. |
 | `demo/reset_demo.py` | Recreate CSV and SQLite demo state from the configured seed. |
 | `ml/features.py` | Build only decision-time features; exclude future outcomes and ground-truth labels. |
 | `ml/train.py`, `predict.py`, `evaluate.py`, `explain.py` | Train, score, measure, and explain models. |

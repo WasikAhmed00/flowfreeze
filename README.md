@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-Steps 1–2 are complete, and Step 3 now includes a balance-checked transaction replay engine and a reset command for the deterministic demo data.
+Steps 1–4 are implemented: the project has a seeded synthetic dataset, balance-checked time replay, and bounded downstream graph tracing with cash-out and rapid-forward evidence.
 
 ## Generate demo data
 
@@ -59,3 +59,11 @@ Reset all synthetic CSVs and the local database to the default seed:
 ```powershell
 python -m demo.reset_demo --seed 42
 ```
+
+Trace downstream paths visible at the incident analysis time:
+
+```powershell
+python -m core.graph SCN-06-FANOUT-CASHOUT --hops 5 --window-minutes 30
+```
+
+Trace amounts are gross transaction amounts; the graph does not label every amount on a path as tainted. Proportional attribution belongs to the next processing layer.
