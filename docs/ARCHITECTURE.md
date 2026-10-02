@@ -37,10 +37,10 @@ Baseline comparison and metrics
 | `backend/db.py` | Resolve the configured SQLite path and provide row-based connections to the generated database. |
 | `core/simulator.py` | Replay a scenario in event-time order, validate balance chains, enforce an `as_of` cutoff, and collect cash-out events. |
 | `core/graph.py` | Build a directed, time-stamped multigraph and return downstream paths, fan-out, rapid-forwarding, and cash-out evidence within explicit limits. |
+| `core/taint.py` | Carry a proportional estimate of reported value through the same observed event timeline and separate it from the legitimate balance remainder. |
 | `demo/reset_demo.py` | Recreate CSV and SQLite demo state from the configured seed. |
 | `ml/features.py` | Build only decision-time features; exclude future outcomes and ground-truth labels. |
 | `ml/train.py`, `predict.py`, `evaluate.py`, `explain.py` | Train, score, measure, and explain models. |
-| `core/graph.py` | Construct time-stamped wallet transfer graph and trace paths. |
 | `core/taint.py` | Propagate a proportional estimate of potentially tainted value. |
 | `core/intervention.py`, `policy.yaml` | Apply configurable business rules and produce an explainable bounded recommendation. |
 | `core/simulator.py`, `baseline.py` | Replay scenarios and compare the recommendation strategy to direct-recipient-only baseline. |

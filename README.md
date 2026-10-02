@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-Steps 1–4 are implemented: the project has a seeded synthetic dataset, balance-checked time replay, and bounded downstream graph tracing with cash-out and rapid-forward evidence.
+Steps 1–5 are implemented: the project has a seeded synthetic dataset, balance-checked replay, bounded downstream graph tracing, and proportional reported-fund attribution with wallet-level collateral estimates.
 
 ## Generate demo data
 
@@ -67,3 +67,11 @@ python -m core.graph SCN-06-FANOUT-CASHOUT --hops 5 --window-minutes 30
 ```
 
 Trace amounts are gross transaction amounts; the graph does not label every amount on a path as tainted. Proportional attribution belongs to the next processing layer.
+
+Estimate proportional reported-fund attribution at the same incident analysis time:
+
+```powershell
+python -m core.taint SCN-06-FANOUT-CASHOUT
+```
+
+The estimate and its assumptions are described in [TAINT_METHODOLOGY.md](docs/TAINT_METHODOLOGY.md). It is not a fraud finding or a determination of ownership.
