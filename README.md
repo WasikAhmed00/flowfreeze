@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, and proportional reported-fund attribution are implemented. The Step 6 intervention-policy prototype is also in place and accepts scores as inputs. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so recommendations currently fail closed to monitoring/review when scores are not supplied; full integration follows that ML work.
+The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 6 intervention-policy prototype, and Step 7 local API/audit workflow are implemented. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so recommendations currently fail closed to monitoring/review when scores are not supplied; full integration follows that ML work.
 
 ## Generate demo data
 
@@ -85,3 +85,13 @@ python -m core.intervention SCN-06-FANOUT-CASHOUT-0001 --fraud-risk 0.82 --p-for
 ```
 
 The result shows the policy version, evidence transaction IDs, potential collateral, thresholds, and an action proposal for each wallet with a positive taint estimate. It never changes a balance or contacts a provider. Wrong-recipient disputes are routed to review. See [INTERVENTION_POLICY.md](docs/INTERVENTION_POLICY.md).
+
+## Start the backend API
+
+Generate the synthetic database first, then run the local API from the repository root:
+
+```powershell
+python -m uvicorn backend.main:app --reload
+```
+
+Interactive API docs are at `http://127.0.0.1:8000/docs`; endpoints and request examples are listed in [API.md](docs/API.md). The server is configured for local frontend development. Do not expose this synthetic demo API publicly. The development-only `POST /api/demo/reset` regenerates the SQLite database and clears its local decision/audit history.
