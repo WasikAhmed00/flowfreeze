@@ -2,6 +2,10 @@
 
 FlowFreeze is a hackathon prototype for **upay BD**, an MFS provider. It uses synthetic data to help an authorized analyst trace reported suspicious transfers, estimate potentially tainted e-money, predict likely next movement, and review proportionate intervention recommendations.
 
+## Current status
+
+Roadmap Steps 0–10 are implemented for a local, synthetic-data demonstration. The complete analyst flow, held-out ML evaluation, same-case direct-recipient comparison, Windows startup/reset guidance, judge walkthrough, and pitch deck are available in this repository. The Step 9 report's values are counterfactual synthetic estimates, and the models do not demonstrate real-world or upay BD performance. See `docs/END_TO_END_EVALUATION.md`, `docs/LIMITATIONS.md`, and `demo/DEMO_SCRIPT.md`.
+
 ## Product boundary
 
 This prototype does not autonomously confiscate, reverse, refund, or legally freeze customer money. Recommendations are for analyst review and simulation only. Any real hold capability would need provider, legal, and regulatory validation. Use synthetic data only; never commit real customer data, credentials, or wallet identifiers.

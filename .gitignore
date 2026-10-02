@@ -21,6 +21,10 @@ data/*.sqlite
 data/*.sqlite3
 data/generated/
 
+# Local demo service processes/logs
+demo/.runtime/
+.pptx-build/
+
 # Model artifacts generated locally
 ml/artifacts/*.joblib
 ml/artifacts/*.pkl

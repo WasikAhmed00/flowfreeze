@@ -24,7 +24,29 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 5 synthetic fraud/next-move training and evaluation, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, Step 8 analyst frontend, and Step 9 end-to-end synthetic benchmark are implemented. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md), [responsible AI notes](docs/RESPONSIBLE_AI.md), and [end-to-end evaluation report](docs/END_TO_END_EVALUATION.md) before interpreting results.
+Steps 0–10 are implemented for the synthetic hackathon prototype. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md), [responsible AI notes](docs/RESPONSIBLE_AI.md), [limitations](docs/LIMITATIONS.md), and [end-to-end evaluation report](docs/END_TO_END_EVALUATION.md) before interpreting results.
+
+## Start the complete local demo (Windows)
+
+With Python 3.11+ and Node.js 20+ installed, run this from PowerShell at the repository root:
+
+```powershell
+.\demo\start_demo.ps1
+```
+
+On first run, the script creates `.venv` if needed, installs Python/frontend dependencies if missing, generates the seeded synthetic data if any required file is missing, trains local models if model files are missing, and starts the API/frontend on `127.0.0.1`. It writes service logs and process IDs under the ignored `demo/.runtime/` folder. Open `http://127.0.0.1:5173`; use `http://127.0.0.1:8000/docs` for the local API docs. Stop both services with:
+
+```powershell
+.\demo\stop_demo.ps1
+```
+
+To reset the generated SQLite database and its local audit history, run:
+
+```powershell
+.\.venv\Scripts\python.exe -m demo.reset_demo --seed 42
+```
+
+Reset does not retrain the models. The synthetic generator and benchmark are deterministic for a fixed seed, while local timing depends on the computer. See the [judge demo script](demo/DEMO_SCRIPT.md) for the walkthrough and reset checklist.
 
 ## Generate demo data
 

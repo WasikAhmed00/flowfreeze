@@ -4,10 +4,11 @@ React + Vite analyst workspace for the synthetic FlowFreeze API.
 
 ## Run locally
 
-1. In the repository root, generate the database and start the API:
+1. In the repository root, generate data, train models, and start the API:
 
    ```powershell
    python -m data_generator.generate --seed 42
+   python -m ml.train --seed 42
    python -m uvicorn backend.main:app --reload
    ```
 
@@ -28,7 +29,7 @@ Set `VITE_API_BASE_URL` in `.env.local` to use a different local API address. A 
 - Incident detail: time-bounded graph and evidence, proportional taint estimates, wallet context, policy recommendation, analyst decision, and one-shot what-if outcome.
 - Direct-recipient-only comparison: same-snapshot coverage comparison against the traced network, clearly separated from preserved-value outcomes.
 - What-if lab: choose a generated scenario and examine it using the incident review flow.
-- Evaluation: synthetic dataset and simulation estimates, with a clear notice that ML metrics are not available before roadmap Step 5.
+- Evaluation: held-out synthetic model metrics and the same-case direct-recipient baseline comparison, with visible counterfactual and dataset limitations.
 - Audit trail: recorded analyst actions with actor, reason, amount, and timestamp.
 
-The demo entry is a client-side prototype gate, not authentication. The API has no production authentication and must remain local. Optional score controls on incident detail are prominently labeled **illustrative only**. Leaving them disabled sends no model scores and therefore retains the policy's review-only behavior.
+The demo entry is a client-side prototype gate, not authentication. The API has no production authentication and must remain local. Trained model files are created locally and are not committed; generate them with `python -m ml.train --seed 42` before expecting synthetic model scores. Optional score controls on incident detail are prominently labeled **illustrative only**.
