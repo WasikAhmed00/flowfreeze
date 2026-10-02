@@ -1,0 +1,10 @@
+{
+  "policy_version": "1.0",
+  "synthetic_prototype_only": true,
+  "minimum_fraud_risk": 0.65,
+  "minimum_predicted_movement_probability": 0.55,
+  "urgent_cashout_probability": 0.45,
+  "minimum_tainted_amount_bdt": 1000,
+  "maximum_simulated_hold_bdt": 10000,
+  "wrong_recipient_dispute_requires_review": true
+}

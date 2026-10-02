@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-Steps 1–5 are implemented: the project has a seeded synthetic dataset, balance-checked replay, bounded downstream graph tracing, and proportional reported-fund attribution with wallet-level collateral estimates.
+The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, and proportional reported-fund attribution are implemented. The Step 6 intervention-policy prototype is also in place and accepts scores as inputs. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so recommendations currently fail closed to monitoring/review when scores are not supplied; full integration follows that ML work.
 
 ## Generate demo data
 
@@ -75,3 +75,13 @@ python -m core.taint SCN-06-FANOUT-CASHOUT-0001
 ```
 
 The estimate and its assumptions are described in [TAINT_METHODOLOGY.md](docs/TAINT_METHODOLOGY.md). It is not a fraud finding or a determination of ownership.
+
+## Build a simulated intervention recommendation
+
+The policy in `core/policy.yaml` is JSON syntax, which is also valid YAML, so the policy can be loaded without an extra parser dependency. This CLI accepts optional scores so the policy can be explored before the ML models are implemented; omitted scores are treated as unavailable and fail closed to monitoring/review.
+
+```powershell
+python -m core.intervention SCN-06-FANOUT-CASHOUT-0001 --fraud-risk 0.82 --p-forward 0.20 --p-cashout 0.65 --p-no-movement 0.15
+```
+
+The result shows the policy version, evidence transaction IDs, potential collateral, thresholds, and an action proposal for each wallet with a positive taint estimate. It never changes a balance or contacts a provider. Wrong-recipient disputes are routed to review. See [INTERVENTION_POLICY.md](docs/INTERVENTION_POLICY.md).
