@@ -1,0 +1,320 @@
+{
+  "synthetic_only": true,
+  "warning": "Synthetic generated labels and distributions are not evidence of upay BD production performance.",
+  "seed": 42,
+  "scikit_learn_version": "1.6.1",
+  "feature_count": 30,
+  "feature_columns": [
+    "account_age_days",
+    "opening_balance_bdt",
+    "profile_average_transaction_bdt",
+    "profile_frequency_per_day",
+    "reported_amount_bdt",
+    "amount_to_profile_average_ratio",
+    "report_to_analysis_seconds",
+    "reported_sender",
+    "reported_recipient",
+    "observed_incoming_count",
+    "observed_outgoing_count",
+    "observed_transaction_count",
+    "observed_incoming_amount_bdt",
+    "observed_outgoing_amount_bdt",
+    "observed_net_flow_bdt",
+    "observed_average_outgoing_bdt",
+    "observed_max_outgoing_bdt",
+    "observed_cashout_count",
+    "post_report_incoming_count",
+    "post_report_outgoing_count",
+    "post_report_outgoing_amount_bdt",
+    "post_report_cashout_count",
+    "merchant_payment_count",
+    "distinct_counterparties",
+    "graph_hops_from_reported_recipient",
+    "reachable_from_reported_recipient",
+    "customer_type",
+    "normal_active_hours",
+    "usual_transaction_types",
+    "incident_type"
+  ],
+  "excluded_from_features": [
+    "scenario_id",
+    "wallet_id",
+    "split",
+    "fraud_flag",
+    "tainted_amount",
+    "hop_number",
+    "cashout_flag",
+    "expected_next_action",
+    "fraud_source_wallet",
+    "all transactions after analysis_at"
+  ],
+  "split_unit": "scenario_id; no scenario appears in multiple splits",
+  "split_scenarios": {
+    "train": 560,
+    "validation": 120,
+    "test": 120
+  },
+  "split_wallet_rows": {
+    "train": 3850,
+    "validation": 825,
+    "test": 825
+  },
+  "label_distribution": {
+    "fraud_flag": {
+      "0": 4100,
+      "1": 1400
+    },
+    "expected_next_action": {
+      "no_movement": 5000,
+      "forward": 400,
+      "cashout": 100
+    }
+  },
+  "fraud_model_selection": {
+    "fraud_model_comparison": {
+      "logistic_regression": {
+        "validation_pr_auc_average_precision": 1.0,
+        "validation_f1_at_0_5": 1.0
+      },
+      "random_forest": {
+        "validation_pr_auc_average_precision": 1.0,
+        "validation_f1_at_0_5": 1.0
+      }
+    },
+    "selected_fraud_model": "logistic_regression",
+    "fraud_threshold_selected_on_validation_for_f1": 0.94878058083529,
+    "fraud_validation": {
+      "threshold": 0.94878058083529,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "pr_auc_average_precision": 1.0,
+      "confusion_matrix_labels_0_1": [
+        [
+          615,
+          0
+        ],
+        [
+          0,
+          210
+        ]
+      ],
+      "class_report": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 615.0
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 210.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        }
+      }
+    },
+    "next_move_calibration": {
+      "method": "one_vs_rest_platt_scaled_then_renormalized",
+      "fit_rows": 825,
+      "validation_scores_are_calibration_fit_data": true,
+      "calibrated_validation_diagnostics_not_held_out": {
+        "classes": [
+          "cashout",
+          "forward",
+          "no_movement"
+        ],
+        "accuracy": 1.0,
+        "balanced_accuracy": 1.0,
+        "precision_macro": 1.0,
+        "recall_macro": 1.0,
+        "f1_macro": 1.0,
+        "f1_weighted": 1.0,
+        "pr_auc_macro_ovr": 1.0,
+        "log_loss": 0.00019735850794993314,
+        "brier_score_multiclass": 1.0308324051882033e-05,
+        "confusion_matrix_labels_classes_order": [
+          [
+            15,
+            0,
+            0
+          ],
+          [
+            0,
+            60,
+            0
+          ],
+          [
+            0,
+            0,
+            750
+          ]
+        ],
+        "class_report": {
+          "cashout": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 15.0
+          },
+          "forward": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 60.0
+          },
+          "no_movement": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 750.0
+          },
+          "accuracy": 1.0,
+          "macro avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 825.0
+          },
+          "weighted avg": {
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1-score": 1.0,
+            "support": 825.0
+          }
+        }
+      }
+    }
+  },
+  "held_out_test": {
+    "wallet_rows": 825,
+    "scenario_cases": 120,
+    "fraud": {
+      "threshold": 0.94878058083529,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "pr_auc_average_precision": 1.0,
+      "confusion_matrix_labels_0_1": [
+        [
+          615,
+          0
+        ],
+        [
+          0,
+          210
+        ]
+      ],
+      "class_report": {
+        "0": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 615.0
+        },
+        "1": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 210.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        }
+      }
+    },
+    "next_move": {
+      "classes": [
+        "cashout",
+        "forward",
+        "no_movement"
+      ],
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "precision_macro": 1.0,
+      "recall_macro": 1.0,
+      "f1_macro": 1.0,
+      "f1_weighted": 1.0,
+      "pr_auc_macro_ovr": 1.0,
+      "log_loss": 0.0003558900626140061,
+      "brier_score_multiclass": 4.226196273350801e-05,
+      "confusion_matrix_labels_classes_order": [
+        [
+          15,
+          0,
+          0
+        ],
+        [
+          0,
+          60,
+          0
+        ],
+        [
+          0,
+          0,
+          750
+        ]
+      ],
+      "class_report": {
+        "cashout": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 15.0
+        },
+        "forward": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 60.0
+        },
+        "no_movement": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 750.0
+        },
+        "accuracy": 1.0,
+        "macro avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        },
+        "weighted avg": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 825.0
+        }
+      }
+    }
+  }
+}

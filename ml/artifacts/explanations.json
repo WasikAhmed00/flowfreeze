@@ -1,0 +1,137 @@
+{
+  "synthetic_only": true,
+  "test_wallet_rows_sampled": 825,
+  "fraud_model": {
+    "model_name": "logistic_regression",
+    "method": "permutation importance using average precision",
+    "top_features": [
+      {
+        "feature": "merchant_payment_count",
+        "mean_score_decrease": 0.0246043395631782,
+        "std_score_decrease": 0.0005829312256813284
+      },
+      {
+        "feature": "incident_type",
+        "mean_score_decrease": 0.0008093949302163672,
+        "std_score_decrease": 0.0004649072856574853
+      },
+      {
+        "feature": "observed_incoming_amount_bdt",
+        "mean_score_decrease": 0.0001730461896892003,
+        "std_score_decrease": 0.0002289515511805484
+      },
+      {
+        "feature": "normal_active_hours",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "reachable_from_reported_recipient",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "customer_type",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "graph_hops_from_reported_recipient",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "distinct_counterparties",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "post_report_cashout_count",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "post_report_outgoing_amount_bdt",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "post_report_outgoing_count",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "post_report_incoming_count",
+        "mean_score_decrease": 0.0,
+        "std_score_decrease": 0.0
+      }
+    ]
+  },
+  "next_move_model": {
+    "model_name": "class-balanced logistic regression",
+    "method": "permutation importance using macro F1",
+    "top_features": [
+      {
+        "feature": "post_report_incoming_count",
+        "mean_score_decrease": 0.17148202124418976,
+        "std_score_decrease": 0.0054984714479876795
+      },
+      {
+        "feature": "graph_hops_from_reported_recipient",
+        "mean_score_decrease": 0.16677753912914903,
+        "std_score_decrease": 0.01675145102877973
+      },
+      {
+        "feature": "reported_amount_bdt",
+        "mean_score_decrease": 0.1637273612381461,
+        "std_score_decrease": 0.02419725898103654
+      },
+      {
+        "feature": "reported_recipient",
+        "mean_score_decrease": 0.16242724634223885,
+        "std_score_decrease": 0.005253049090191076
+      },
+      {
+        "feature": "incident_type",
+        "mean_score_decrease": 0.10449649486332979,
+        "std_score_decrease": 0.010047221719245745
+      },
+      {
+        "feature": "merchant_payment_count",
+        "mean_score_decrease": 0.032442404617497,
+        "std_score_decrease": 0.0019648789770213156
+      },
+      {
+        "feature": "post_report_outgoing_count",
+        "mean_score_decrease": 0.010592655952628779,
+        "std_score_decrease": 0.007526948275687235
+      },
+      {
+        "feature": "observed_incoming_amount_bdt",
+        "mean_score_decrease": 0.010481896340107433,
+        "std_score_decrease": 0.0040807785055881575
+      },
+      {
+        "feature": "observed_net_flow_bdt",
+        "mean_score_decrease": 0.007429005868080522,
+        "std_score_decrease": 0.011255505377737
+      },
+      {
+        "feature": "account_age_days",
+        "mean_score_decrease": 0.0044229237548972416,
+        "std_score_decrease": 0.005004654444740976
+      },
+      {
+        "feature": "reported_sender",
+        "mean_score_decrease": 0.00247161001586349,
+        "std_score_decrease": 0.0
+      },
+      {
+        "feature": "profile_frequency_per_day",
+        "mean_score_decrease": 0.0013649161836527535,
+        "std_score_decrease": 0.00587085709244385
+      }
+    ]
+  },
+  "warning": "Global permutation importance is distribution-dependent and is not causal or a per-wallet explanation."
+}

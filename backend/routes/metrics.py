@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 from decimal import Decimal
+import json
+from pathlib import Path
 
 from fastapi import APIRouter
 
 from backend.db import application_connection
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
+ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
 
 
 @router.get("")
@@ -25,6 +28,10 @@ def get_metrics() -> dict:
             row["decision"]: row["count"]
             for row in db.execute("SELECT decision, COUNT(*) AS count FROM analyst_decisions GROUP BY decision")
         }
+    try:
+        ml_metrics = json.loads(ML_METRICS_PATH.read_text(encoding="utf-8")) if ML_METRICS_PATH.exists() else None
+    except (OSError, json.JSONDecodeError):
+        ml_metrics = None
     return {
         "synthetic": True,
         "dataset": {"incident_count": incidents, "transaction_count": transactions, "wallet_count": wallets},
@@ -33,6 +40,18 @@ def get_metrics() -> dict:
             "count": len(simulations),
             "estimated_tainted_value_preserved_bdt": f"{sum((Decimal(row[0]) for row in simulations), Decimal('0.00')):.2f}",
             "estimated_legitimate_value_affected_bdt": f"{sum((Decimal(row[1]) for row in simulations), Decimal('0.00')):.2f}",
+        },
+        "ml_evaluation": {
+            "metrics_available": ml_metrics is not None,
+            "artifact_available": (ML_METRICS_PATH.parent / "fraud_model.joblib").exists()
+            and (ML_METRICS_PATH.parent / "next_move_model.joblib").exists(),
+            "synthetic_only": True,
+            "held_out_test": ml_metrics.get("held_out_test") if ml_metrics else None,
+            "metadata": {
+                key: ml_metrics.get(key)
+                for key in ("seed", "split_scenarios", "split_wallet_rows", "fraud_model_selection")
+            } if ml_metrics else None,
+            "warning": ml_metrics.get("warning") if ml_metrics else "Train with python -m ml.train to generate held-out synthetic metrics.",
         },
         "warning": "Synthetic scenario metrics are not upay BD production statistics.",
     }

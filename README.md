@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, and Step 8 analyst frontend are implemented. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so the frontend marks scores unavailable by default and recommendations fail closed to monitoring/review when scores are not supplied. The score controls are only for clearly labeled illustrative demo inputs.
+The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 5 synthetic fraud/next-move training and evaluation, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, and Step 8 analyst frontend are implemented. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md) and [responsible AI notes](docs/RESPONSIBLE_AI.md) before interpreting them.
 
 ## Generate demo data
 
@@ -75,6 +75,19 @@ python -m core.taint SCN-06-FANOUT-CASHOUT-0001
 ```
 
 The estimate and its assumptions are described in [TAINT_METHODOLOGY.md](docs/TAINT_METHODOLOGY.md). It is not a fraud finding or a determination of ownership.
+
+## Train and evaluate the synthetic models
+
+After generating data and installing requirements, train the fraud and next-move models using the fixed case-level splits:
+
+```powershell
+python -m ml.train --seed 42
+python -m ml.evaluate
+python -m ml.explain --rows 825
+python -m ml.predict SCN-06-FANOUT-CASHOUT-0001
+```
+
+Training writes local ignored `.joblib` model artifacts and a reviewable `ml/artifacts/metrics.json`. Model scores are automatically available to the analysis API when those local model files exist. The validation split selects the fraud model/threshold and fits next-move probability calibration; held-out test results are reported separately. `ground_truth.csv` supplies labels only and is not used by inference feature generation. Metrics are limited to held-out variants from the same eight synthetic scenario families and do not establish real-world or upay BD performance; details are in the [model card](docs/MODEL_CARD.md).
 
 ## Build a simulated intervention recommendation
 

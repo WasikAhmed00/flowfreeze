@@ -19,7 +19,7 @@ OpenAPI documentation is served at `/docs`. All endpoints are local demo APIs an
 | `POST` | `/api/decisions` | Append an analyst approve/reject/modify decision with reason, actor, and bounded simulated amount. |
 | `GET` | `/api/decisions` | Read-only audit history, optionally filtered by `scenario_id`. |
 | `POST` | `/api/simulation/{decision_id}` | Record one synthetic outcome estimate for a prior decision; does not alter balances. |
-| `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, and aggregate simulation estimates. |
+| `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, aggregate simulation estimates, and held-out ML metrics when generated. |
 | `GET` | `/api/demo` | List seeded demo scenarios. |
 | `POST` | `/api/demo/reset?seed=42` | Regenerate synthetic CSV/SQLite data in development mode using the default `data/flowfreeze.db` location. This replaces the database and clears its local audit history. |
 
@@ -43,5 +43,6 @@ Rejected decisions must use amount zero. Approved or modified amounts must be po
 - The API has no production authentication or provider integration; bind it to a trusted local development environment only.
 - There are no wallet-control routes. Decision approval never changes a ledger or contacts a wallet.
 - Audit entries are append-only through the API. A demo reset intentionally replaces the SQLite file, including local audit history.
-- Until the ML step is implemented, risk and movement scores are optional caller-supplied values. Missing scores lead to monitoring/review recommendations.
+- After running `python -m ml.train`, `/api/analysis/{scenario_id}` automatically includes locally trained synthetic wallet scores. The metrics endpoint serves the tracked held-out metrics file even when ignored local model artifacts are absent. Missing model artifacts leave scores unavailable; caller-supplied scores are labeled illustrative.
+- ML scores, performance metrics, and recommendations are synthetic and advisory. See `docs/MODEL_CARD.md` and `docs/RESPONSIBLE_AI.md`.
 - Never use real customer information or production credentials with this prototype.
