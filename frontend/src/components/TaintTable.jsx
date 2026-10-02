@@ -1,0 +1,6 @@
+import { formatMoney } from '../api.js'
+
+export default function TaintTable({ wallets, onSelect, selectedWallet }) {
+  if (!wallets?.length) return <div className="empty-state compact-empty">No digital wallet taint rows at this snapshot.</div>
+  return <div className="table-scroll"><table className="data-table taint-table"><thead><tr><th>WALLET</th><th>BALANCE</th><th>TAINT ESTIMATE</th><th>LEGITIMATE REMAINDER</th><th>SHARE</th></tr></thead><tbody>{wallets.map((wallet) => <tr key={wallet.wallet_id} onClick={() => onSelect(wallet.wallet_id)} className={selectedWallet === wallet.wallet_id ? 'row-selected' : ''}><td><button className="table-wallet-link" onClick={(event) => { event.stopPropagation(); onSelect(wallet.wallet_id) }}>{wallet.wallet_id}</button><div className="scenario-id">{wallet.customer_type || 'digital wallet'}</div></td><td>{formatMoney(wallet.balance_bdt)}</td><td className="text-amber">{formatMoney(wallet.potentially_tainted_bdt)}</td><td>{formatMoney(wallet.potentially_legitimate_bdt)}</td><td><div className="share-cell"><div className="share-track"><span style={{ width: `${Math.min(100, Number(wallet.potentially_tainted_ratio || 0) * 100)}%` }} /></div><small>{(Number(wallet.potentially_tainted_ratio || 0) * 100).toFixed(0)}%</small></div></td></tr>)}</tbody></table></div>
+}

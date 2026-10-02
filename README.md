@@ -24,7 +24,7 @@ See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and defini
 
 ## Status
 
-The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 6 intervention-policy prototype, and Step 7 local API/audit workflow are implemented. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so recommendations currently fail closed to monitoring/review when scores are not supplied; full integration follows that ML work.
+The seeded synthetic data workflow, balance-checked replay, bounded downstream graph tracing, proportional reported-fund attribution, Step 6 intervention-policy prototype, Step 7 local API/audit workflow, and Step 8 analyst frontend are implemented. **Roadmap Step 5 (fraud and next-move model training/evaluation) remains outstanding**, so the frontend marks scores unavailable by default and recommendations fail closed to monitoring/review when scores are not supplied. The score controls are only for clearly labeled illustrative demo inputs.
 
 ## Generate demo data
 
@@ -95,3 +95,15 @@ python -m uvicorn backend.main:app --reload
 ```
 
 Interactive API docs are at `http://127.0.0.1:8000/docs`; endpoints and request examples are listed in [API.md](docs/API.md). The server is configured for local frontend development. Do not expose this synthetic demo API publicly. The development-only `POST /api/demo/reset` regenerates the SQLite database and clears its local decision/audit history.
+
+## Start the analyst frontend
+
+With the API running in a separate terminal:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. The frontend reads `VITE_API_BASE_URL` from `frontend/.env.local` when provided; its default is the local API above. The demo entry screen is not authentication. See the [frontend setup](frontend/README.md) for details.

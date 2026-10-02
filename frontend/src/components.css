@@ -1,0 +1,2 @@
+.incident-search{width:170px;height:28px;padding:0 8px;border:1px solid #e4ebe6;border-radius:5px;color:#53695f;font-size:8px}.pagination{display:flex;align-items:center;gap:8px}.pagination button{width:23px;height:22px;border:1px solid #e3eae5;border-radius:5px;background:#fff;color:#567467;font-size:10px}.pagination button:disabled{color:#c5cec8}.pagination span{color:#82928a;font-size:8px}
+@media(max-width:720px){.incident-search{width:130px}}
