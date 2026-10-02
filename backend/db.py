@@ -20,6 +20,7 @@ def resolve_database_path(path: str | Path | None = None) -> Path:
             raise ValueError("Only SQLite DATABASE_URL values are supported by this MVP.")
         else:
             value = str(DEFAULT_DATABASE_PATH)
+        path = value
 
     result = Path(path)
     if not result.is_absolute():

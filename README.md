@@ -31,7 +31,7 @@ Steps 1–2 are complete, and Step 3 now includes a balance-checked transaction 
 Requires Python 3.11 or later. In PowerShell, create the environment and install the pinned project dependencies:
 
 ```powershell
-py -3.11 -m venv .venv
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
