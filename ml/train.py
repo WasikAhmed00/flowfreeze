@@ -145,7 +145,7 @@ def train_models(
         "fraud_validation": binary_metrics(y_validation, selected_validation_probabilities, threshold),
     }
     validation_metrics["next_move_calibration"] = {
-        "method": "one_vs_rest_platt_scaled_then_renormalized",
+        "method": "one_vs_rest_platt_scaled_then_renormalized_with_50pct_raw_blend",
         "fit_rows": int(len(validation)),
         "validation_scores_are_calibration_fit_data": True,
         "calibrated_validation_diagnostics_not_held_out": multiclass_metrics(
@@ -173,7 +173,8 @@ def train_models(
         "feature_columns": FEATURE_COLUMNS,
         "classes": next_classes,
         "calibrators": next_calibrators,
-        "calibration_method": "one_vs_rest_platt_scaled_then_renormalized",
+        "calibration_method": "one_vs_rest_platt_scaled_then_renormalized_with_50pct_raw_blend",
+        "raw_probability_blend": 0.5,
         "prediction_window_minutes": 5,
     }, out_dir / "next_move_model.joblib")
     metrics = {

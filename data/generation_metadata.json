@@ -1,13 +1,13 @@
 {
   "synthetic": true,
   "seed": 42,
-  "scenario_family_count": 8,
+  "scenario_family_count": 11,
   "cases_per_scenario_family": 100,
-  "case_count": 800,
+  "case_count": 1100,
   "split_case_counts": {
-    "train": 560,
-    "validation": 120,
-    "test": 120
+    "train": 770,
+    "validation": 165,
+    "test": 165
   },
   "split_unit": "scenario_id (all wallet and transaction rows for a case stay together)",
   "split_ratios": {
