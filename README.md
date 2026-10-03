@@ -147,7 +147,25 @@ Create a `.env` file if required by your deployment environment.
 Create `frontend/.env.local`:
 
 ```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
+// vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+      '/health': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+});
 ```
 
 Use deployment-specific URLs when hosting remotely.
