@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './styles.css'
 import './components.css'
 import './baseline.css'
+import './mfs-theme.css'
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
