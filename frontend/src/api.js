@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
 const WRITE_API_KEY = import.meta.env.VITE_DEMO_WRITE_KEY || ''
 
 export async function api(path, options = {}) {
@@ -13,7 +13,8 @@ export async function api(path, options = {}) {
       },
     })
   } catch {
-    throw new Error(`Cannot reach FlowFreeze API at ${API_BASE}. Start the backend and try again.`)
+    const endpoint = API_BASE || 'the same-origin /api endpoint'
+    throw new Error(`Cannot reach FlowFreeze API at ${endpoint}. Start the backend and try again.`)
   }
   const payload = await response.json().catch(() => ({}))
   if (!response.ok) {

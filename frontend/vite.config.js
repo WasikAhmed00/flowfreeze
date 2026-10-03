@@ -8,5 +8,8 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     allowedHosts: ['5173-i7bder2g0eww6sjx4ozmr-af78cef5.us1.manus.computer'],
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:8000', changeOrigin: true },
+    },
   },
 })

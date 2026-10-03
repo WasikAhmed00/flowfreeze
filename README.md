@@ -150,13 +150,9 @@ Create a `.env` file if required by your deployment environment.
 
 ### Frontend Environment Variables
 
-Create `frontend/.env.local`:
-
-```env
-VITE_API_BASE_URL=http://127.0.0.1:8000
-```
-
-Use deployment-specific URLs when hosting remotely.
+For local development, Vite proxies same-origin `/api` requests to `http://127.0.0.1:8000`,
+so no frontend environment override is needed. If the frontend is hosted separately from the
+FastAPI service, set `VITE_API_BASE_URL` to the backend origin (without an `/api` suffix).
 
 > Never commit real credentials, secrets, API keys, or production configuration values.
 
