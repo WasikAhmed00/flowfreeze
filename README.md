@@ -116,6 +116,25 @@ Training writes local ignored `.joblib` model artifacts and a reviewable `ml/art
 
 The Step 9 benchmark runs both direct-recipient-only and FlowFreeze policy strategies over the same held-out cases. It writes `ml/artifacts/end_to_end_metrics.json`, which the Evaluation page displays alongside its assumptions. Value preserved and legitimate value affected are counterfactual estimates based on generated remaining-taint labels and an instant-action assumption; they are not observed outcomes. See [the benchmark report](docs/END_TO_END_EVALUATION.md).
 
+## Testing
+
+FlowFreeze uses automated tests to validate the real implementation, not placeholder outputs:
+
+- Decision-time feature engineering and leakage boundaries
+- Fraud model training, inference, probability bounds, and the not-fitted failure path
+- Next-move prediction across `forward`, `cashout`, and `no_movement`
+- Downstream graph tracing and proportional taint/value invariants
+- Human-reviewed intervention policy behavior
+- The end-to-end prediction, replay, graph, taint, and recommendation flow
+
+Run the suite from the repository root:
+
+```powershell
+pytest -q
+```
+
+The tests generate a small deterministic synthetic fixture and train the actual scikit-learn pipelines in a temporary directory, so they do not depend on ignored local model artifacts or a pre-existing SQLite database.
+
 ## Build a simulated intervention recommendation
 
 The policy in `core/policy.yaml` is JSON syntax, which is also valid YAML, so the policy can be loaded without an extra parser dependency. This CLI accepts optional scores for independent policy exploration; omitted scores are unavailable and fail closed to monitoring/review. The API pipeline uses local trained synthetic model artifacts automatically when present.
