@@ -126,12 +126,6 @@ Prediction of likely wallet behavior:
 * Node.js 20+
 * npm
 
-### Recommended Hardware
-
-* 4 GB RAM minimum
-* 8 GB RAM recommended
-* Multi-core CPU recommended for model training
-
 ---
 
 ## Environment Variables
@@ -188,40 +182,10 @@ bash scripts/render-start.sh
 
 ## Live Deployment URL
 
-### Frontend
-
 Replace with actual deployment URL:
 
-```text
-https://YOUR_FRONTEND_DEPLOYMENT_URL
-```
+https://flowfreeze-web.onrender.com
 
-### Backend
-
-Replace with actual deployment URL:
-
-```text
-https://YOUR_BACKEND_DEPLOYMENT_URL
-```
-
----
-
-## Manual Verification Steps
-
-Judges can verify the implemented features by following these steps:
-
-1. Generate synthetic data.
-2. Train the models.
-3. Start the backend API.
-4. Launch the frontend dashboard.
-5. Open an incident.
-6. Review fraud risk predictions.
-7. Inspect downstream fund-flow tracing.
-8. Review taint estimation results.
-9. Generate intervention recommendations.
-10. Execute scenario replay and evaluation workflows.
-
----
 
 ## Additional Configuration
 
