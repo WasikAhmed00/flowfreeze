@@ -12,6 +12,7 @@ from backend.db import application_connection
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
+ROBUSTNESS_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "robustness.json"
 END_TO_END_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "end_to_end_metrics.json"
 
 
@@ -33,6 +34,10 @@ def get_metrics() -> dict:
         ml_metrics = json.loads(ML_METRICS_PATH.read_text(encoding="utf-8")) if ML_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
         ml_metrics = None
+    try:
+        robustness_metrics = json.loads(ROBUSTNESS_METRICS_PATH.read_text(encoding="utf-8")) if ROBUSTNESS_METRICS_PATH.exists() else None
+    except (OSError, json.JSONDecodeError):
+        robustness_metrics = None
     try:
         end_to_end = json.loads(END_TO_END_METRICS_PATH.read_text(encoding="utf-8")) if END_TO_END_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
@@ -58,6 +63,7 @@ def get_metrics() -> dict:
             } if ml_metrics else None,
             "warning": ml_metrics.get("warning") if ml_metrics else "Train with python -m ml.train to generate held-out synthetic metrics.",
         },
+        "robustness": robustness_metrics,
         "end_to_end_evaluation": {
             "metrics_available": end_to_end is not None,
             "results": end_to_end,
