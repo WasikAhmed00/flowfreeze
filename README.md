@@ -1,179 +1,248 @@
-# FlowFreeze
+## Project Overview
 
-FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence prototype for an upay BD sponsored hackathon. It is designed to help an authorized analyst trace suspicious transfers, estimate potentially tainted e-money, anticipate likely next movement, and review a proportionate intervention recommendation.
+### Problem Addressed
 
-> **Prototype boundary:** FlowFreeze uses synthetic data and simulates interventions. It does not autonomously confiscate, reverse, refund, or legally freeze money. Any real hold capability requires provider, legal, and regulatory validation.
+Digital financial fraud can spread rapidly through multiple wallets and transactions, making manual investigation difficult and time-consuming. Fraud analysts often need to identify suspicious behavior, trace fund movement, estimate potential exposure, and determine appropriate intervention actions while minimizing impact on legitimate users.
 
-## Build plan
+### Proposed Solution
 
-See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and definition of done.
+FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence platform that combines:
 
-For a public synthetic demo, use the explicit [Render free-tier deployment guide](docs/RENDER_FREE_TIER.md).
+* Fraud risk prediction
+* Transaction graph analysis
+* Fund-flow tracing
+* Taint estimation
+* Next-move prediction
+* Analyst-reviewed intervention recommendations
 
-## Planned stack
+The platform provides explainable evidence and decision-support tools to help investigators analyze suspicious incidents using synthetic data in a safe demonstration environment.
 
-- Backend and ML: Python, FastAPI, pandas, scikit-learn, NetworkX
-- Frontend: React, Vite, Tailwind CSS
-- MVP storage: SQLite
-- Demo data: synthetic only
+### Purpose
 
-## Safety and data
+The project was developed as a prototype for the upay BD sponsored hackathon to demonstrate how AI can assist fraud investigation workflows while maintaining human oversight and responsible decision-making.
 
-- Never use real customer data, NID details, wallet numbers, production credentials, or secret keys.
-- Keep predictions separate from policy decisions and show evidence and uncertainty.
-- Require analyst review for every simulated intervention.
-- Clearly label all synthetic metrics; they are not upay production statistics.
+---
 
-## Status
+## Features
 
-Steps 0–10 are implemented for the synthetic hackathon prototype. Model scores are synthetic advisory inputs; policy checks and analyst review remain separate. Read the [model card](docs/MODEL_CARD.md), [responsible AI notes](docs/RESPONSIBLE_AI.md), [limitations](docs/LIMITATIONS.md), and [end-to-end evaluation report](docs/END_TO_END_EVALUATION.md) before interpreting results.
+In addition to the functionality described throughout this README, FlowFreeze includes:
 
-## Start the complete local demo (Windows)
+### AI-Assisted Fraud Risk Detection
 
-With Python 3.11+ and Node.js 20+ installed, run this from PowerShell at the repository root:
+* Machine learning based fraud risk scoring
+* Decision-time feature engineering
+* Explainable model outputs for analyst review
 
-```powershell
-.\demo\start_demo.ps1
+### Fund Flow Intelligence
+
+* Multi-hop transaction tracing
+* Downstream wallet discovery
+* Transaction relationship visualization
+
+### Taint Estimation
+
+* Proportional attribution methodology
+* Estimated exposure tracking
+* Visibility constrained to incident analysis time
+
+### Next-Move Prediction
+
+Prediction of likely wallet behavior:
+
+* Forward transfer
+* Cash-out
+* No movement
+
+### Analyst Decision Support
+
+* Intervention recommendations
+* Policy-based evaluation
+* Human-in-the-loop review process
+
+### Incident Investigation Dashboard
+
+* Incident management
+* Fund-flow analysis
+* Evaluation metrics
+* Synthetic case replay
+
+---
+
+## Technology Stack
+
+### Programming Languages
+
+* Python 3.11+
+* JavaScript / TypeScript
+
+### Backend
+
+* FastAPI
+* Uvicorn
+
+### Frontend
+
+* React
+* Vite
+* Tailwind CSS
+
+### Machine Learning & Analytics
+
+* scikit-learn
+* pandas
+* NumPy
+* NetworkX
+* joblib
+
+### Database
+
+* SQLite
+
+### AI Components
+
+* Fraud Risk Prediction Model
+* Next-Move Prediction Model
+* Explainability Pipeline
+* Intervention Recommendation Engine
+
+### Services & Deployment
+
+* Render
+* GitHub
+
+---
+
+## Requirements
+
+### Software Requirements
+
+#### Backend
+
+* Python 3.11 or newer
+* pip
+
+#### Frontend
+
+* Node.js 20+
+* npm
+
+### Recommended Hardware
+
+* 4 GB RAM minimum
+* 8 GB RAM recommended
+* Multi-core CPU recommended for model training
+
+---
+
+## Environment Variables
+
+### Backend Environment Variables
+
+Create a `.env` file if required by your deployment environment.
+
+| Variable           | Purpose                      | Example                        |
+| ------------------ | ---------------------------- | ------------------------------ |
+| APP_ENV            | Application environment      | development                    |
+| DATABASE_URL       | Database connection string   | sqlite:///./data/flowfreeze.db |
+| RANDOM_SEED        | Synthetic dataset seed       | 42                             |
+| ENABLE_DEMO_WRITES | Enable demo write operations | false                          |
+| DEMO_WRITE_KEY     | Demo authorization key       | YOUR_SECRET_KEY                |
+
+### Frontend Environment Variables
+
+Create `frontend/.env.local`:
+
+```env
+VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-On first run, the script creates `.venv` if needed, installs Python/frontend dependencies if missing, generates the seeded synthetic data if any required file is missing, trains local models if model files are missing, and starts the API/frontend on `127.0.0.1`. It writes service logs and process IDs under the ignored `demo/.runtime/` folder. Open `http://127.0.0.1:5173`; use `http://127.0.0.1:8000/docs` for the local API docs. Stop both services with:
+Use deployment-specific URLs when hosting remotely.
 
-```powershell
-.\demo\stop_demo.ps1
-```
+> Never commit real credentials, secrets, API keys, or production configuration values.
 
-To reset the generated SQLite database and its local audit history, run:
+---
 
-```powershell
-.\.venv\Scripts\python.exe -m demo.reset_demo --seed 42
-```
+## Build Instructions
 
-Reset does not retrain the models. The synthetic generator and benchmark are deterministic for a fixed seed, while local timing depends on the computer. See the [judge demo script](demo/DEMO_SCRIPT.md) for the walkthrough and reset checklist.
+### Frontend Production Build
 
-## Generate demo data
-
-Requires Python 3.11 or later. In PowerShell, create the environment and install the pinned project dependencies:
-
-```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-```
-
-The generator itself uses only Python's standard library, so it can also run before installing the project dependencies once Python is available.
-
-```powershell
-python -m data_generator.generate --seed 42
-```
-
-This writes `transactions.csv`, `wallets.csv`, `incidents.csv`, `ground_truth.csv`, `generation_metadata.json`, and `flowfreeze.db` under `data/`. Reusing the same seed reproduces the profile attributes and scenario data. See [data/README.md](data/README.md) and [the data dictionary](docs/DATA_DICTIONARY.md) for details.
-
-The generator produces 100 varied cases per scenario family by default across eleven families, including legitimate relay, payroll split, and slow-mule cases. It adds timing and amount variation, overlapping profiles, prior-relationship history, and case-level train/validation/test splits. This supports initial synthetic model experiments, but it is **not evidence of upay production performance**. Results will depend on the synthetic assumptions and must be labeled accordingly.
-
-## Replay or reset a scenario
-
-Replay only the events visible by the incident's `analysis_at` time:
-
-```powershell
-python -m core.simulator SCN-06-FANOUT-CASHOUT-0001
-```
-
-Reset all synthetic CSVs and the local database to the default seed:
-
-```powershell
-python -m demo.reset_demo --seed 42
-```
-
-Trace downstream paths visible at the incident analysis time:
-
-```powershell
-python -m core.graph SCN-06-FANOUT-CASHOUT-0001 --hops 5 --window-minutes 30
-```
-
-Trace amounts are gross transaction amounts; the graph does not label every amount on a path as tainted. Proportional attribution belongs to the next processing layer.
-
-Estimate proportional reported-fund attribution at the same incident analysis time:
-
-```powershell
-python -m core.taint SCN-06-FANOUT-CASHOUT-0001
-```
-
-The estimate and its assumptions are described in [TAINT_METHODOLOGY.md](docs/TAINT_METHODOLOGY.md). It is not a fraud finding or a determination of ownership.
-
-## Train and evaluate the synthetic models
-
-After generating data and installing requirements, train the fraud and next-move models using the fixed case-level splits:
-
-```powershell
-python -m ml.train --seed 42
-python -m ml.evaluate
-python -m ml.explain --rows 825
-python -m ml.predict SCN-06-FANOUT-CASHOUT-0001
-python -m core.baseline --split test
-python -m ml.robustness
-```
-
-Training writes local ignored `.joblib` model artifacts and a reviewable `ml/artifacts/metrics.json`. Model scores are automatically available to the analysis API when those local model files exist. The validation split selects the fraud model/threshold and fits next-move probability calibration; held-out test results are reported separately. `ground_truth.csv` supplies labels only and is not used by inference feature generation. The model uses behavior-only decision-time features; held-out metrics and robustness diagnostics do not establish real-world or upay BD performance. See the [model card](docs/MODEL_CARD.md).
-
-The Step 9 benchmark runs both direct-recipient-only and FlowFreeze policy strategies over the same held-out cases. It writes `ml/artifacts/end_to_end_metrics.json`, which the Evaluation page displays alongside its assumptions. Value preserved and legitimate value affected are counterfactual estimates based on generated remaining-taint labels and an instant-action assumption; they are not observed outcomes. See [the benchmark report](docs/END_TO_END_EVALUATION.md).
-
-## Testing
-
-FlowFreeze uses automated tests to validate the real implementation, not placeholder outputs:
-
-- Decision-time feature engineering and leakage boundaries
-- Fraud model training, inference, probability bounds, and the not-fitted failure path
-- Next-move prediction across `forward`, `cashout`, and `no_movement`
-- Downstream graph tracing and proportional taint/value invariants
-- Human-reviewed intervention policy behavior
-- The end-to-end prediction, replay, graph, taint, and recommendation flow
-
-Run the suite from the repository root:
-
-```powershell
-pytest -q
-```
-
-The tests generate a small deterministic synthetic fixture and train the actual scikit-learn pipelines in a temporary directory, so they do not depend on ignored local model artifacts or a pre-existing SQLite database.
-
-## Build a simulated intervention recommendation
-
-The policy in `core/policy.yaml` is JSON syntax, which is also valid YAML, so the policy can be loaded without an extra parser dependency. This CLI accepts optional scores for independent policy exploration; omitted scores are unavailable and fail closed to monitoring/review. The API pipeline uses local trained synthetic model artifacts automatically when present.
-
-```powershell
-python -m core.intervention SCN-06-FANOUT-CASHOUT-0001 --fraud-risk 0.82 --p-forward 0.20 --p-cashout 0.65 --p-no-movement 0.15
-```
-
-The result shows the policy version, evidence transaction IDs, potential collateral, thresholds, and an action proposal for each wallet with a positive taint estimate. It never changes a balance or contacts a provider. Wrong-recipient disputes are routed to review. See [INTERVENTION_POLICY.md](docs/INTERVENTION_POLICY.md).
-
-## Start the backend API
-
-Generate the synthetic database first, then run the local API from the repository root:
-
-```powershell
-python -m uvicorn backend.main:app --reload
-```
-
-Interactive API docs are at `http://127.0.0.1:8000/docs`; endpoints and request examples are listed in [API.md](docs/API.md). The server is configured for local frontend development. Do not expose this synthetic demo API publicly. The development-only `POST /api/demo/reset` regenerates the SQLite database and clears its local decision/audit history.
-
-## Start the analyst frontend
-
-With the API running in a separate terminal:
-
-```powershell
+```bash
 cd frontend
-npm ci
-npm run dev
+npm run build
 ```
 
-Open `http://127.0.0.1:5173`. The frontend reads `VITE_API_BASE_URL` from `frontend/.env.local` when provided; its default is the local API above. The demo entry screen is not authentication. See the [frontend setup](frontend/README.md) for details.
+### Render Deployment Build
 
-## Deploy on Render's free tier
+```bash
+pip install -r requirements.txt
+bash scripts/render-build.sh
+```
 
-The repository includes `render.yaml` plus `scripts/render-build.sh` and
-`scripts/render-start.sh`. The API build regenerates the seeded synthetic
-database and trains the model artifacts before startup; the static frontend is
-built with an explicit API URL. Public deployments are read-only by default,
-and the free tier can sleep or lose its ephemeral SQLite data after restart.
-See [docs/RENDER_FREE_TIER.md](docs/RENDER_FREE_TIER.md) for the required
-environment variables and live-demo expectations.
+### Render Startup Command
+
+```bash
+bash scripts/render-start.sh
+```
+
+---
+
+## Live Deployment URL
+
+### Frontend
+
+Replace with actual deployment URL:
+
+```text
+https://YOUR_FRONTEND_DEPLOYMENT_URL
+```
+
+### Backend
+
+Replace with actual deployment URL:
+
+```text
+https://YOUR_BACKEND_DEPLOYMENT_URL
+```
+
+---
+
+## Manual Verification Steps
+
+Judges can verify the implemented features by following these steps:
+
+1. Generate synthetic data.
+2. Train the models.
+3. Start the backend API.
+4. Launch the frontend dashboard.
+5. Open an incident.
+6. Review fraud risk predictions.
+7. Inspect downstream fund-flow tracing.
+8. Review taint estimation results.
+9. Generate intervention recommendations.
+10. Execute scenario replay and evaluation workflows.
+
+---
+
+## Additional Configuration
+
+### Important Documentation
+
+The following project documents provide additional configuration, methodology, and evaluation details:
+
+* `docs/API.md`
+* `docs/DATA_DICTIONARY.md`
+* `docs/INTERVENTION_POLICY.md`
+* `docs/MODEL_CARD.md`
+* `docs/RESPONSIBLE_AI.md`
+* `docs/LIMITATIONS.md`
+* `docs/TAINT_METHODOLOGY.md`
+* `docs/END_TO_END_EVALUATION.md`
+* `docs/RENDER_FREE_TIER.md`
+
+### Demo Notes
+
+* Synthetic data only
+* No production customer information
+* No real fund freezing capability
+* Human analyst review required for recommendations
+* All intervention actions are simulated
