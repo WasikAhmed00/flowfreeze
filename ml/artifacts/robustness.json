@@ -1,0 +1,114 @@
+{
+  "synthetic_only": true,
+  "seed": 42,
+  "test_rows": 1155,
+  "test_cases": 165,
+  "prevalence_baseline": {
+    "positive_rate": 0.17575757575757575,
+    "majority_accuracy": 0.8242424242424242
+  },
+  "trained_model": {
+    "prevalence": 0.17575757575757575,
+    "average_precision": 0.9796295623069243,
+    "balanced_accuracy": 0.9656259055346277,
+    "f1": 0.8939051918735892
+  },
+  "behavior_rule_baseline": {
+    "balanced_accuracy": 0.45577368878585917,
+    "f1": 0.09975062344139651
+  },
+  "shuffled_label_check": {
+    "prevalence": 0.17575757575757575,
+    "average_precision": 0.29945120700783456,
+    "balanced_accuracy": 0.5517965807012459,
+    "f1": 0.30278884462151395
+  },
+  "scenario_cluster_bootstrap": {
+    "repetitions": 100,
+    "average_precision_mean": 0.884234513228738,
+    "ci95": [
+      0.8045842587138142,
+      0.9488513761823965
+    ]
+  },
+  "leave_one_family_out": {
+    "direct_fraud": {
+      "rows": 75,
+      "prevalence": 0.2,
+      "average_precision": 1.0,
+      "balanced_accuracy": 1.0,
+      "f1": 1.0
+    },
+    "false_positive": {
+      "rows": 90,
+      "prevalence": 0.0,
+      "average_precision": 0.0,
+      "balanced_accuracy": 1.0,
+      "f1": 0.0
+    },
+    "fanout": {
+      "rows": 120,
+      "prevalence": 0.3333333333333333,
+      "average_precision": 1.0,
+      "balanced_accuracy": 1.0,
+      "f1": 1.0
+    },
+    "fanout_cashout": {
+      "rows": 135,
+      "prevalence": 0.28888888888888886,
+      "average_precision": 1.0,
+      "balanced_accuracy": 1.0,
+      "f1": 1.0
+    },
+    "legitimate_relay": {
+      "rows": 105,
+      "prevalence": 0.0,
+      "average_precision": 0.0,
+      "balanced_accuracy": 0.8857142857142857,
+      "f1": 0.0
+    },
+    "mixed_balance": {
+      "rows": 120,
+      "prevalence": 0.31666666666666665,
+      "average_precision": 0.9653302878214117,
+      "balanced_accuracy": 0.9088575096277278,
+      "f1": 0.8888888888888888
+    },
+    "multi_hop": {
+      "rows": 120,
+      "prevalence": 0.3416666666666667,
+      "average_precision": 0.9994192799070848,
+      "balanced_accuracy": 0.9936708860759493,
+      "f1": 0.9879518072289156
+    },
+    "payroll_split": {
+      "rows": 120,
+      "prevalence": 0.0,
+      "average_precision": 0.0,
+      "balanced_accuracy": 0.7666666666666667,
+      "f1": 0.0
+    },
+    "rapid_cashout": {
+      "rows": 90,
+      "prevalence": 0.16666666666666666,
+      "average_precision": 1.0,
+      "balanced_accuracy": 1.0,
+      "f1": 1.0
+    },
+    "slow_mule": {
+      "rows": 105,
+      "prevalence": 0.14285714285714285,
+      "average_precision": 1.0,
+      "balanced_accuracy": 1.0,
+      "f1": 1.0
+    },
+    "wrong_recipient": {
+      "rows": 75,
+      "prevalence": 0.0,
+      "average_precision": 0.0,
+      "balanced_accuracy": 1.0,
+      "f1": 0.0
+    }
+  },
+  "interpretation": "Robustness checks are synthetic diagnostics. Cluster intervals and family holdouts are not production validation."
+}

@@ -3,7 +3,7 @@
 ## Data and evaluation
 
 - All included records are generated. They do not represent upay BD, its customers, transaction patterns, or operating performance.
-- Train, validation, and test contain variants of the same eight scenario templates. This is not a temporal, new-family, production, or adversarial evaluation.
+- Train, validation, and test contain variants of the same eleven scenario families. This is not a temporal, new-family, production, or adversarial evaluation.
 - The classifier's perfect results on the held-out generated test cases demonstrate consistency with the generator's labels, not reliable fraud detection in an MFS environment.
 - Taint is proportional attribution, an accounting assumption. It does not establish source, ownership, fraud, or legal recoverability.
 - Step 9's “preserved” and “legitimate affected” values are counterfactual sums against generated remaining-taint labels. They assume an immediate proposal takes effect and are not measured loss prevention or customer impact.

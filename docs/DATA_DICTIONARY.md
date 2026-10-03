@@ -82,6 +82,6 @@ One row per wallet per incident scenario. Generator/evaluation labels only. Do n
 - Record random seed and generator configuration so reported metrics can be reproduced.
 - Synthetic distributions are design assumptions and are not evidence of actual upay customer behavior.
 - `ml.features.build_decision_features` builds inference inputs without opening `ground_truth.csv`; offline training joins the labels only after the input feature table has been constructed.
-- The baseline model uses 30 fields (26 numeric and 4 categorical). Identifiers, split assignments, scenario-family keys, labels, taint, and cashout outcomes are excluded. Features are aggregated only through `analysis_at`.
-- The default case-level split includes variants of each of the eight scenario families in train, validation, and test. This prevents the same incident case from crossing splits but does not measure generalization to a new scenario family or time period.
+- The baseline model uses behavior-only fields: 18 numeric and 2 categorical features. Identifiers, split assignments, scenario-family keys, labels, graph reachability, incident-role flags, customer roles, profile balances, and post-analysis outcomes are excluded. Features are aggregated only through `analysis_at`.
+- The default case-level split includes variants of each of the eleven scenario families in train, validation, and test. This prevents the same incident case from crossing splits but does not measure generalization to a new scenario family or time period.
 - See `docs/MODEL_CARD.md` for the target definitions, model selection, calibration, reported metrics, and limitations.

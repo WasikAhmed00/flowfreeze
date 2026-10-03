@@ -68,7 +68,7 @@ python -m data_generator.generate --seed 42
 
 This writes `transactions.csv`, `wallets.csv`, `incidents.csv`, `ground_truth.csv`, `generation_metadata.json`, and `flowfreeze.db` under `data/`. Reusing the same seed reproduces the profile attributes and scenario data. See [data/README.md](data/README.md) and [the data dictionary](docs/DATA_DICTIONARY.md) for details.
 
-The generator produces 100 varied cases per scenario family by default, with benign historical activity and case-level train/validation/test splits. This supports initial synthetic model experiments, but it is **not evidence of upay production performance**. Results will depend on the synthetic assumptions and must be labeled accordingly.
+The generator produces 100 varied cases per scenario family by default across eleven families, including legitimate relay, payroll split, and slow-mule cases. It adds timing and amount variation, overlapping profiles, prior-relationship history, and case-level train/validation/test splits. This supports initial synthetic model experiments, but it is **not evidence of upay production performance**. Results will depend on the synthetic assumptions and must be labeled accordingly.
 
 ## Replay or reset a scenario
 
@@ -110,9 +110,10 @@ python -m ml.evaluate
 python -m ml.explain --rows 825
 python -m ml.predict SCN-06-FANOUT-CASHOUT-0001
 python -m core.baseline --split test
+python -m ml.robustness
 ```
 
-Training writes local ignored `.joblib` model artifacts and a reviewable `ml/artifacts/metrics.json`. Model scores are automatically available to the analysis API when those local model files exist. The validation split selects the fraud model/threshold and fits next-move probability calibration; held-out test results are reported separately. `ground_truth.csv` supplies labels only and is not used by inference feature generation. Metrics are limited to held-out variants from the same eight synthetic scenario families and do not establish real-world or upay BD performance; details are in the [model card](docs/MODEL_CARD.md).
+Training writes local ignored `.joblib` model artifacts and a reviewable `ml/artifacts/metrics.json`. Model scores are automatically available to the analysis API when those local model files exist. The validation split selects the fraud model/threshold and fits next-move probability calibration; held-out test results are reported separately. `ground_truth.csv` supplies labels only and is not used by inference feature generation. The model uses behavior-only decision-time features; held-out metrics and robustness diagnostics do not establish real-world or upay BD performance. See the [model card](docs/MODEL_CARD.md).
 
 The Step 9 benchmark runs both direct-recipient-only and FlowFreeze policy strategies over the same held-out cases. It writes `ml/artifacts/end_to_end_metrics.json`, which the Evaluation page displays alongside its assumptions. Value preserved and legitimate value affected are counterfactual estimates based on generated remaining-taint labels and an instant-action assumption; they are not observed outcomes. See [the benchmark report](docs/END_TO_END_EVALUATION.md).
 

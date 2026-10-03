@@ -1,69 +1,69 @@
 {
   "synthetic_only": true,
-  "test_wallet_rows_sampled": 825,
+  "test_wallet_rows_sampled": 1155,
   "fraud_model": {
-    "model_name": "logistic_regression",
+    "model_name": "random_forest",
     "method": "permutation importance using average precision",
     "top_features": [
       {
         "feature": "merchant_payment_count",
-        "mean_score_decrease": 0.0246043395631782,
-        "std_score_decrease": 0.0005829312256813284
+        "mean_score_decrease": 0.04906765545717947,
+        "std_score_decrease": 0.0036834741325370893
       },
       {
-        "feature": "incident_type",
-        "mean_score_decrease": 0.0008093949302163672,
-        "std_score_decrease": 0.0004649072856574853
+        "feature": "reported_amount_bdt",
+        "mean_score_decrease": 0.02560279349771603,
+        "std_score_decrease": 0.0010438057370518773
       },
       {
         "feature": "observed_incoming_amount_bdt",
-        "mean_score_decrease": 0.0001730461896892003,
-        "std_score_decrease": 0.0002289515511805484
+        "mean_score_decrease": 0.022944252597921433,
+        "std_score_decrease": 0.008544996106162009
       },
       {
-        "feature": "normal_active_hours",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
+        "feature": "incoming_outgoing_count_ratio",
+        "mean_score_decrease": 0.017631392906265253,
+        "std_score_decrease": 0.0009292389253489513
       },
       {
-        "feature": "reachable_from_reported_recipient",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
+        "feature": "observed_net_flow_bdt",
+        "mean_score_decrease": 0.009818418190793357,
+        "std_score_decrease": 0.0011714995352786232
       },
       {
-        "feature": "customer_type",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
+        "feature": "observed_incoming_count",
+        "mean_score_decrease": 0.009118626978020497,
+        "std_score_decrease": 0.0015209919256662353
       },
       {
-        "feature": "graph_hops_from_reported_recipient",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
+        "feature": "observed_max_outgoing_bdt",
+        "mean_score_decrease": 0.006626707825115652,
+        "std_score_decrease": 0.0018714219171824331
+      },
+      {
+        "feature": "observed_outgoing_amount_bdt",
+        "mean_score_decrease": 0.006109430842829148,
+        "std_score_decrease": 0.002116083979672042
+      },
+      {
+        "feature": "observed_average_outgoing_bdt",
+        "mean_score_decrease": 0.0058018353116515336,
+        "std_score_decrease": 0.0012930378659379578
+      },
+      {
+        "feature": "prior_active_days",
+        "mean_score_decrease": 0.0037899226009419085,
+        "std_score_decrease": 0.0020779670091730694
+      },
+      {
+        "feature": "amount_to_prior_average_ratio",
+        "mean_score_decrease": 0.003450272342681101,
+        "std_score_decrease": 0.0010400448499391956
       },
       {
         "feature": "distinct_counterparties",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
-      },
-      {
-        "feature": "post_report_cashout_count",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
-      },
-      {
-        "feature": "post_report_outgoing_amount_bdt",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
-      },
-      {
-        "feature": "post_report_outgoing_count",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
-      },
-      {
-        "feature": "post_report_incoming_count",
-        "mean_score_decrease": 0.0,
-        "std_score_decrease": 0.0
+        "mean_score_decrease": 0.003090228934597724,
+        "std_score_decrease": 0.0002331568986846963
       }
     ]
   },
@@ -72,64 +72,64 @@
     "method": "permutation importance using macro F1",
     "top_features": [
       {
-        "feature": "post_report_incoming_count",
-        "mean_score_decrease": 0.17148202124418976,
-        "std_score_decrease": 0.0054984714479876795
+        "feature": "observed_outgoing_count",
+        "mean_score_decrease": 0.12422588156401655,
+        "std_score_decrease": 0.011858201612596793
       },
       {
-        "feature": "graph_hops_from_reported_recipient",
-        "mean_score_decrease": 0.16677753912914903,
-        "std_score_decrease": 0.01675145102877973
+        "feature": "observed_incoming_count",
+        "mean_score_decrease": 0.1083724747124994,
+        "std_score_decrease": 0.010371936012622448
       },
       {
-        "feature": "reported_amount_bdt",
-        "mean_score_decrease": 0.1637273612381461,
-        "std_score_decrease": 0.02419725898103654
+        "feature": "observed_outgoing_amount_bdt",
+        "mean_score_decrease": 0.0800466619671046,
+        "std_score_decrease": 0.006112933486789014
       },
       {
-        "feature": "reported_recipient",
-        "mean_score_decrease": 0.16242724634223885,
-        "std_score_decrease": 0.005253049090191076
-      },
-      {
-        "feature": "incident_type",
-        "mean_score_decrease": 0.10449649486332979,
-        "std_score_decrease": 0.010047221719245745
-      },
-      {
-        "feature": "merchant_payment_count",
-        "mean_score_decrease": 0.032442404617497,
-        "std_score_decrease": 0.0019648789770213156
-      },
-      {
-        "feature": "post_report_outgoing_count",
-        "mean_score_decrease": 0.010592655952628779,
-        "std_score_decrease": 0.007526948275687235
+        "feature": "incoming_outgoing_count_ratio",
+        "mean_score_decrease": 0.07763861927556749,
+        "std_score_decrease": 0.012744903048948257
       },
       {
         "feature": "observed_incoming_amount_bdt",
-        "mean_score_decrease": 0.010481896340107433,
-        "std_score_decrease": 0.0040807785055881575
+        "mean_score_decrease": 0.07660745200774975,
+        "std_score_decrease": 0.017984194039433604
       },
       {
         "feature": "observed_net_flow_bdt",
-        "mean_score_decrease": 0.007429005868080522,
-        "std_score_decrease": 0.011255505377737
+        "mean_score_decrease": 0.07202681887664054,
+        "std_score_decrease": 0.01104407042849842
       },
       {
-        "feature": "account_age_days",
-        "mean_score_decrease": 0.0044229237548972416,
-        "std_score_decrease": 0.005004654444740976
+        "feature": "reported_amount_bdt",
+        "mean_score_decrease": 0.05353421866498385,
+        "std_score_decrease": 0.008740739150322065
       },
       {
-        "feature": "reported_sender",
-        "mean_score_decrease": 0.00247161001586349,
-        "std_score_decrease": 0.0
+        "feature": "prior_active_days",
+        "mean_score_decrease": 0.04013762434066315,
+        "std_score_decrease": 0.01050587189530897
       },
       {
-        "feature": "profile_frequency_per_day",
-        "mean_score_decrease": 0.0013649161836527535,
-        "std_score_decrease": 0.00587085709244385
+        "feature": "distinct_counterparties",
+        "mean_score_decrease": 0.03408394058350467,
+        "std_score_decrease": 0.007551117628968672
+      },
+      {
+        "feature": "merchant_payment_count",
+        "mean_score_decrease": 0.029003134076345232,
+        "std_score_decrease": 0.01409265384147394
+      },
+      {
+        "feature": "amount_to_prior_average_ratio",
+        "mean_score_decrease": 0.01464825026733311,
+        "std_score_decrease": 0.002956566010867634
+      },
+      {
+        "feature": "observed_transaction_count",
+        "mean_score_decrease": 0.012915682769563194,
+        "std_score_decrease": 0.0015606758752240548
       }
     ]
   },

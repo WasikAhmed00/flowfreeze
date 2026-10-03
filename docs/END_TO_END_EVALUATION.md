@@ -24,7 +24,7 @@ The command writes `ml/artifacts/end_to_end_metrics.json`; `GET /api/metrics` se
 
 ## Recorded run
 
-Seed 42, default policy v1, eight generated families, test split (120 cases, 825 wallet rows):
+Seed 42, default policy v1, eleven generated families, test split (165 cases and 1,155 test wallet rows):
 
 | Measure | Direct recipient only | FlowFreeze network | Difference |
 |---|---:|---:|---:|

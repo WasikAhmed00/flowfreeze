@@ -40,14 +40,21 @@ def apply_multiclass_calibrators(
     raw_probabilities: Any,
     classes: list[str],
     calibrators: dict[str, Any],
+    *,
+    raw_blend: float = 0.5,
 ) -> np.ndarray:
     raw = np.asarray(raw_probabilities, dtype=float)
     if raw.ndim != 2 or raw.shape[1] != len(classes):
         raise ValueError("Prediction score columns do not match calibration classes.")
+    if not 0 <= raw_blend <= 1:
+        raise ValueError("raw_blend must be between 0 and 1.")
     logits = _logit(raw)
     corrected = np.column_stack([
         calibrators[label].predict_proba(logits[:, [index]])[:, 1]
         for index, label in enumerate(classes)
     ])
     totals = corrected.sum(axis=1, keepdims=True)
-    return np.divide(corrected, totals, out=np.full_like(corrected, 1 / len(classes)), where=totals > 0)
+    calibrated = np.divide(corrected, totals, out=np.full_like(corrected, 1 / len(classes)), where=totals > 0)
+    blended = raw_blend * raw + (1 - raw_blend) * calibrated
+    blend_totals = blended.sum(axis=1, keepdims=True)
+    return np.divide(blended, blend_totals, out=np.full_like(blended, 1 / len(classes)), where=blend_totals > 0)

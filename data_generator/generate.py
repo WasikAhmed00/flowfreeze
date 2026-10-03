@@ -82,8 +82,20 @@ def _build_cases(cases_per_scenario: int, seed: int) -> list[dict[str, Any]]:
     for template in SCENARIOS:
         family_cases: list[dict[str, Any]] = []
         for variant in range(1, cases_per_scenario + 1):
-            amount_scale = variation_rng.uniform(0.75, 1.25)
-            time_scale = variation_rng.uniform(0.90, 1.10)
+            amount_scale = variation_rng.uniform(0.65, 1.35)
+            time_scale = variation_rng.uniform(0.75, 1.30)
+            event_rows = []
+            for event_index, (minute, sender, receiver, amount, transaction_type) in enumerate(template["events"]):
+                # Keep the reported transfer present, but vary downstream
+                # timing and retained amount enough to avoid near-copy cases.
+                if event_index and variation_rng.random() < 0.08:
+                    continue
+                jitter = 0.0 if event_index == 0 else variation_rng.uniform(-1.5, 1.5)
+                retention = 1.0 if event_index == 0 else variation_rng.uniform(0.70, 1.0)
+                event_rows.append((
+                    max(0.0, minute * time_scale + jitter), sender, receiver,
+                    max(1, _scaled(amount, amount_scale * retention)), transaction_type,
+                ))
             case = {
                 "scenario_id": f"{template['scenario_id']}-{variant:04d}",
                 "scenario_type": template["scenario_type"],
@@ -96,16 +108,7 @@ def _build_cases(cases_per_scenario: int, seed: int) -> list[dict[str, Any]]:
                     role: (customer_type, _scaled(balance, amount_scale * variation_rng.uniform(0.80, 1.20)))
                     for role, (customer_type, balance) in template["wallets"].items()
                 },
-                "events": [
-                    (
-                        minute * time_scale,
-                        sender,
-                        receiver,
-                        max(1, _scaled(amount, amount_scale)),
-                        transaction_type,
-                    )
-                    for minute, sender, receiver, amount, transaction_type in template["events"]
-                ],
+                "events": event_rows,
             }
             family_cases.append(case)
 
@@ -263,7 +266,11 @@ def generate_dataset(
             receiver = role_ids[event_spec["receiver_role"]]
             amount = int(event_spec["amount"])
             if balances[sender] < amount:
-                raise ValueError(f"Insufficient generated balance in {sender} for {scenario_id}")
+                if event_spec["reported"]:
+                    raise ValueError(f"Insufficient generated balance in {sender} for {scenario_id}")
+                amount = balances[sender]
+            if amount <= 0:
+                continue
             sender_before = balances[sender]
             receiver_before = balances[receiver]
             balances[sender] -= amount
