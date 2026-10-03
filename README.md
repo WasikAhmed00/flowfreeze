@@ -187,6 +187,115 @@ Replace with actual deployment URL:
 https://flowfreeze-web.onrender.com
 
 
+## Testing Instructions
+
+### Automated Testing
+
+Run the backend test suite:
+
+```bash
+pytest -q
+```
+
+Run a specific test module:
+
+```bash
+pytest tests/test_fraud_model.py
+```
+
+Run all tests with detailed output:
+
+```bash
+pytest -v
+```
+
+### Manual Feature Verification
+
+Judges can verify the implemented features by following these steps:
+
+#### 1. Start the Backend
+
+```bash
+python -m uvicorn backend.main:app --reload
+```
+
+Verify that the API is accessible:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+#### 2. Start the Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open:
+
+```text
+http://127.0.0.1:5173
+```
+
+#### 3. Verify Fraud Risk Detection
+
+* Open an incident from the Incident Dashboard.
+* Review the generated fraud risk score.
+* Check the AI explanation panel and contributing risk indicators.
+
+#### 4. Verify Fund Flow Intelligence
+
+* Select an incident.
+* Open the Fund Flow Graph.
+* Confirm that downstream wallet connections and transaction paths are visualized.
+
+#### 5. Verify Taint Estimation
+
+* Open the Taint Analysis section.
+* Review the estimated affected value and exposure calculations.
+
+#### 6. Verify Next-Move Prediction
+
+* Open the prediction panel.
+* Confirm that the system generates probabilities for:
+
+  * Forward Transfer
+  * Cash-Out
+  * No Movement
+
+#### 7. Verify Intervention Recommendations
+
+* Review the recommended analyst action.
+* Confirm that supporting evidence and reasoning are displayed.
+
+#### 8. Verify What-If Lab
+
+* Open the What-If Lab.
+* Modify simulation parameters.
+* Run a scenario.
+* Compare the original and simulated outcomes.
+
+#### 9. Verify Incident Replay
+
+* Open a replayable incident.
+* Run the replay.
+* Confirm that historical events and decisions can be reviewed step-by-step.
+
+### Expected Outcome
+
+The platform should successfully demonstrate:
+
+* AI-assisted fraud risk detection
+* Fund-flow tracing
+* Taint estimation
+* Next-move prediction
+* Intervention recommendation generation
+* Incident replay and simulation capabilities
+* Analyst-focused investigation workflows
+
+
 ## Additional Configuration
 
 ### Important Documentation
