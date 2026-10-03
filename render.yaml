@@ -10,6 +10,8 @@ services:
     envVars:
       - key: APP_ENV
         value: production
+      - key: PYTHON_VERSION
+        value: 3.12.10
       - key: DATABASE_URL
         value: sqlite:///./data/flowfreeze.db
       - key: RANDOM_SEED
