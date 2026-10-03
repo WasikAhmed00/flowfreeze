@@ -1,50 +1,15 @@
 import { useMemo, useState } from 'react'
 import StatCard from '../components/StatCard.jsx'
-import { formatDate, formatMoney } from '../api.js'
-
-const categoryLabel = (value = '') => value.replaceAll('_', ' ')
-const today = new Intl.DateTimeFormat('en-BD', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date()).toUpperCase()
-
-export default function Dashboard({ incidents, totalCount, metrics, onSelect, loading }) {
-  const [query, setQuery] = useState('')
-  const [page, setPage] = useState(0)
-  const pageSize = 12
-  const filtered = useMemo(() => {
-    const term = query.trim().toLowerCase()
-    return term ? incidents.filter((row) => `${row.incident_id} ${row.scenario_id} ${row.scenario_type} ${row.incident_type}`.toLowerCase().includes(term)) : incidents
-  }, [incidents, query])
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize))
-  const visible = filtered.slice(page * pageSize, (page + 1) * pageSize)
-  const displayedStart = filtered.length ? page * pageSize + 1 : 0
-  const displayedEnd = Math.min((page + 1) * pageSize, filtered.length)
-  return <>
-    <div className="page-heading heading-row">
-      <div><div className="eyebrow">{today} <span className="eyebrow-dot" /> SANDBOX</div><h1>Good morning, analyst</h1><p>Here’s what’s happening across your synthetic incident workspace.</p></div>
-      <button className="button button-primary" onClick={() => incidents[0] && onSelect(incidents[0].scenario_id)}><span>＋</span> Review an incident</button>
-    </div>
-    <div className="synthetic-banner"><span className="banner-symbol">✳</span><div><b>Working with synthetic data</b><span>All wallets, transactions, and performance figures on this screen are generated for the hackathon demo.</span></div><span className="banner-tag">SANDBOX ONLY</span></div>
-    <div className="stats-grid">
-      <StatCard label="INCIDENT CASES" value={metrics?.dataset?.incident_count?.toLocaleString() ?? '—'} sub="Synthetic cases available" icon="⌁" tone="green" />
-      <StatCard label="TRANSACTIONS TRACED" value={metrics?.dataset?.transaction_count?.toLocaleString() ?? '—'} sub="Generated ledger events" icon="⇢" tone="blue" />
-      <StatCard label="WALLETS IN SCOPE" value={metrics?.dataset?.wallet_count?.toLocaleString() ?? '—'} sub="Across generated scenarios" icon="◉" tone="violet" />
-      <StatCard label="SIMULATED VALUE PRESERVED" value={formatMoney(metrics?.simulations?.estimated_tainted_value_preserved_bdt)} sub={`${metrics?.simulations?.count ?? 0} recorded what-if outcomes`} icon="৳" tone="amber" />
-    </div>
-    <section className="content-card incident-list-card">
-      <div className="section-head"><div><div className="eyebrow">CASE QUEUE</div><h2>Incident cases <span className="count-badge">{totalCount}</span></h2></div><div className="list-tools"><input className="incident-search" aria-label="Search incidents" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0) }} placeholder="Search case or scenario" /><span className="filter-chip"><i /> All cases</span></div></div>
-      {loading ? <div className="empty-state">Loading synthetic incident list…</div> : incidents.length === 0 ? <div className="empty-state">No incidents returned. Check that the API is connected and the database has been generated.</div> :
-        <div className="table-scroll"><table className="data-table incident-table"><thead><tr><th>INCIDENT</th><th>SCENARIO TYPE</th><th>REPORTED</th><th>AMOUNT</th><th>STATUS</th><th /></tr></thead><tbody>
-          {visible.map((item) => <tr key={item.incident_id} onClick={() => onSelect(item.scenario_id)} tabIndex="0" onKeyDown={(event) => event.key === 'Enter' && onSelect(item.scenario_id)}>
-            <td><div className="incident-id">{item.incident_id}</div><div className="scenario-id">{item.scenario_id}</div></td>
-            <td><span className={`type-pill ${item.incident_type === 'wrong_recipient_dispute' ? 'type-dispute' : ''}`}>{categoryLabel(item.scenario_type)}</span></td>
-            <td className="date-cell">{formatDate(item.reported_at)}</td><td className="amount-cell">{formatMoney(item.reported_amount)}</td>
-            <td><span className="status-pill"><i /> {categoryLabel(item.status || 'new')}</span></td><td className="row-arrow">↗</td>
-          </tr>)}
-        </tbody></table>{visible.length === 0 && <div className="empty-state">No cases match “{query}”. Try a scenario family or case ID.</div>}</div>}
-      <div className="table-foot"><span>Showing {displayedStart}–{displayedEnd} of {filtered.length} matching synthetic cases</span><div className="pagination"><button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>←</button><span>{page + 1} / {pageCount}</span><button disabled={page + 1 >= pageCount} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>→</button></div></div>
-    </section>
-    <div className="dashboard-bottom-grid">
-      <section className="content-card quick-card"><div className="section-head compact"><div><div className="eyebrow">HOW TO READ THIS</div><h2>Analyst-first by design</h2></div><span className="round-icon">✳</span></div><p>Risk, tracing, and taint are evidence for review. FlowFreeze never makes a legal finding or executes a real wallet action.</p><button className="text-action" onClick={() => onSelect(incidents[0]?.scenario_id)}>Start with a sample case <span>→</span></button></section>
-      <section className="content-card mini-stat-card"><div className="eyebrow">AUDIT ACTIVITY</div><div className="audit-total">{metrics?.audit?.decision_count ?? '—'} <span>analyst decisions</span></div><div className="mini-stat-row"><span>Approved</span><b>{metrics?.audit?.decision_counts?.approve ?? 0}</b></div><div className="mini-stat-row"><span>Modified</span><b>{metrics?.audit?.decision_counts?.modify ?? 0}</b></div><div className="mini-stat-row"><span>Rejected</span><b>{metrics?.audit?.decision_counts?.reject ?? 0}</b></div></section>
-    </div>
-  </>
+import { formatMoney, maskWallet, relativeTime, shortCaseId } from '../api.js'
+const label=(value='')=>value.replaceAll('_',' ')
+const riskFor=(row)=>Number(row.risk_score ?? row.risk ?? 0)>=.7?'High':Number(row.risk_score ?? row.risk ?? 0)>=.4?'Medium':'Low'
+export default function Dashboard({incidents,totalCount,metrics,onSelect,loading}){
+ const [query,setQuery]=useState(''),[risk,setRisk]=useState('all'),[page,setPage]=useState(0);const size=10
+ const filtered=useMemo(()=>incidents.filter(row=>{const term=query.trim().toLowerCase();return(!term||`${row.incident_id} ${row.scenario_id} ${row.scenario_type} ${row.incident_type} ${row.source_wallet}`.toLowerCase().includes(term))&&(risk==='all'||riskFor(row).toLowerCase()===risk)}),[incidents,query,risk])
+ const visible=filtered.slice(page*size,(page+1)*size),pages=Math.max(1,Math.ceil(filtered.length/size));const featured=incidents.find(row=>/slow|chain/i.test(row.scenario_type||''))||incidents[0];const comparison=metrics?.end_to_end_evaluation?.results,baseline=comparison?.direct_recipient_only,network=comparison?.flowfreeze_network
+ return <><div className="page-heading heading-row"><div><h1>Overview</h1><p>{totalCount||0} cases are ready for supervisor review.</p></div><button className="button button-primary" onClick={()=>featured&&onSelect(featured.scenario_id)}>Open featured case <span>→</span></button></div>
+ <div className="stats-grid"><StatCard label="Waiting for decision" value={incidents.filter(x=>!x.status||x.status==='new').length||totalCount||'—'} sub="Cases in the review queue" icon="◷" tone="green"/><StatCard label="Amount proposed to freeze" value={formatMoney(metrics?.simulations?.estimated_tainted_value_preserved_bdt)} sub="Synthetic estimate" icon="৳" tone="blue"/><StatCard label="Oldest waiting" value={incidents[0]?relativeTime(incidents[0].reported_at).replace(' ago',''):'—'} sub="Since report time" icon="◴" tone="amber"/><StatCard label="Decided today" value={metrics?.audit?.decision_count??0} sub="Approved, modified, or rejected" icon="✓" tone="violet"/></div>
+ <section className="content-card comparison-card"><div><h2>Why tracing matters</h2><p>Estimated suspicious funds preserved with and without downstream tracing.</p></div><div className="comparison-values"><div><span>Direct recipient only</span><b>{formatMoney(baseline?.estimated_tainted_value_preserved_bdt)}</b><small>Legitimate funds affected: {formatMoney(baseline?.estimated_legitimate_value_affected_bdt)}</small></div><div className="comparison-highlight"><span>With FlowFreeze tracing</span><b>{formatMoney(network?.estimated_tainted_value_preserved_bdt)}</b><small>Legitimate funds affected: {formatMoney(network?.estimated_legitimate_value_affected_bdt)}</small></div></div><button className="text-action" onClick={()=>window.dispatchEvent(new CustomEvent('flowfreeze:navigate',{detail:'evaluation'}))}>See full evaluation →</button></section>
+ <section className="content-card incident-list-card"><div className="section-head"><div><h2>Cases waiting for decision <span className="count-badge">{totalCount}</span></h2></div><div className="list-tools"><input className="incident-search" aria-label="Search cases" value={query} onChange={e=>{setQuery(e.target.value);setPage(0)}} placeholder="Search cases"/><select aria-label="Filter by risk" value={risk} onChange={e=>{setRisk(e.target.value);setPage(0)}}><option value="all">All risk</option><option value="high">High risk</option><option value="medium">Medium risk</option><option value="low">Low risk</option></select></div></div>{loading?<div className="empty-state">Loading cases…</div>:<div className="table-scroll"><table className="data-table incident-table"><thead><tr><th>CASE ID</th><th>RISK</th><th>AMOUNT</th><th>WALLET</th><th>PROPOSED FREEZE</th><th>AGE</th><th>STATUS</th></tr></thead><tbody>{visible.map(item=><tr key={item.incident_id} onClick={()=>onSelect(item.scenario_id)} tabIndex="0" onKeyDown={e=>e.key==='Enter'&&onSelect(item.scenario_id)}><td><div className="incident-id">{shortCaseId(item.incident_id)}</div></td><td><span className={`risk-pill risk-${riskFor(item).toLowerCase()}`}>{riskFor(item)}</span></td><td className="amount-cell">{formatMoney(item.reported_amount)}</td><td title={item.source_wallet}>{maskWallet(item.source_wallet||item.wallet_id)}</td><td>{formatMoney(item.proposed_simulated_hold_bdt)}</td><td className="date-cell">{relativeTime(item.reported_at)}</td><td><span className="status-pill">{label(item.status||'waiting')}</span></td></tr>)}</tbody></table>{!visible.length&&<div className="empty-state">No cases match those filters. Clear the search or risk filter.</div>}</div>}<div className="table-foot"><span>Showing {filtered.length?page*size+1:0}–{Math.min((page+1)*size,filtered.length)} of {filtered.length} cases</span><div className="pagination"><button disabled={!page} onClick={()=>setPage(p=>p-1)}>←</button><span>{page+1} / {pages}</span><button disabled={page+1>=pages} onClick={()=>setPage(p=>p+1)}>→</button></div></div></section>
+ <div className="dashboard-bottom-grid"><section className="content-card quick-card"><h2>Recent decisions</h2><p>{metrics?.audit?.decision_count||0} decisions have been recorded in this demo session.</p><button className="text-action" onClick={()=>window.dispatchEvent(new CustomEvent('flowfreeze:navigate',{detail:'audit'}))}>Open audit trail →</button></section><section className="content-card mini-stat-card"><h2>Decision summary</h2><div className="mini-stat-row"><span>Approved</span><b>{metrics?.audit?.decision_counts?.approve??0}</b></div><div className="mini-stat-row"><span>Modified</span><b>{metrics?.audit?.decision_counts?.modify??0}</b></div><div className="mini-stat-row"><span>Rejected</span><b>{metrics?.audit?.decision_counts?.reject??0}</b></div></section></div></>
 }
