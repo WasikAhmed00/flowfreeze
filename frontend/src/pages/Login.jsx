@@ -1,2 +1,0 @@
-export default function Login({ onContinue }) {
-  return <main className="login-screen"><section className="login-card"><div className="brand-lockup login-brand"><div className="brand-mark">F</div><div><b>FlowFreeze</b><small>SUPERVISOR CONSOLE</small></div></div><h1>FlowFreeze</h1><p className="login-copy">Fraud case review for supervisors.</p><button className="button button-primary login-action" onClick={onContinue}>Continue as demo supervisor <span>→</span></button><div className="login-foot">Demo version. No account or password needed.</div></section></main>}

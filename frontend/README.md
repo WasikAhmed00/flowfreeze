@@ -1,35 +1,49 @@
-# FlowFreeze frontend
+# FlowFreeze analyst frontend
 
-React + Vite analyst workspace for the synthetic FlowFreeze API.
+A React + TypeScript + Vite analyst console for the existing FastAPI, SQLite, and synthetic-data project. The interface is a **decision-support demonstration**, not an upay BD production service.
 
 ## Run locally
 
-1. In the repository root, generate data, train models, and start the API:
+From the project root (`flowfreeze/`):
 
-   ```powershell
-   python -m data_generator.generate --seed 42
-   python -m ml.train --seed 42
-   python -m uvicorn backend.main:app --reload
-   ```
+```bash
+python3 -m pip install -r requirements.txt
+python3 -m data_generator.generate --seed 42
+APP_ENV=development python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 8000
+```
 
-2. In this `frontend/` directory, install from the committed lockfile and start Vite:
+In another terminal:
 
-   ```powershell
-   npm ci
-   npm run dev
-   ```
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-3. Open `http://127.0.0.1:5173`.
+Open the Vite URL printed in the terminal. Vite proxies `/api/*` and `/health` to `http://127.0.0.1:8000`, so the browser uses a same-origin API. The generator creates the local SQLite database at `data/flowfreeze.db`; it also regenerates the synthetic CSV files in `data/`, so preserve/backup those files before re-running it if the original snapshot matters.
 
-Set `VITE_API_BASE_URL` in `.env.local` to use a different local API address. A copyable example is in `.env.example`.
+## Optional synthetic model outputs
 
-## Screens
+The app runs without model artifacts and clearly marks risk and next-move outputs unavailable. To enable the existing synthetic-only models without rewriting the repository's tracked metrics file, train to a temporary directory and copy only the ignored model binaries:
 
-- Overview: synthetic case inventory, dataset totals, audit counts, search, and paging.
-- Incident detail: time-bounded graph and evidence, proportional taint estimates, wallet context, policy recommendation, analyst decision, and one-shot what-if outcome.
-- Direct-recipient-only comparison: same-snapshot coverage comparison against the traced network, clearly separated from preserved-value outcomes.
-- What-if lab: choose a generated scenario and examine it using the incident review flow.
-- Evaluation: held-out synthetic model metrics and the same-case direct-recipient baseline comparison, with visible counterfactual and dataset limitations.
-- Audit trail: recorded analyst actions with actor, reason, amount, and timestamp.
+```bash
+python3 -m ml.train --data-dir data --artifact-dir /tmp/flowfreeze-models --seed 42
+cp /tmp/flowfreeze-models/fraud_model.joblib /tmp/flowfreeze-models/next_move_model.joblib ml/artifacts/
+```
 
-The demo entry is a client-side prototype gate, not authentication. The API has no production authentication and must remain local. Trained model files are created locally and are not committed; generate them with `python -m ml.train --seed 42` before expecting synthetic model scores. Optional score controls on incident detail are prominently labeled **illustrative only**.
+The models and all displayed evaluation values are based on generated data. They are **not** upay BD production performance claims.
+
+## Demo access and write controls
+
+- The analyst-name gate is only a local display-name/session convenience; it is **not authentication** or an authorization boundary.
+- Approve/reject/modify actions write synthetic analyst decisions and simulated outcomes to the local SQLite audit tables. They never hold, move, or otherwise control a real wallet.
+- The local run command explicitly sets `APP_ENV=development`; this enables the synthetic decision buttons without requiring a key. Do not run this mode against real services or data.
+- Public/production deployments remain read-only by default (`ENABLE_DEMO_WRITES=false` in this repository's `render.yaml`). To enable a controlled synthetic deployment, configure `ENABLE_DEMO_WRITES=true` and `DEMO_WRITE_KEY` on the API, then set the matching `VITE_DEMO_WRITE_KEY` at frontend build time.
+- A `VITE_` value is shipped to every browser and is **not a secret or real access control**; use this only for synthetic demo data, never for real wallet or customer systems. Do not reuse demo tokens across environments.
+- All incident amounts, wallet identities, model scores, taint estimates, and what-if results are synthetic and should remain clearly labeled in any deployment or presentation.
+
+## Frontend commands
+
+- `npm run dev` — local development server
+- `npm run build` — strict TypeScript check and production bundle
+- `npm run preview` — serve the production bundle locally
