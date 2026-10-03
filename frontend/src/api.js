@@ -1,4 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+const WRITE_API_KEY = import.meta.env.VITE_DEMO_WRITE_KEY || ''
 
 export async function api(path, options = {}) {
   let response
@@ -7,6 +8,7 @@ export async function api(path, options = {}) {
       ...options,
       headers: {
         ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+        ...(WRITE_API_KEY && options.body ? { 'X-FlowFreeze-Write-Key': WRITE_API_KEY } : {}),
         ...options.headers,
       },
     })

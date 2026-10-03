@@ -5,9 +5,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.db import application_connection
+from backend.security import require_demo_write_access
 from backend.schemas import DecisionCreate
 from core.intervention import load_policy
 from core.simulator import TransactionSimulator
@@ -16,7 +17,7 @@ from core.taint import calculate_proportional_taint
 router = APIRouter(prefix="/decisions", tags=["decisions", "audit"])
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, dependencies=[Depends(require_demo_write_access)])
 def create_decision(payload: DecisionCreate) -> dict:
     try:
         replay = TransactionSimulator().replay(payload.scenario_id)

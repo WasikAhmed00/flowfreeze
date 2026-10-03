@@ -5,16 +5,17 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from backend.db import application_connection
+from backend.security import require_demo_write_access
 from core.simulator import TransactionSimulator
 from core.taint import calculate_proportional_taint
 
 router = APIRouter(prefix="/simulation", tags=["simulation"])
 
 
-@router.post("/{decision_id}", status_code=201)
+@router.post("/{decision_id}", status_code=201, dependencies=[Depends(require_demo_write_access)])
 def simulate_decision(decision_id: int) -> dict:
     with application_connection() as db:
         decision = db.execute("SELECT * FROM analyst_decisions WHERE decision_id = ?", (decision_id,)).fetchone()

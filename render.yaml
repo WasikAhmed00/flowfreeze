@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: flowfreeze-api
+    runtime: python
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt && bash scripts/render-build.sh
+    startCommand: bash scripts/render-start.sh
+    healthCheckPath: /health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:///./data/flowfreeze.db
+      - key: RANDOM_SEED
+        value: "42"
+      - key: ENABLE_DEMO_WRITES
+        value: "false"
+      - key: CORS_ORIGINS
+        value: https://flowfreeze-web.onrender.com
+
+  - type: web
+    name: flowfreeze-web
+    runtime: static
+    plan: free
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_BASE_URL
+        value: https://flowfreeze-api.onrender.com

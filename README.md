@@ -8,6 +8,8 @@ FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence protot
 
 See [BUILD_PLAN.md](BUILD_PLAN.md) for the phased implementation plan and definition of done.
 
+For a public synthetic demo, use the explicit [Render free-tier deployment guide](docs/RENDER_FREE_TIER.md).
+
 ## Planned stack
 
 - Backend and ML: Python, FastAPI, pandas, scikit-learn, NetworkX
@@ -145,3 +147,13 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:5173`. The frontend reads `VITE_API_BASE_URL` from `frontend/.env.local` when provided; its default is the local API above. The demo entry screen is not authentication. See the [frontend setup](frontend/README.md) for details.
+
+## Deploy on Render's free tier
+
+The repository includes `render.yaml` plus `scripts/render-build.sh` and
+`scripts/render-start.sh`. The API build regenerates the seeded synthetic
+database and trains the model artifacts before startup; the static frontend is
+built with an explicit API URL. Public deployments are read-only by default,
+and the free tier can sleep or lose its ephemeral SQLite data after restart.
+See [docs/RENDER_FREE_TIER.md](docs/RENDER_FREE_TIER.md) for the required
+environment variables and live-demo expectations.
