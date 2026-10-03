@@ -3,8 +3,11 @@ import { api, formatMoney } from '../api.js'
 
 export default function ApprovalButtons({ scenarioId, wallet, recommendation, onRecorded }) {
   const eligible = recommendation?.action === 'propose_bounded_simulated_hold' && Number(recommendation.proposed_simulated_hold_bdt) > 0
+  const defaultAmount = recommendation?.proposed_simulated_hold_bdt && Number(recommendation.proposed_simulated_hold_bdt) > 0
+    ? recommendation.proposed_simulated_hold_bdt
+    : wallet?.balance_bdt ? Math.min(Number(wallet.balance_bdt), 1000).toFixed(2) : '0.00'
   const [decision, setDecision] = useState('approve')
-  const [amount, setAmount] = useState(recommendation?.proposed_simulated_hold_bdt || '0.00')
+  const [amount, setAmount] = useState(defaultAmount)
   const [reason, setReason] = useState('')
   const [actor, setActor] = useState('demo_analyst')
   const [saving, setSaving] = useState(false)
@@ -13,10 +16,10 @@ export default function ApprovalButtons({ scenarioId, wallet, recommendation, on
   const [outcome, setOutcome] = useState(null)
 
   useEffect(() => {
-    setDecision(eligible ? 'approve' : 'reject')
-    setAmount(recommendation?.proposed_simulated_hold_bdt || '0.00')
+    setDecision('approve')
+    setAmount(defaultAmount)
     setRecorded(null); setOutcome(null); setError('')
-  }, [scenarioId, wallet?.wallet_id, eligible, recommendation?.proposed_simulated_hold_bdt])
+  }, [scenarioId, wallet?.wallet_id, eligible, recommendation?.proposed_simulated_hold_bdt, wallet?.balance_bdt])
 
   const record = async () => {
     if (!wallet || !reason.trim()) { setError('Select a wallet and enter a review reason.'); return }
@@ -40,9 +43,9 @@ export default function ApprovalButtons({ scenarioId, wallet, recommendation, on
   return <section className="content-card approval-card"><div className="eyebrow">ANALYST DECISION</div><h2>Record your review</h2>
     {!wallet ? <div className="empty-state compact-empty">Select a wallet to record a decision.</div> : <>
       <div className="decision-target"><span>Selected target</span><b>{wallet.wallet_id}</b><small>Balance {formatMoney(wallet.balance_bdt)}</small></div>
-      {!eligible && <div className="review-only-note">No policy hold proposal is available for this wallet. You can record a rejection or continue monitoring; supply explicitly illustrative inputs above only for demo exploration.</div>}
+      {!eligible && <div className="review-only-note">No policy hold proposal is available for this wallet. Approve, modify, or reject remain available for analyst review; any amount entered here is explicitly illustrative and does not change a wallet.</div>}
       {!recorded ? <>
-        <label className="form-label">REVIEW OUTCOME</label><div className="decision-options">{['approve', 'modify', 'reject'].map((item) => <button key={item} className={`decision-option ${decision === item ? `chosen chosen-${item}` : ''} ${item !== 'reject' && !eligible ? 'disabled-option' : ''}`} disabled={item !== 'reject' && !eligible} onClick={() => setDecision(item)}>{item === 'approve' ? '✓ Approve' : item === 'modify' ? '≋ Modify' : '× Reject'}</button>)}</div>
+        <label className="form-label">REVIEW OUTCOME</label><div className="decision-options">{['approve', 'modify', 'reject'].map((item) => <button key={item} className={`decision-option ${decision === item ? `chosen chosen-${item}` : ''}`} onClick={() => setDecision(item)}>{item === 'approve' ? '✓ Approve' : item === 'modify' ? '≋ Modify' : '× Reject'}</button>)}</div>
         {decision !== 'reject' && <label className="form-label amount-field">SIMULATED AMOUNT (BDT)<input type="number" min="0.01" max={Number(wallet.balance_bdt)} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>}
         <label className="form-label amount-field">ANALYST REASON<textarea rows="3" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Record why this decision was made…" /></label>
         <label className="form-label amount-field">ACTOR LABEL<input value={actor} onChange={(e) => setActor(e.target.value)} /></label>

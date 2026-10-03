@@ -59,7 +59,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand-lockup"><div className="brand-mark">F</div><div><b>flowfreeze</b><small>UPAY BD · HACKATHON</small></div></div>
+        <div className="brand-lockup"><div className="brand-mark">F</div><div><b>flowfreeze</b><small>UPAY BD · RISK REVIEW</small></div></div>
         <div className="workspace-label">WORKSPACE</div>
         <nav className="side-nav" aria-label="Main navigation">
           {nav.map((item) => <button key={item.id} className={`nav-item ${page === item.id ? 'active' : ''}`} onClick={() => setPage(item.id)}>
