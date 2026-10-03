@@ -182,7 +182,7 @@ bash scripts/render-start.sh
 
 ## Live Deployment URL
 
-Replace with actual deployment URL:
+
 
 https://flowfreeze-web.onrender.com
 
