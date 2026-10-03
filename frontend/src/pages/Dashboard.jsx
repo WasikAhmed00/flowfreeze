@@ -19,10 +19,10 @@ export default function Dashboard({ incidents, totalCount, metrics, onSelect, lo
   const displayedEnd = Math.min((page + 1) * pageSize, filtered.length)
   return <>
     <div className="page-heading heading-row">
-      <div><div className="eyebrow">{today} <span className="eyebrow-dot" /> SANDBOX</div><h1>Good morning, analyst</h1><p>Here’s what’s happening across your synthetic incident workspace.</p></div>
-      <button className="button button-primary" onClick={() => incidents[0] && onSelect(incidents[0].scenario_id)}><span>＋</span> Review an incident</button>
+      <div><div className="eyebrow">{today} <span className="eyebrow-dot" /> UPAY BD RISK OPERATIONS</div><h1>Wallet risk overview</h1><p>Review reported transfers, wallet networks, and proportionate financial controls.</p></div>
+      <button className="button button-primary" onClick={() => incidents[0] && onSelect(incidents[0].scenario_id)}><span>＋</span> Open a case</button>
     </div>
-    <div className="synthetic-banner"><span className="banner-symbol">✳</span><div><b>Working with synthetic data</b><span>All wallets, transactions, and performance figures on this screen are generated for the hackathon demo.</span></div><span className="banner-tag">SANDBOX ONLY</span></div>
+    <div className="synthetic-banner"><span className="banner-symbol">✳</span><div><b>Controlled MFS review environment</b><span>Wallets, transaction events, and risk outcomes are generated for analyst training. No customer account or payment rail is connected.</span></div><span className="banner-tag">NO LIVE FUNDS</span></div>
     <div className="stats-grid">
       <StatCard label="INCIDENT CASES" value={metrics?.dataset?.incident_count?.toLocaleString() ?? '—'} sub="Synthetic cases available" icon="⌁" tone="green" />
       <StatCard label="TRANSACTIONS TRACED" value={metrics?.dataset?.transaction_count?.toLocaleString() ?? '—'} sub="Generated ledger events" icon="⇢" tone="blue" />
@@ -43,7 +43,7 @@ export default function Dashboard({ incidents, totalCount, metrics, onSelect, lo
       <div className="table-foot"><span>Showing {displayedStart}–{displayedEnd} of {filtered.length} matching synthetic cases</span><div className="pagination"><button disabled={page === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>←</button><span>{page + 1} / {pageCount}</span><button disabled={page + 1 >= pageCount} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>→</button></div></div>
     </section>
     <div className="dashboard-bottom-grid">
-      <section className="content-card quick-card"><div className="section-head compact"><div><div className="eyebrow">HOW TO READ THIS</div><h2>Analyst-first by design</h2></div><span className="round-icon">✳</span></div><p>Risk, tracing, and taint are evidence for review. FlowFreeze never makes a legal finding or executes a real wallet action.</p><button className="text-action" onClick={() => onSelect(incidents[0]?.scenario_id)}>Start with a sample case <span>→</span></button></section>
+      <section className="content-card quick-card"><div className="section-head compact"><div><div className="eyebrow">OPERATIONS GUIDANCE</div><h2>Evidence before action</h2></div><span className="round-icon">✳</span></div><p>Risk scores, transaction tracing, and taint estimates support an analyst decision. They are not a customer-facing outcome or an automatic wallet control.</p><button className="text-action" onClick={() => onSelect(incidents[0]?.scenario_id)}>Open a sample case <span>→</span></button></section>
       <section className="content-card mini-stat-card"><div className="eyebrow">AUDIT ACTIVITY</div><div className="audit-total">{metrics?.audit?.decision_count ?? '—'} <span>analyst decisions</span></div><div className="mini-stat-row"><span>Approved</span><b>{metrics?.audit?.decision_counts?.approve ?? 0}</b></div><div className="mini-stat-row"><span>Modified</span><b>{metrics?.audit?.decision_counts?.modify ?? 0}</b></div><div className="mini-stat-row"><span>Rejected</span><b>{metrics?.audit?.decision_counts?.reject ?? 0}</b></div></section>
     </div>
   </>

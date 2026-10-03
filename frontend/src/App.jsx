@@ -9,10 +9,10 @@ import AuditLog from './pages/AuditLog.jsx'
 
 const nav = [
   { id: 'dashboard', label: 'Overview', icon: '◫' },
-  { id: 'incident', label: 'Incidents', icon: '⌁' },
-  { id: 'simulator', label: 'What-if lab', icon: '◌' },
+  { id: 'incident', label: 'Case queue', icon: '⌁' },
+  { id: 'simulator', label: 'Simulation lab', icon: '◌' },
   { id: 'evaluation', label: 'Evaluation', icon: '▥' },
-  { id: 'audit', label: 'Audit trail', icon: '≡' },
+  { id: 'audit', label: 'Decision log', icon: '≡' },
 ]
 
 export default function App() {
@@ -59,7 +59,7 @@ export default function App() {
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand-lockup"><div className="brand-mark">F</div><div><b>flowfreeze</b><small>UPAY BD · RISK REVIEW</small></div></div>
+        <div className="brand-lockup"><div className="brand-mark">F</div><div><b>flowfreeze</b><small>UPAY BD · MFS RISK OPERATIONS</small></div></div>
         <div className="workspace-label">WORKSPACE</div>
         <nav className="side-nav" aria-label="Main navigation">
           {nav.map((item) => <button key={item.id} className={`nav-item ${page === item.id ? 'active' : ''}`} onClick={() => setPage(item.id)}>
@@ -67,7 +67,7 @@ export default function App() {
           </button>)}
         </nav>
         <div className="sidebar-bottom">
-          <div className="side-safety"><span className="safety-icon">✳</span><div><b>Synthetic environment</b><small>No live wallets connected</small></div></div>
+          <div className="side-safety"><span className="safety-icon">✳</span><div><b>Controlled MFS sandbox</b><small>No live wallets connected</small></div></div>
           <div className="profile-row"><div className="avatar">DA</div><div><b>Demo analyst</b><small>Local session</small></div><button className="icon-button logout" title="Sign out" onClick={() => setAuthenticated(false)}>↗</button></div>
         </div>
       </aside>
@@ -75,7 +75,7 @@ export default function App() {
       <main className="main-area">
         <header className="topbar">
           <div className="breadcrumbs"><span>FlowFreeze</span><span className="crumb-slash">/</span><b>{nav.find((n) => n.id === page)?.label || 'Incident review'}</b></div>
-          <div className="topbar-right"><span className="environment-pill"><i /> DEMO MODE</span><button className="icon-button" aria-label="Refresh data" onClick={refresh}>↻</button><div className="top-avatar">DA</div></div>
+          <div className="topbar-right"><span className="environment-pill"><i /> MFS CONTROLLED SANDBOX</span><button className="icon-button" aria-label="Refresh data" onClick={refresh}>↻</button><div className="top-avatar">DA</div></div>
         </header>
         {error && <div className="global-error"><strong>API unavailable</strong><span>{error}</span><button onClick={refresh}>Retry</button></div>}
         <div className="page-wrap">
@@ -85,7 +85,7 @@ export default function App() {
           {page === 'evaluation' && <Evaluation metrics={metrics} onRefresh={refresh} />}
           {page === 'audit' && <AuditLog refreshToken={refreshToken} />}
         </div>
-        <footer className="page-footer"><span>FlowFreeze prototype · synthetic data only</span><span>Recommendations are for analyst review, not wallet execution.</span></footer>
+        <footer className="page-footer"><span>FlowFreeze · UPAY BD risk operations · synthetic data only</span><span>Recommendations require analyst review and never execute wallet actions.</span></footer>
       </main>
     </div>
   )
