@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -69,15 +70,35 @@ def create_decision(payload: DecisionCreate) -> dict:
 @router.get("")
 def list_decisions(
     scenario_id: str | None = Query(default=None, max_length=100),
+    decision: Literal["approve", "modify", "reject"] | None = Query(default=None),
+    q: str | None = Query(default=None, max_length=120),
     limit: int = Query(default=100, ge=1, le=500),
     offset: int = Query(default=0, ge=0),
 ) -> dict:
-    where = " WHERE scenario_id = ?" if scenario_id else ""
-    params: list[object] = [scenario_id] if scenario_id else []
+    clauses: list[str] = []
+    params: list[object] = []
+    if scenario_id:
+        clauses.append("scenario_id = ?")
+        params.append(scenario_id)
+    if decision:
+        clauses.append("decision = ?")
+        params.append(decision)
+    search_term = (q or "").strip()
+    if search_term:
+        clauses.append("(scenario_id LIKE ? OR wallet_id LIKE ? OR reason LIKE ? OR actor LIKE ?)")
+        pattern = f"%{search_term}%"
+        params.extend([pattern] * 4)
+    where = " WHERE " + " AND ".join(clauses) if clauses else ""
     with application_connection() as db:
         total = db.execute(f"SELECT COUNT(*) FROM analyst_decisions{where}", params).fetchone()[0]
         rows = db.execute(
             f"SELECT * FROM analyst_decisions{where} ORDER BY decision_id DESC LIMIT ? OFFSET ?",
             [*params, limit, offset],
         ).fetchall()
-    return {"synthetic": True, "total": total, "decisions": [dict(row) for row in rows]}
+    return {
+        "synthetic": True,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+        "decisions": [dict(row) for row in rows],
+    }

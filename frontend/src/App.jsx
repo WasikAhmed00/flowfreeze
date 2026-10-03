@@ -23,6 +23,7 @@ export default function App() {
   const [scenarioId, setScenarioId] = useState('')
   const [metrics, setMetrics] = useState(null)
   const [error, setError] = useState('')
+  const [incidentsLoading, setIncidentsLoading] = useState(true)
   const [refreshToken, setRefreshToken] = useState(0)
 
   useEffect(() => {
@@ -33,20 +34,42 @@ export default function App() {
 
   useEffect(() => {
     let alive = true
-    Promise.all([api('/api/incidents?limit=200&offset=0'), api('/api/metrics')])
-      .then(async ([firstPage, metricData]) => {
+    setIncidentsLoading(true)
+    setError('')
+    const loadIncidents = async () => {
+      try {
+        const firstPage = await api('/api/incidents?limit=200&offset=0')
         const offsets = []
         for (let offset = firstPage.incidents.length; offset < firstPage.total; offset += 200) offsets.push(offset)
         const remainingPages = await Promise.all(offsets.map((offset) => api(`/api/incidents?limit=200&offset=${offset}`)))
         const incidentData = { ...firstPage, incidents: [...firstPage.incidents, ...remainingPages.flatMap((page) => page.incidents)] }
         if (!alive) return
-        setIncidents(incidentData.incidents || [])
+        const nextIncidents = incidentData.incidents || []
+        setIncidents(nextIncidents)
         setIncidentTotal(incidentData.total || 0)
-        setMetrics(metricData)
-        setScenarioId((current) => current || incidentData.incidents?.[0]?.scenario_id || '')
-        setError('')
-      })
-      .catch((e) => alive && setError(e.message))
+        setScenarioId((current) => nextIncidents.some((item) => item.scenario_id === current) ? current : nextIncidents[0]?.scenario_id || '')
+      } catch (e) {
+        if (!alive) return
+        setIncidents([])
+        setIncidentTotal(0)
+        setScenarioId('')
+        setError((current) => [current, `Incidents: ${e.message}`].filter(Boolean).join(' '))
+      } finally {
+        if (alive) setIncidentsLoading(false)
+      }
+    }
+    const loadMetrics = async () => {
+      try {
+        const metricData = await api('/api/metrics')
+        if (alive) setMetrics(metricData)
+      } catch (e) {
+        if (!alive) return
+        setMetrics(null)
+        setError((current) => [current, `Metrics: ${e.message}`].filter(Boolean).join(' '))
+      }
+    }
+    loadIncidents()
+    loadMetrics()
     return () => { alive = false }
   }, [refreshToken])
 
@@ -77,9 +100,9 @@ export default function App() {
           <div className="breadcrumbs"><span>FlowFreeze</span><span className="crumb-slash">/</span><b>{nav.find((n) => n.id === page)?.label || 'Incident review'}</b></div>
           <div className="topbar-right"><span className="environment-pill"><i /> DEMO MODE</span><button className="icon-button" aria-label="Refresh data" onClick={refresh}>↻</button><div className="top-avatar">DA</div></div>
         </header>
-        {error && <div className="global-error"><strong>API unavailable</strong><span>{error}</span><button onClick={refresh}>Retry</button></div>}
+        {error && <div className="global-error" role="alert"><strong>Some workspace data could not be loaded</strong><span>{error}</span><button onClick={refresh}>Retry</button></div>}
         <div className="page-wrap">
-          {page === 'dashboard' && <Dashboard incidents={incidents} totalCount={incidentTotal} metrics={metrics} onSelect={chooseIncident} loading={!metrics && !error} />}
+          {page === 'dashboard' && <Dashboard incidents={incidents} totalCount={incidentTotal} metrics={metrics} onSelect={chooseIncident} loading={incidentsLoading} />}
           {page === 'incident' && <IncidentDetail scenarioId={scenarioId} incident={selected} onRefresh={refresh} />}
           {page === 'simulator' && <Simulator incidents={incidents} scenarioId={scenarioId} onSelect={setScenarioId} onRefresh={refresh} />}
           {page === 'evaluation' && <Evaluation metrics={metrics} onRefresh={refresh} />}

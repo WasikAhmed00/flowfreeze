@@ -17,7 +17,7 @@ OpenAPI documentation is served at `/docs`. All endpoints are local demo APIs an
 | `GET` | `/api/incidents/{scenario_id}` | Incident metadata and scenario record counts. |
 | `GET` | `/api/analysis/{scenario_id}` | Time-bounded replay, graph trace, taint estimate, and policy recommendation. Optional `fraud_risk` and all three next-move probability query values can be supplied. |
 | `POST` | `/api/decisions` | Append an analyst approve/reject/modify decision with reason, actor, and bounded simulated amount. |
-| `GET` | `/api/decisions` | Read-only audit history, optionally filtered by `scenario_id`. |
+| `GET` | `/api/decisions` | Read-only, newest-first audit history; optional `scenario_id`, `decision` (`approve`, `modify`, `reject`), and `q` substring search across scenario, wallet, reason, and actor; supports `limit` and `offset` pagination. The returned `total` reflects active filters. |
 | `POST` | `/api/simulation/{decision_id}` | Record one synthetic outcome estimate for a prior decision; does not alter balances. |
 | `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, aggregate simulation estimates, held-out ML metrics, and the end-to-end baseline experiment when generated. |
 | `GET` | `/api/demo` | List seeded demo scenarios. |
