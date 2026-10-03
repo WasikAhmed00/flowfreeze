@@ -57,10 +57,11 @@ public showcase.
 
 ## Free-tier behavior and live-demo expectations
 
-Render free web services can **spin down after a period without inbound traffic**.
-The next request may wait for a cold start, so open `/health` shortly before a
-presentation and allow the first page load to finish. Do not promise continuous
-availability or low latency from the free tier.
+Render free web services **spin down after 15 minutes without inbound traffic**.
+The next request can take about one minute while the service spins back up, so
+open `/health` shortly before a presentation and allow the first page load to
+finish. Do not promise continuous availability or low latency from the free
+tier.
 
 The service's local filesystem is ephemeral. A restart, redeploy, spin-down,
 instance replacement, or manual reset can discard SQLite audit decisions and
