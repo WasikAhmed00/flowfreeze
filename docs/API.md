@@ -81,7 +81,7 @@ Rejected decisions must use amount zero. Approved or modified amounts must be po
 
 ## Safety and deployment limits
 
-- The API has no production authentication or provider integration; bind it to a trusted local development environment only.
+- The API has no comprehensive production authentication or provider integration. Only the two aggregate fairness read endpoints require the narrow operator-mapped bearer RBAC described below; bind this prototype to a trusted development environment only.
 - There are no wallet-control routes. Decision approval never changes a ledger or contacts a wallet.
 - Audit entries are append-only through the API. A demo reset intentionally replaces the SQLite file, including local audit history.
 - Analyst feedback is stored in a SQLite table with update/delete rejection triggers; it remains synthetic demo feedback and is not a regulated record. Shadow event operator/outcome fields are null in the synthetic simulation.
@@ -89,3 +89,23 @@ Rejected decisions must use amount zero. Approved or modified amounts must be po
 - ML scores, performance metrics, and recommendations are synthetic and advisory. See `docs/MODEL_CARD.md` and `docs/RESPONSIBLE_AI.md`.
 - The end-to-end comparison is generated from the held-out test cases using an instant-action counterfactual assumption; it is not observed value preserved. See `docs/END_TO_END_EVALUATION.md`.
 - Never use real customer information or production credentials with this prototype.
+
+
+### Protected Responsible AI / fairness metrics
+
+| Method | Path | Purpose / access |
+|---|---|---|
+| `GET` | `/api/metrics/fairness` | Aggregate test-split subgroup error metrics, validation-only threshold diagnostics, cohort gaps and intervention counterfactuals. Requires bearer role scope `fairness:read`. |
+| `GET` | `/api/metrics/false-positive-impact` | Aggregate false-positive counts, rates, generated legitimate transaction-value exposure, mean/median event values, and affected cases/value by synthetic cohort. Requires bearer role scope `fairness:read`. |
+
+Both endpoints return only JSON aggregates and reject artifacts that are not marked synthetic or contain identifier keys. They fail closed with `503` when the server RBAC configuration or report artifact is unavailable/invalid, return `401` for a missing/invalid token, and `403` for a configured role without the read scope. They do not return wallet-, transaction-, or scenario-level records.
+
+Run the analysis from the repository root after generating the synthetic data and training the project models:
+
+```bash
+python -m data_generator.generate --seed 42
+python -m ml.train --seed 42
+python -m core.fairness_analysis
+```
+
+This writes `fairness_evaluation.json`, `fairness_evaluation.csv`, `false_positive_impact.json`, and `false_positive_impact.csv` under `ml/artifacts/`. Configure `FLOWFREEZE_RBAC_TOKENS` on the API server as JSON mapping high-entropy bearer tokens (at least 32 characters) to `fairness_analyst`, `model_auditor`, or `risk_admin`. All three roles are read-only for these endpoints; there is no default token. Do not put server tokens in source control or frontend build variables. The dashboard asks the authorized reader to enter a token, retains it only in component memory, and sends it in an Authorization header. See `docs/FAIRNESS_AND_HARM.md` for the cohort definitions, sample-support rules, measured synthetic results, validation/test discipline, policy comparison, and limitations.
