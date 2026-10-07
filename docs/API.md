@@ -13,6 +13,13 @@ OpenAPI documentation is served at `/docs`. All endpoints are local demo APIs an
 | Method | Path | Purpose |
 |---|---|---|
 | `GET` | `/health` | Service status and synthetic-only boundary. |
+| `POST` | `/api/transactions` | Validate, run one event through the extended analysis pipeline, and persist it; returns graph context, heuristic risk, taint estimate, alerts and next-move prediction. Duplicate IDs return `409`. |
+| `GET` | `/api/transactions` | Read the newest persisted stream events (`limit` 1–200). |
+| `POST` | `/api/transactions/simulate` | Generate 1–20 synthetic MFS-shaped events through the same stream processor (optional deterministic `seed`). |
+| `POST` | `/api/cases` | Create a case; risk may be inherited from a linked stream transaction. |
+| `GET` | `/api/cases` | List cases with `limit`, `offset`, and optional `status` filter. |
+| `GET` | `/api/cases/{case_id}` | Read one case by its `FF-00000001` identifier. |
+| `PATCH` | `/api/cases/{case_id}` | Update risk, investigator, status, title or notes. |
 | `GET` | `/api/incidents` | Paginated incident list; optional `scenario_type` and `status` filters. |
 | `GET` | `/api/incidents/{scenario_id}` | Incident metadata and scenario record counts. |
 | `GET` | `/api/analysis/{scenario_id}` | Time-bounded replay, graph trace, taint estimate, and policy recommendation. Optional `fraud_risk` and all three next-move probability query values can be supplied. |
@@ -20,12 +27,34 @@ OpenAPI documentation is served at `/docs`. All endpoints are local demo APIs an
 | `POST` | `/api/decisions/{decision_id}/feedback` | Append one validated usefulness, trace-accuracy, confidence, and reason feedback record. Synthetic demo data only; update/delete are blocked. |
 | `GET` | `/api/decisions` | Read-only audit history, optionally filtered by `scenario_id`. |
 | `POST` | `/api/simulation/{decision_id}` | Record one synthetic outcome estimate for a prior decision; does not alter balances. |
-| `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, aggregate simulation estimates, held-out ML metrics, end-to-end baseline results, and the financial-impact artifact when generated. |
+| `GET` | `/api/metrics` | Synthetic dataset and decision metrics plus `operational` API request/latency/error counters, stream totals/alerts, and case totals. |
 | `GET` | `/api/metrics/shadow-mode` | Synthetic shadow-mode events and heuristic metrics plus a separately aggregated local analyst-feedback summary. |
 | `GET` | `/api/metrics/business-impact` | Synthetic business-impact simulation results and assumptions. |
 | `GET` | `/api/metrics/impact/{scenario_id}` | Calculate a selected synthetic case's direct-recipient vs. multi-hop exposure comparison and event-time response-delay curve. |
 | `GET` | `/api/demo` | List seeded demo scenarios. |
 | `POST` | `/api/demo/reset?seed=42` | Regenerate synthetic CSV/SQLite data in development mode using the default `data/flowfreeze.db` location. This replaces the database and clears its local audit history. |
+
+### Transaction event example
+
+```json
+{
+  "transaction_id": "partner-event-0001",
+  "timestamp": "2026-10-07T10:00:00Z",
+  "sender_wallet": "synthetic-wallet-01",
+  "receiver_wallet": "synthetic-wallet-02",
+  "amount_bdt": "1250.00",
+  "transaction_type": "transfer",
+  "channel": "synthetic-adapter"
+}
+```
+
+`amount` is accepted as an alias for `amount_bdt`. Send stable event IDs for deduplication. The current adapter accepts synthetic/de-identified wallet references and emits explicit synthetic heuristic outputs; it does not authenticate a partner, connect to Upay or another MFS provider, or trigger wallet actions. A production connector requires partner-approved authentication, schemas, retry/idempotency policy, privacy review, and load/security testing.
+
+`POST /api/transactions/simulate` powers the dashboard's **Live Simulation** control; its events follow the same ingestion path. Stream subgraphs are bounded to a recent 10-minute local neighborhood. Taint is an illustrative risk-weighted amount estimate, not the existing ledger replay's proportional taint calculation. Predictions are heuristic, not calibrated model probabilities.
+
+### Operational readiness and scale benchmark
+
+`/health` returns `status`, `database`, `synthetic_data_only`, and `automatic_wallet_actions`. `/api/metrics.operational` reports request counts and process-local response-time/error counters alongside stream and case totals; these counters reset at process restart and are not a durable monitoring backend. Run `python scripts/benchmark_scalability.py` to replay a deterministic 10,000-wallet synthetic network at 1K, 10K, 50K, and 100K events and sample API latency. See `docs/SCALABILITY_BENCHMARK.md` for the measured run and limitations.
 
 ### Financial-impact analysis
 

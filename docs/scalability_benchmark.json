@@ -1,0 +1,66 @@
+{
+  "benchmark": "FlowFreeze synthetic transaction stream",
+  "date_utc": "2026-10-07T04:48:10.992595+00:00",
+  "python": "3.12.3",
+  "platform": "Linux-6.18.38+-x86_64-with-glibc2.39",
+  "logical_cpus": 6,
+  "database": "SQLite, WAL, synchronous=NORMAL; one durable commit per transaction",
+  "wallet_domain": 10000,
+  "synthetic_only": true,
+  "limitations": [
+    "Single-process local benchmark; not a production MFS load test or a multi-worker deployment test.",
+    "Risk/taint/prediction are illustrative synthetic heuristics, not calibrated model evaluation.",
+    "The local graph work is bounded to indexed neighborhood lookups and a 10-minute response subgraph; it is not full-history path enumeration.",
+    "API percentiles are a 40-request local in-process sample, not a concurrent network/load test."
+  ],
+  "scales": [
+    {
+      "transactions": 1000,
+      "wallets_in_input_domain": 10000,
+      "elapsed_seconds": 0.2004,
+      "processing_ms_sum": 132.118,
+      "graph_processing_ms_sum": 89.27,
+      "throughput_transactions_per_second": 4990.35,
+      "mean_processing_ms": 0.1321,
+      "mean_graph_processing_ms": 0.0893
+    },
+    {
+      "transactions": 10000,
+      "wallets_in_input_domain": 10000,
+      "elapsed_seconds": 2.0859,
+      "processing_ms_sum": 1343.676,
+      "graph_processing_ms_sum": 904.246,
+      "throughput_transactions_per_second": 4794.04,
+      "mean_processing_ms": 0.1344,
+      "mean_graph_processing_ms": 0.0904
+    },
+    {
+      "transactions": 50000,
+      "wallets_in_input_domain": 10000,
+      "elapsed_seconds": 10.7999,
+      "processing_ms_sum": 6852.499,
+      "graph_processing_ms_sum": 4646.652,
+      "throughput_transactions_per_second": 4629.66,
+      "mean_processing_ms": 0.137,
+      "mean_graph_processing_ms": 0.0929
+    },
+    {
+      "transactions": 100000,
+      "wallets_in_input_domain": 10000,
+      "elapsed_seconds": 21.8066,
+      "processing_ms_sum": 13813.119,
+      "graph_processing_ms_sum": 9390.83,
+      "throughput_transactions_per_second": 4585.77,
+      "mean_processing_ms": 0.1381,
+      "mean_graph_processing_ms": 0.0939
+    }
+  ],
+  "api_response": {
+    "sample_count": 40,
+    "mean_ms": 4.568,
+    "p50_ms": 4.455,
+    "p95_ms": 5.087,
+    "max_ms": 7.433,
+    "measurement": "FastAPI TestClient POST /api/transactions with a 100K-row stream already persisted; includes validation, indexed graph context, scoring, SQLite write and response serialization."
+  }
+}
