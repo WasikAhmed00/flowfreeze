@@ -33,7 +33,7 @@ export function IntegrationCenter() {
   const [refreshKey, setRefreshKey] = useState(0);
   const onEvent = useCallback((event: StreamEvent) => { setLatest(event); setEvents((items) => [event, ...items].slice(0, 8)); setRefreshKey((value) => value + 1); }, []);
   return <section className="integration-center">
-    <div className="integration-heading"><div><div className="panel-eyebrow"><Activity size={13} /> SCALABILITY &amp; INTEGRATION</div><h2>Event stream &amp; case operations</h2><p>Synthetic adapter workflow; ready for a partner-governed MFS connector, with no production connection enabled.</p></div><span className="integration-synthetic">SYNTHETIC ONLY</span></div>
+    <div className="integration-heading"><div><div className="panel-eyebrow"><Activity size={13} /> SCALABILITY &amp; INTEGRATION</div><h2>Event stream &amp; case operations</h2><p>Adapter workflow; ready for a partner-governed MFS connector, with no production connection enabled.</p></div><span className="integration-synthetic">ADVISORY</span></div>
     <div className="integration-grid"><LiveSimulationPanel onEvent={onEvent} events={events} /><CaseManagementPanel latest={latest} refreshKey={refreshKey} /></div>
     <FairnessDashboardPanel />
   </section>;
@@ -70,7 +70,7 @@ function LiveSimulationPanel({ onEvent, events }: { onEvent: (event: StreamEvent
   const latest = events[0];
   const latestGraph = latest?.graph;
   return <section className="integration-panel live-panel">
-    <div className="integration-panel-head"><div className="integration-icon live-icon"><Network size={17} /></div><div><div className="panel-eyebrow">REAL-TIME SYNTHETIC STREAM</div><h3>Live simulation</h3></div><span className={`integration-status ${health}`}><i />{health === 'online' ? 'API healthy' : health === 'offline' ? 'API unavailable' : 'Checking'}</span></div>
+    <div className="integration-panel-head"><div className="integration-icon live-icon"><Network size={17} /></div><div><div className="panel-eyebrow">REAL-TIME EVENT STREAM</div><h3>Live simulation</h3></div><span className={`integration-status ${health}`}><i />{health === 'online' ? 'API healthy' : health === 'offline' ? 'API unavailable' : 'Checking'}</span></div>
     <p className="integration-copy">Each generated event runs through incremental risk scoring, a bounded transaction subgraph, taint estimate, alert rules and next-move prediction.</p>
     <button className={`button ${running ? 'button-danger' : 'button-primary'} integration-run`} onClick={running ? stop : () => void start()}>
       {running ? <><CircleStop size={16} /> Stop simulation</> : <><CirclePlay size={16} /> Start Live Simulation</>}
@@ -91,14 +91,14 @@ function LiveSimulationPanel({ onEvent, events }: { onEvent: (event: StreamEvent
       <div className="stream-alerts"><span><AlertTriangle size={14} /> Alert rules</span>{latest.analysis.alerts.length ? latest.analysis.alerts.map((alert) => <small key={alert.code} className={`alert-${alert.severity}`}>{alert.severity}: {alert.message}</small>) : <small>No rule alerts on the latest event.</small>}</div>
       <div className="stream-latest"><b>Latest event</b><span>{latest.transaction.transaction_id}</span><small>analysis {latest.processing_ms.toFixed(2)} ms · graph {latest.graph_processing_ms.toFixed(2)} ms</small></div>
     </>}
-    {!latest && <div className="integration-empty">Start the simulator to generate its first synthetic event.</div>}
+    {!latest && <div className="integration-empty">Start the simulator to generate its first event.</div>}
     <button className="integration-refresh" onClick={() => void loadStatus()}><RefreshCw size={13} /> Refresh API status</button>
   </section>;
 }
 
 function CaseManagementPanel({ latest, refreshKey }: { latest: StreamEvent | null; refreshKey: number }) {
   const [cases, setCases] = useState<CaseRecord[]>([]);
-  const [title, setTitle] = useState('Review synthetic stream alert');
+  const [title, setTitle] = useState('Review stream alert');
   const [investigator, setInvestigator] = useState('Nadia Rahman');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -113,7 +113,7 @@ function CaseManagementPanel({ latest, refreshKey }: { latest: StreamEvent | nul
       await api<CaseRecord>('/api/cases', { method: 'POST', body: JSON.stringify({
         transaction_id: latest?.transaction.transaction_id,
         risk_score: latest?.analysis.risk_score ?? 0.25,
-        investigator: investigator.trim() || 'Unassigned', title: title.trim() || 'Synthetic review', status: 'new',
+        investigator: investigator.trim() || 'Unassigned', title: title.trim() || 'Stream review', status: 'new',
       }) });
       await load();
     } catch (e) { setError(e instanceof Error ? e.message : 'Case creation failed'); }
