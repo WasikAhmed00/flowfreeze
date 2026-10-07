@@ -1,3 +1,28 @@
+## MFS business workflow and value proposition
+
+**For MFS fraud and risk operations, FlowFreeze is an AI fund-flow investigation and decision-support platform that helps analysts detect, trace, quantify, predict, and prioritize suspicious money movement.** Unlike simple transaction-level alerts, it combines behavioral risk intelligence with multi-hop fund-flow investigation and proportionate recommendations. FlowFreeze is an intelligence layer—not the transaction-monitoring system, case system of record, or financial transaction engine. It does not execute holds or contact customers. No actual savings or operational improvement is claimed before validation.
+
+The business workflow is: **transaction → transaction monitoring → suspicious alert → FlowFreeze intelligence → fraud analyst → human decision under MFS policy → audit and feedback → governed model improvement**. FlowFreeze returns evidence to the analyst; it does not replace monitoring or the operator's authorized decision/action process. See [`docs/BUSINESS_WORKFLOW.md`](docs/BUSINESS_WORKFLOW.md) for actor responsibilities, shadow-mode architecture, validation plan, and customer-protection measures.
+
+### AI outputs mapped to business decisions
+
+| AI output | Business use | User | Decision supported |
+|---|---|---|---|
+| Risk score | Prioritize cases | Fraud analyst | Review now, monitor, or inspect evidence |
+| Money-flow graph | Identify downstream exposure | Fraud analyst | Select movement/wallets for further review |
+| Tainted value | Estimate potential financial exposure | Risk manager | Size investigation; not loss, ownership, or recoverable value |
+| Next move | Prioritize intervention timing | Fraud analyst | Expedite review or continue monitoring |
+| Recommendation | Support policy decision | Fraud analyst | Accept, reject, modify, escalate, or close under policy |
+| Audit trail | Compliance and accountability | Risk/compliance team | Review rationale, decision owner, and feedback |
+
+### Business and customer-protection KPIs
+
+The executive view should track investigated and high-risk cases, potential exposure and tracing-identified exposure, **simulated** prevented exposure, median investigation time, analyst workload, false-positive rate, and customer-harm indicators. Customer-protection measures include legitimate cases affected, unnecessary holds, legitimate value affected, and proportionate interventions. In this repository, these are synthetic estimates or future validation measures—not actual operational performance. API response time is not analyst investigation time. “Don't freeze everything”: investigate first when appropriate, retain human review, and measure customer outcomes. Definitions, denominators, and acceptance thresholds must be agreed with the MFS partner before trials.
+
+### Evidence boundary
+
+**Current synthetic results:** all current generated-ledger business impact and shadow-mode values are scenario simulations/counterfactuals, not actual fraud-loss reduction, response-time improvement, customer harm avoided, or monetary savings. **Future business validation:** authorized retrospective cases, governed read-only shadow mode with paired existing-process decisions, and an analyst trial measuring real handling time, trace utility, false positives, exposure error, analyst usefulness, and customer-harm outcomes. See [`docs/ANALYST_TRIAL_GUIDE.md`](docs/ANALYST_TRIAL_GUIDE.md) and [`docs/PILOT_PLAN.md`](docs/PILOT_PLAN.md). No real-world improvement may be claimed absent evidence.
+
 ## Project Overview
 
 ### Problem Addressed
