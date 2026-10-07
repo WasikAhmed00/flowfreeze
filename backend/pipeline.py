@@ -45,14 +45,19 @@ def analyze_scenario(
             wallet_moves = {
                 wallet_id: item["next_move_probabilities"]
                 for wallet_id, item in predictions["wallet_predictions"].items()
+                if item.get("next_move_probabilities") is not None
             }
+            if not wallet_moves:
+                wallet_moves = None
             model_status = {
-                "synthetic": True,
-                "source": "trained_synthetic_models",
-                "fraud_model": predictions["fraud_model"],
-                "fraud_threshold": predictions["fraud_threshold"],
-                "next_move_window_minutes": predictions["next_move_window_minutes"],
-                "message": predictions["warning"],
+                "synthetic": predictions.get("synthetic", True),
+                "source": predictions.get("fraud_model_source", "synthetic_flowfreeze_data"),
+                "scenario_data_source": predictions.get("scenario_data_source", "synthetic_flowfreeze_scenario"),
+                "fraud_model": predictions.get("fraud_model"),
+                "fraud_threshold": predictions.get("fraud_threshold"),
+                "next_move_model_source": predictions.get("next_move_model_source", "unavailable"),
+                "wallet_risk_aggregation": predictions.get("wallet_risk_aggregation"),
+                "message": predictions.get("warning"),
             }
         except FileNotFoundError:
             pass
