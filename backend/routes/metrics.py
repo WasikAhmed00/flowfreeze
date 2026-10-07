@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter
 
 from backend.db import application_connection
+from core.business_impact import run_business_impact
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
@@ -71,3 +72,9 @@ def get_metrics() -> dict:
         },
         "warning": "Synthetic scenario metrics are not upay BD production statistics.",
     }
+
+
+@router.get("/business-impact")
+def get_business_impact() -> dict:
+    """Return a fresh, synthetic-only impact simulation from generated CSV data."""
+    return run_business_impact()

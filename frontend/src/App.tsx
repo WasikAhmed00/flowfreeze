@@ -15,8 +15,9 @@ const API_HEADERS: HeadersInit = { 'Content-Type': 'application/json', ...(WRITE
 const DEMO_LABEL = 'SYNTHETIC DEMO';
 const DEFAULT_DEMO_SCENARIO = 'SCN-02-FANOUT-0001';
 
-type View = 'dashboard' | 'incidents' | 'case' | 'graph' | 'wallets' | 'recommendations' | 'simulator' | 'evaluation' | 'audit';
+type View = 'dashboard' | 'incidents' | 'case' | 'graph' | 'wallets' | 'recommendations' | 'simulator' | 'evaluation' | 'business-impact' | 'audit';
 type Edge = { id: string; from: string; to: string; amount: number; taint: number; time: string; cashout: boolean; type: string };
+type BusinessImpact = { synthetic: boolean; label: string; case_count: number; fraud_loss: Record<string, any>; investigation_efficiency: Record<string, any>; customer_harm: Record<string, any>; analyst_productivity: Record<string, any>; baseline_vs_flowfreeze: Record<string, any>; assumptions: string[]; limitations: string[]; validation_targets: Record<string, any> };
 
 type DecisionDraft = { recommendation: WalletRecommendation; decision: 'approve' | 'reject' | 'modify' } | null;
 
@@ -60,6 +61,7 @@ const NAV: { id: View; label: string; icon: typeof Activity; group: string }[] =
   { id: 'recommendations', label: 'Recommendations', icon: CheckCircle2, group: 'Decisioning' },
   { id: 'simulator', label: 'What-if simulator', icon: FlaskConical, group: 'Decisioning' },
   { id: 'evaluation', label: 'Evaluation', icon: Gauge, group: 'Governance' },
+  { id: 'business-impact', label: 'Business impact', icon: CircleDollarSign, group: 'Governance' },
   { id: 'audit', label: 'Audit history', icon: History, group: 'Governance' },
 ];
 
@@ -91,6 +93,7 @@ function App() {
   const [incidentOffset, setIncidentOffset] = useState(0);
   const [incidentTotal, setIncidentTotal] = useState(0);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [businessImpact, setBusinessImpact] = useState<BusinessImpact | null>(null);
   const [decisions, setDecisions] = useState<DecisionRecord[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -121,10 +124,11 @@ function App() {
     let live = true;
     const load = async () => {
       setBusy(true);
-      const [healthResult, incidentResult, metricResult, decisionResult, pendingResult] = await Promise.allSettled([
+      const [healthResult, incidentResult, metricResult, impactResult, decisionResult, pendingResult] = await Promise.allSettled([
         api<{ status: string }>('/health'),
         api<{ incidents: Incident[]; total: number }>(`/api/incidents?limit=100&offset=${incidentOffset}`),
         api<Metrics>('/api/metrics'),
+        api<BusinessImpact>('/api/metrics/business-impact'),
         api<{ decisions: DecisionRecord[] }>('/api/decisions?limit=100'),
         api<{ total: number }>('/api/incidents?status=new&limit=1'),
       ]);
@@ -137,6 +141,7 @@ function App() {
         setSelectedId((current) => current || DEFAULT_DEMO_SCENARIO || incidentResult.value.incidents?.[0]?.scenario_id || '');
       } else setIncidents([]);
       if (metricResult.status === 'fulfilled') setMetrics(metricResult.value);
+      if (impactResult.status === 'fulfilled') setBusinessImpact(impactResult.value);
       if (decisionResult.status === 'fulfilled') setDecisions(decisionResult.value.decisions || []);
       if (pendingResult.status === 'fulfilled') setPendingCount(pendingResult.value.total);
       setBusy(false);
@@ -255,6 +260,8 @@ function App() {
         return <SimulatorPage incident={selectedIncident} analysis={analysis} metrics={metrics} />;
       case 'evaluation':
         return <EvaluationPage metrics={metrics} />;
+      case 'business-impact':
+        return <BusinessImpactPage impact={businessImpact} />;
       case 'audit':
         return <AuditPage decisions={decisions} onOpen={(incident) => openIncident(incident, 'case')} />;
       default:
@@ -320,6 +327,7 @@ function pageDescription(view: View, incident: Incident | null) {
     recommendations: 'Review bounded proposals and record an analyst decision for the selected case.',
     simulator: 'Explore the trade-off between potentially preserved value and legitimate value affected.',
     evaluation: 'Compare FlowFreeze with a direct-recipient baseline on held-out synthetic cases.',
+    'business-impact': 'Synthetic counterfactuals for exposure, investigation effort, and customer-harm trade-offs.',
     audit: 'Append-only record of synthetic analyst decisions and simulated outcomes.',
   };
   return descriptions[view];
@@ -518,6 +526,30 @@ function EvaluationPage({ metrics }: { metrics: Metrics | null }) {
     {baseline && network && <div className="comparison-delta"><div><ArrowUpRight size={17} /><span>Additional estimated tainted value preserved</span><b>{money(result?.network_minus_baseline?.estimated_tainted_value_preserved_bdt)}</b></div><div><AlertTriangle size={17} /><span>Additional legitimate value affected</span><b>{money(result?.network_minus_baseline?.estimated_legitimate_value_affected_bdt)}</b></div><div><Network size={17} /><span>Average downstream wallets per case</span><b>{result?.tracing?.average_downstream_wallets_found_per_case ?? '—'}</b></div></div>}
     <div className="comparison-caveat"><Info size={15} /><span>{result?.limitation || metrics?.warning || 'Synthetic counterfactual estimates; not observed losses prevented, customer outcomes, or upay BD production statistics.'}</span></div></section>
     <section className="panel model-evaluation-panel"><div className="panel-head"><div><div className="panel-eyebrow">MODEL QUALITY SNAPSHOT</div><h2>Held-out model diagnostics</h2><p>Generated labels can be easier than real-world fraud; class balance and drift matter.</p></div></div>{fraud || next ? <div className="model-score-grid"><div className="model-score-card"><div><ShieldAlert size={16} /> Fraud model</div><ScoreMeter label="Precision" value={fraud?.precision} /><ScoreMeter label="Recall" value={fraud?.recall} /><ScoreMeter label="F1" value={fraud?.f1} /><ScoreMeter label="PR-AUC" value={fraud?.pr_auc_average_precision} /></div><div className="model-score-card"><div><Activity size={16} /> Next-move model</div><ScoreMeter label="Accuracy" value={next?.accuracy} /><ScoreMeter label="Macro F1" value={next?.f1_macro} /><ScoreMeter label="Macro PR-AUC" value={next?.pr_auc_macro_ovr} /><ScoreMeter label="Brier score" value={next?.brier_score_multiclass} inverse /></div></div> : <EmptyState title="Model artifacts not loaded" text={String(metrics?.ml_evaluation?.warning || 'Train the synthetic models to produce scores for individual cases.')} />}<div className="model-eval-caveat"><AlertTriangle size={15} /><span>These diagnostics are based on synthetic generated labels. A high score does not establish real-world accuracy, fairness, or fitness for operational use.</span></div></section>
+  </div>;
+}
+
+function BusinessImpactPage({ impact }: { impact: BusinessImpact | null }) {
+  if (!impact) return <div className="panel impact-empty"><Info size={18} /><span>Business impact simulation is unavailable. Start the backend and ensure generated synthetic CSV data is present.</span></div>;
+  const loss = impact.fraud_loss;
+  const efficiency = impact.investigation_efficiency;
+  const harm = impact.customer_harm;
+  const comparison = impact.baseline_vs_flowfreeze;
+  return <div className="page-stack business-impact-page">
+    <div className="impact-warning"><FlaskConical size={18} /><div><b>{impact.label}</b><span>Every result is synthetic. This is not measured MFS performance, actual loss avoided, or observed customer harm.</span></div><strong>{impact.case_count.toLocaleString()} CASES</strong></div>
+    <div className="impact-kpis">
+      <div className="impact-kpi"><span>POTENTIAL EXPOSURE IDENTIFIED</span><b>{money(comparison.flowfreeze_exposure_identified_bdt, true)}</b><small>Generated taint labels found through observed downstream tracing</small></div>
+      <div className="impact-kpi"><span>SIMULATED PREVENTED EXPOSURE</span><b>{money(loss.simulated_prevented_exposure_bdt, true)}</b><small>Counterfactual, not actual prevented loss</small></div>
+      <div className="impact-kpi"><span>INVESTIGATION TIME SAVED</span><b>{Number(efficiency.investigation_time_saved_minutes).toLocaleString()} min</b><small>Synthetic manual-timing model</small></div>
+      <div className="impact-kpi"><span>LEGITIMATE VALUE PROTECTED</span><b>{money(Math.max(0, Number(harm.overly_aggressive_policy_legitimate_value_affected_bdt) - Number(harm.flowfreeze_legitimate_value_affected_bdt)), true)}</b><small>Compared with overly aggressive simulated policy</small></div>
+    </div>
+    <section className="panel impact-compare"><div className="panel-head"><div><div className="panel-eyebrow">SAME GENERATED CASES · COUNTERFACTUAL COMPARISON</div><h2>Baseline vs FlowFreeze</h2><p>Direct-recipient-only manual discovery compared with observed-flow multihop tracing.</p></div><span className="micro-tag">{impact.case_count.toLocaleString()} SYNTHETIC CASES</span></div>
+      <div className="impact-compare-grid"><div><span>Potential exposure identified</span><div><small>Baseline</small><b>{money(comparison.baseline_exposure_identified_bdt, true)}</b></div><div><small>FlowFreeze</small><b>{money(comparison.flowfreeze_exposure_identified_bdt, true)}</b></div></div><div><span>Modeled investigation time</span><div><small>Baseline</small><b>{Number(comparison.baseline_time_minutes).toLocaleString()} min</b></div><div><small>FlowFreeze</small><b>{Number(comparison.flowfreeze_time_minutes).toLocaleString()} min</b></div></div><div><span>Simulated prevented exposure</span><div><small>Baseline</small><b>{money(loss.baseline_simulated_prevented_exposure_bdt, true)}</b></div><div><small>FlowFreeze</small><b>{money(loss.simulated_prevented_exposure_bdt, true)}</b></div></div></div>
+      <div className="impact-formula"><Info size={14} /> Simulated loss-reduction rate: {pct(loss.simulated_loss_reduction_rate)} = simulated prevented exposure ÷ initial suspicious value. It is a synthetic ratio, not an actual loss-reduction claim.</div>
+    </section>
+    <div className="impact-lower-grid"><section className="panel impact-harm"><div className="panel-head"><div><div className="panel-eyebrow">CUSTOMER HARM</div><h2>Unnecessary intervention rate</h2><p>Synthetic policy comparison only</p></div><span className="harm-rate">{pct(harm.unnecessary_intervention_rate)}</span></div><div className="impact-harm-rows"><div><span>Overly aggressive-policy unnecessary holds</span><b>{Number(harm.overly_aggressive_policy_unnecessary_holds).toLocaleString()}</b></div><div><span>FlowFreeze-proxy unnecessary holds</span><b>{Number(harm.flowfreeze_unnecessary_holds).toLocaleString()}</b></div><div><span>Legitimate value affected · aggressive</span><b>{money(harm.overly_aggressive_policy_legitimate_value_affected_bdt)}</b></div><div><span>Legitimate value affected · FlowFreeze proxy</span><b>{money(harm.flowfreeze_legitimate_value_affected_bdt)}</b></div><div><span>Legitimate cases correctly left alone</span><b>{Number(harm.legitimate_cases_correctly_left_alone).toLocaleString()}</b></div></div><div className="impact-caveat">The FlowFreeze proxy bounds interventions to generated taint labels, so modeled collateral is zero by construction. This is not evidence of real-world false-positive or customer-harm reduction.</div></section>
+      <section className="panel impact-productivity"><div className="panel-head"><div><div className="panel-eyebrow">ANALYST PRODUCTIVITY</div><h2>Operational simulation</h2><p>Illustrative assumptions, not analyst trial timings</p></div></div><div className="impact-harm-rows"><div><span>Baseline modeled cases/hour</span><b>{efficiency.baseline_minutes_per_case ? (60 / Number(efficiency.baseline_minutes_per_case)).toFixed(1) : '—'}</b></div><div><span>FlowFreeze modeled cases/hour</span><b>{efficiency.flowfreeze_minutes_per_case ? (60 / Number(efficiency.flowfreeze_minutes_per_case)).toFixed(1) : '—'}</b></div><div><span>Downstream wallets identified</span><b>{Number(efficiency.downstream_wallets_identified).toLocaleString()}</b></div><div><span>Transactions reviewed · baseline / FlowFreeze</span><b>{Number(efficiency.transactions_reviewed_baseline).toLocaleString()} / {Number(efficiency.transactions_reviewed_flowfreeze).toLocaleString()}</b></div><div><span>Modeled alerts prioritized</span><b>{Number(impact.analyst_productivity.alerts_prioritized).toLocaleString()}</b></div></div></section></div>
+    <details className="panel impact-method"><summary>Assumptions, limitations & future validation targets</summary><div><b>Timing assumption:</b> 4 min case intake + 1.5 min per reviewed transaction + 0.75 min per reviewed wallet.</div><ul>{impact.assumptions.map((item) => <li key={item}>{item}</li>)}</ul><ul>{impact.limitations.map((item) => <li key={item}>{item}</li>)}</ul><b>{String(impact.validation_targets.status || '')}</b></details>
   </div>;
 }
 

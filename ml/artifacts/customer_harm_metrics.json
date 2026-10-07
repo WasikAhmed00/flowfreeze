@@ -1,0 +1,28 @@
+{
+  "synthetic": true,
+  "label": "SYNTHETIC POLICY SIMULATION",
+  "legitimate_case_count": 400,
+  "overly_aggressive_policy_unnecessary_holds": 400,
+  "overly_aggressive_policy_legitimate_value_affected_bdt": 8131840.0,
+  "flowfreeze_unnecessary_holds": 0,
+  "flowfreeze_legitimate_value_affected_bdt": 0.0,
+  "legitimate_cases_correctly_left_alone": 400,
+  "proportionate_intervention_rate": 0.1182,
+  "unnecessary_intervention_rate": 0.0,
+  "synthetic_policy_simulation_only": true,
+  "assumptions": [
+    "All transaction, incident, wallet truth-label and scenario data are generated synthetic records from this repository.",
+    "A case includes all available synthetic records; there is no real analyst or controlled workflow timing.",
+    "Manual-time model: 4 case-intake minutes + 1.5 minutes per reviewed transaction + 0.75 minutes per wallet.",
+    "Downstream graph discovery uses post-report observed transactions through analysis time, is cycle-safe and bounded to 5 hops.",
+    "Synthetic tainted_amount labels are the generated outcome oracle for remaining exposure; gross transfer sums are not counted as distinct exposure.",
+    "Overly aggressive policy means placing a hold for the full reported amount in every synthetic legitimate case; FlowFreeze proxy is an observable cash-out/multi-recipient evidence rule with a taint-bounded amount.",
+    "Potentially prevented exposure assumes immediate intervention at analysis and is not actual prevented loss."
+  ],
+  "limitations": [
+    "No real MFS performance, fraud-loss reduction, response-time benefit, or customer harm is claimed.",
+    "Synthetic labels and case families may not represent real distributions; this is not a causal or controlled impact evaluation.",
+    "False-positive and legitimate-customer figures are synthetic policy outcomes, not measured customer events.",
+    "Fraud-loss reduction, investigation time saved, and unnecessary-hold rates are validation targets until measured in an authorized shadow-mode/pilot."
+  ]
+}

@@ -1,0 +1,44 @@
+metric,value,unit,synthetic
+fraud_loss.initial_suspicious_value_bdt,35438800.0,BDT,True
+fraud_loss.potentially_interceptable_exposure_bdt,34443297.0,BDT,True
+fraud_loss.baseline_simulated_prevented_exposure_bdt,17686984.33,BDT,True
+fraud_loss.simulated_prevented_exposure_bdt,24868675.57,BDT,True
+fraud_loss.exposure_identified_before_cashout_bdt,24868675.57,BDT,True
+fraud_loss.exposure_identified_after_cashout_bdt,962230.08,BDT,True
+fraud_loss.simulated_loss_reduction_rate,0.7017,count_or_value,True
+fraud_loss.formula,sum(simulated prevented exposure) / sum(initial suspicious value); not actual loss reduction,count_or_value,True
+investigation_efficiency.baseline_investigation_minutes,6645.5,count_or_value,True
+investigation_efficiency.flowfreeze_investigation_minutes,7452.5,count_or_value,True
+investigation_efficiency.investigation_time_saved_minutes,-807.0,count_or_value,True
+investigation_efficiency.baseline_minutes_per_case,6.04,count_or_value,True
+investigation_efficiency.flowfreeze_minutes_per_case,6.78,count_or_value,True
+investigation_efficiency.transactions_reviewed_baseline,947,count_or_value,True
+investigation_efficiency.transactions_reviewed_flowfreeze,1015,count_or_value,True
+investigation_efficiency.downstream_wallets_identified,940,count_or_value,True
+investigation_efficiency.time_to_first_useful_signal_minutes_median,2.24,count_or_value,True
+investigation_efficiency.time_model,SYNTHETIC OPERATIONAL SIMULATION,count_or_value,True
+customer_harm.legitimate_case_count,400,count_or_value,True
+customer_harm.overly_aggressive_policy_unnecessary_holds,400,count_or_value,True
+customer_harm.overly_aggressive_policy_legitimate_value_affected_bdt,8131840.0,BDT,True
+customer_harm.flowfreeze_unnecessary_holds,0,count_or_value,True
+customer_harm.flowfreeze_legitimate_value_affected_bdt,0.0,BDT,True
+customer_harm.legitimate_cases_correctly_left_alone,400,count_or_value,True
+customer_harm.proportionate_intervention_rate,0.1182,count_or_value,True
+customer_harm.unnecessary_intervention_rate,0.0,count_or_value,True
+customer_harm.synthetic_policy_simulation_only,True,count_or_value,True
+analyst_productivity.baseline_cases_per_hour,9.93,count_or_value,True
+analyst_productivity.flowfreeze_cases_per_hour,8.86,count_or_value,True
+analyst_productivity.analyst_time_saved_minutes,-807.0,count_or_value,True
+analyst_productivity.alerts_prioritized,130,count_or_value,True
+analyst_productivity.escalation_rate,,count_or_value,True
+analyst_productivity.escalation_rate_note,Future validation target; no production escalation outcomes in the synthetic records.,count_or_value,True
+baseline_vs_flowfreeze.baseline,"direct-recipient-only, manual downstream discovery",count_or_value,True
+baseline_vs_flowfreeze.flowfreeze,observed-flow graph trace with synthetic taint labels and bounded risk-flow proxy,count_or_value,True
+baseline_vs_flowfreeze.baseline_exposure_identified_bdt,17688481.86,BDT,True
+baseline_vs_flowfreeze.flowfreeze_exposure_identified_bdt,24874420.83,BDT,True
+baseline_vs_flowfreeze.exposure_difference_bdt,7185938.97,BDT,True
+baseline_vs_flowfreeze.baseline_time_minutes,6645.5,count_or_value,True
+baseline_vs_flowfreeze.flowfreeze_time_minutes,7452.5,count_or_value,True
+baseline_vs_flowfreeze.time_saved_minutes,-807.0,count_or_value,True
+baseline_vs_flowfreeze.baseline_legitimate_value_affected_bdt,9618478.14,BDT,True
+baseline_vs_flowfreeze.flowfreeze_legitimate_value_affected_bdt,0.0,BDT,True

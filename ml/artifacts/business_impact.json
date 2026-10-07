@@ -1,0 +1,275 @@
+{
+  "synthetic": true,
+  "label": "SYNTHETIC BUSINESS SIMULATION",
+  "case_count": 1100,
+  "transaction_count": 7528,
+  "fraud_loss": {
+    "initial_suspicious_value_bdt": 35438800.0,
+    "potentially_interceptable_exposure_bdt": 34443297.0,
+    "baseline_simulated_prevented_exposure_bdt": 17686984.33,
+    "simulated_prevented_exposure_bdt": 24868675.57,
+    "exposure_identified_before_cashout_bdt": 24868675.57,
+    "exposure_identified_after_cashout_bdt": 962230.08,
+    "simulated_loss_reduction_rate": 0.7017,
+    "formula": "sum(simulated prevented exposure) / sum(initial suspicious value); not actual loss reduction"
+  },
+  "investigation_efficiency": {
+    "baseline_investigation_minutes": 6645.5,
+    "flowfreeze_investigation_minutes": 7452.5,
+    "investigation_time_saved_minutes": -807.0,
+    "baseline_minutes_per_case": 6.04,
+    "flowfreeze_minutes_per_case": 6.78,
+    "transactions_reviewed_baseline": 947,
+    "transactions_reviewed_flowfreeze": 1015,
+    "downstream_wallets_identified": 940,
+    "time_to_first_useful_signal_minutes_median": 2.24,
+    "time_model": "SYNTHETIC OPERATIONAL SIMULATION"
+  },
+  "customer_harm": {
+    "legitimate_case_count": 400,
+    "overly_aggressive_policy_unnecessary_holds": 400,
+    "overly_aggressive_policy_legitimate_value_affected_bdt": 8131840.0,
+    "flowfreeze_unnecessary_holds": 0,
+    "flowfreeze_legitimate_value_affected_bdt": 0.0,
+    "legitimate_cases_correctly_left_alone": 400,
+    "proportionate_intervention_rate": 0.1182,
+    "unnecessary_intervention_rate": 0.0,
+    "synthetic_policy_simulation_only": true
+  },
+  "analyst_productivity": {
+    "baseline_cases_per_hour": 9.93,
+    "flowfreeze_cases_per_hour": 8.86,
+    "analyst_time_saved_minutes": -807.0,
+    "alerts_prioritized": 130,
+    "escalation_rate": null,
+    "escalation_rate_note": "Future validation target; no production escalation outcomes in the synthetic records."
+  },
+  "baseline_vs_flowfreeze": {
+    "baseline": "direct-recipient-only, manual downstream discovery",
+    "flowfreeze": "observed-flow graph trace with synthetic taint labels and bounded risk-flow proxy",
+    "baseline_exposure_identified_bdt": 17688481.86,
+    "flowfreeze_exposure_identified_bdt": 24874420.83,
+    "exposure_difference_bdt": 7185938.97,
+    "baseline_time_minutes": 6645.5,
+    "flowfreeze_time_minutes": 7452.5,
+    "time_saved_minutes": -807.0,
+    "baseline_legitimate_value_affected_bdt": 9618478.14,
+    "flowfreeze_legitimate_value_affected_bdt": 0.0
+  },
+  "direct_vs_multihop": {
+    "direct_fraud": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 5051269.0,
+      "flowfreeze_network_exposure_bdt": 5051269.0,
+      "downstream_wallets_identified": 0
+    },
+    "false_positive": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 0.0,
+      "flowfreeze_network_exposure_bdt": 0.0,
+      "downstream_wallets_identified": 76
+    },
+    "fanout": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 1908678.42,
+      "flowfreeze_network_exposure_bdt": 4523286.16,
+      "downstream_wallets_identified": 157
+    },
+    "fanout_cashout": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 2402406.94,
+      "flowfreeze_network_exposure_bdt": 3866316.98,
+      "downstream_wallets_identified": 139
+    },
+    "legitimate_relay": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 0.0,
+      "flowfreeze_network_exposure_bdt": 0.0,
+      "downstream_wallets_identified": 77
+    },
+    "mixed_balance": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 2081537.91,
+      "flowfreeze_network_exposure_bdt": 2779408.33,
+      "downstream_wallets_identified": 129
+    },
+    "multi_hop": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 1143614.51,
+      "flowfreeze_network_exposure_bdt": 3553165.28,
+      "downstream_wallets_identified": 128
+    },
+    "payroll_split": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 0.0,
+      "flowfreeze_network_exposure_bdt": 0.0,
+      "downstream_wallets_identified": 234
+    },
+    "rapid_cashout": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 2461464.08,
+      "flowfreeze_network_exposure_bdt": 2461464.08,
+      "downstream_wallets_identified": 0
+    },
+    "slow_mule": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 2639511.0,
+      "flowfreeze_network_exposure_bdt": 2639511.0,
+      "downstream_wallets_identified": 0
+    },
+    "wrong_recipient": {
+      "case_count": 100,
+      "direct_baseline_exposure_bdt": 0.0,
+      "flowfreeze_network_exposure_bdt": 0.0,
+      "downstream_wallets_identified": 0
+    }
+  },
+  "kpi_framework": {
+    "fraud_loss": [
+      "estimated fraud exposure",
+      "simulated prevented exposure",
+      "exposure identified before/after cash-out",
+      "simulated loss reduction rate"
+    ],
+    "investigation": [
+      "time to first useful signal",
+      "time to identify downstream wallets/exposure",
+      "analyst handling time",
+      "transactions/wallets reviewed",
+      "investigation coverage"
+    ],
+    "customer_harm": [
+      "unnecessary holds",
+      "legitimate value affected",
+      "false-positive interventions",
+      "legitimate customers affected",
+      "proportionate intervention rate"
+    ],
+    "operations": [
+      "analyst cases/hour",
+      "investigation time saved",
+      "downstream wallets/case",
+      "alerts prioritized",
+      "escalation rate"
+    ],
+    "next_move": [
+      "cash-out recall",
+      "forwarding recall",
+      "macro F1",
+      "calibration"
+    ]
+  },
+  "assumptions": [
+    "All transaction, incident, wallet truth-label and scenario data are generated synthetic records from this repository.",
+    "A case includes all available synthetic records; there is no real analyst or controlled workflow timing.",
+    "Manual-time model: 4 case-intake minutes + 1.5 minutes per reviewed transaction + 0.75 minutes per wallet.",
+    "Downstream graph discovery uses post-report observed transactions through analysis time, is cycle-safe and bounded to 5 hops.",
+    "Synthetic tainted_amount labels are the generated outcome oracle for remaining exposure; gross transfer sums are not counted as distinct exposure.",
+    "Overly aggressive policy means placing a hold for the full reported amount in every synthetic legitimate case; FlowFreeze proxy is an observable cash-out/multi-recipient evidence rule with a taint-bounded amount.",
+    "Potentially prevented exposure assumes immediate intervention at analysis and is not actual prevented loss."
+  ],
+  "limitations": [
+    "No real MFS performance, fraud-loss reduction, response-time benefit, or customer harm is claimed.",
+    "Synthetic labels and case families may not represent real distributions; this is not a causal or controlled impact evaluation.",
+    "False-positive and legitimate-customer figures are synthetic policy outcomes, not measured customer events.",
+    "Fraud-loss reduction, investigation time saved, and unnecessary-hold rates are validation targets until measured in an authorized shadow-mode/pilot."
+  ],
+  "validation_targets": {
+    "real_fraud_loss_reduction_rate": null,
+    "real_response_time_improvement": null,
+    "real_customer_harm_reduction": null,
+    "status": "Future validation target; requires authorized MFS case data and analyst trial."
+  },
+  "synthetic_case_examples": [
+    {
+      "scenario_id": "SCN-02-FANOUT-0058",
+      "scenario_type": "fanout",
+      "initial_suspicious_value_bdt": 66369.0,
+      "cashout_value_before_analysis_bdt": 0,
+      "cashout_value_after_analysis_bdt": 0,
+      "potentially_interceptable_exposure_bdt": 66369.0,
+      "baseline": {
+        "identified_exposure_bdt": 13274.4,
+        "simulated_prevented_exposure_bdt": 13274.4,
+        "legitimate_value_affected_bdt": 53094.6,
+        "investigation_minutes": 7.75,
+        "transactions_reviewed": 2,
+        "wallets_reviewed": 1
+      },
+      "flowfreeze": {
+        "identified_exposure_bdt": 66369.0,
+        "simulated_prevented_exposure_bdt": 66369.0,
+        "recommended_intervention_bdt": 13274.4,
+        "legitimate_value_affected_bdt": 0.0,
+        "investigation_minutes": 9.25,
+        "transactions_reviewed": 2,
+        "wallets_reviewed": 3,
+        "downstream_wallets_identified": 2,
+        "first_useful_signal_minutes": 2.55345165
+      },
+      "legitimate_case": false,
+      "cashout_event_count_before_analysis": 0,
+      "legitimate_customers_affected": 0
+    },
+    {
+      "scenario_id": "SCN-03-MULTIHOP-0035",
+      "scenario_type": "multi_hop",
+      "initial_suspicious_value_bdt": 55605.0,
+      "cashout_value_before_analysis_bdt": 0,
+      "cashout_value_after_analysis_bdt": 0,
+      "potentially_interceptable_exposure_bdt": 55605.0,
+      "baseline": {
+        "identified_exposure_bdt": 6323.48,
+        "simulated_prevented_exposure_bdt": 6323.48,
+        "legitimate_value_affected_bdt": 49281.520000000004,
+        "investigation_minutes": 6.25,
+        "transactions_reviewed": 1,
+        "wallets_reviewed": 1
+      },
+      "flowfreeze": {
+        "identified_exposure_bdt": 55605.0,
+        "simulated_prevented_exposure_bdt": 55605.0,
+        "recommended_intervention_bdt": 0,
+        "legitimate_value_affected_bdt": 0.0,
+        "investigation_minutes": 7.0,
+        "transactions_reviewed": 1,
+        "wallets_reviewed": 2,
+        "downstream_wallets_identified": 1,
+        "first_useful_signal_minutes": 3.841718833333333
+      },
+      "legitimate_case": false,
+      "cashout_event_count_before_analysis": 0,
+      "legitimate_customers_affected": 0
+    },
+    {
+      "scenario_id": "SCN-03-MULTIHOP-0096",
+      "scenario_type": "multi_hop",
+      "initial_suspicious_value_bdt": 55592.0,
+      "cashout_value_before_analysis_bdt": 0,
+      "cashout_value_after_analysis_bdt": 0,
+      "potentially_interceptable_exposure_bdt": 55592.0,
+      "baseline": {
+        "identified_exposure_bdt": 7347.71,
+        "simulated_prevented_exposure_bdt": 7347.71,
+        "legitimate_value_affected_bdt": 48244.29,
+        "investigation_minutes": 6.25,
+        "transactions_reviewed": 1,
+        "wallets_reviewed": 1
+      },
+      "flowfreeze": {
+        "identified_exposure_bdt": 55592.0,
+        "simulated_prevented_exposure_bdt": 55592.0,
+        "recommended_intervention_bdt": 0,
+        "legitimate_value_affected_bdt": 0.0,
+        "investigation_minutes": 9.25,
+        "transactions_reviewed": 2,
+        "wallets_reviewed": 3,
+        "downstream_wallets_identified": 2,
+        "first_useful_signal_minutes": 2.8510311333333336
+      },
+      "legitimate_case": false,
+      "cashout_event_count_before_analysis": 0,
+      "legitimate_customers_affected": 0
+    }
+  ]
+}
