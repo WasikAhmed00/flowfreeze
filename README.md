@@ -17,6 +17,16 @@ FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence platfo
 
 The platform provides explainable evidence and decision-support tools to help investigators analyze suspicious incidents using synthetic data in a safe demonstration environment.
 
+### Public transaction model MVP
+
+The optional fraud classifier can be trained on the bounded 10,000-row sample in `data/ml/Fraud.csv`:
+
+```bash
+python -m ml.train_real --data-path data/ml/Fraud.csv --max-rows 10000 --seed 42
+```
+
+See [`docs/REAL_DATA_ML_MVP.md`](docs/REAL_DATA_ML_MVP.md) for the feature mapping, evaluation method, artifacts, and limitations. The public dataset is **not upay BD production/customer data**; FlowFreeze scenarios, graphs, taint, and audit records remain synthetic. The model is decision support only and does not execute wallet actions.
+
 ### Purpose
 
 The project was developed as a prototype for the upay BD sponsored hackathon to demonstrate how AI can assist fraud investigation workflows while maintaining human oversight and responsible decision-making.

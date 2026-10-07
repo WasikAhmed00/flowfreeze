@@ -19,6 +19,7 @@ from sklearn.metrics import (
     precision_recall_fscore_support,
     precision_score,
     recall_score,
+    roc_auc_score,
 )
 from sklearn.preprocessing import label_binarize
 
@@ -40,6 +41,7 @@ def binary_metrics(y_true: Any, probabilities: Any, threshold: float = 0.5) -> d
         "precision": float(precision_score(y_true, predicted, zero_division=0)),
         "recall": float(recall_score(y_true, predicted, zero_division=0)),
         "f1": float(f1_score(y_true, predicted, zero_division=0)),
+        "roc_auc": float(roc_auc_score(y_true, probabilities)) if len(np.unique(y_true)) > 1 else None,
         "pr_auc_average_precision": float(average_precision_score(y_true, probabilities)),
         "confusion_matrix_labels_0_1": confusion_matrix(y_true, predicted, labels=[0, 1]).tolist(),
         "class_report": classification_report(y_true, predicted, labels=[0, 1], output_dict=True, zero_division=0),

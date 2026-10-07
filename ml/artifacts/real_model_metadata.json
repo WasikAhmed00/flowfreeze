@@ -1,0 +1,69 @@
+{
+  "source": "real_transaction_dataset",
+  "dataset": "Fraud.csv",
+  "dataset_path": "data/ml/Fraud.csv",
+  "synthetic": false,
+  "sample_rows_requested": 10000,
+  "rows_loaded": 10000,
+  "feature_columns": [
+    "step",
+    "type",
+    "amount",
+    "oldbalanceOrg",
+    "newbalanceOrig",
+    "oldbalanceDest",
+    "newbalanceDest"
+  ],
+  "excluded_from_features": [
+    "isFraud",
+    "nameOrig",
+    "nameDest",
+    "isFlaggedFraud"
+  ],
+  "preprocessing_version": "real-v1-onehot-median-scaled",
+  "model_type": "logistic_regression",
+  "training_seed": 42,
+  "split_strategy": "chronological_by_step_60_20_20",
+  "split_sizes": {
+    "train": 6016,
+    "validation": 2003,
+    "test": 1981
+  },
+  "class_distribution": {
+    "0": 8977,
+    "1": 1023
+  },
+  "validation_model_comparison": {
+    "logistic_regression": {
+      "pr_auc": 0.9363892824171216,
+      "roc_auc": 0.9841861910867622
+    },
+    "random_forest": {
+      "pr_auc": 0.9279144353244667,
+      "roc_auc": 0.991366515133854
+    }
+  },
+  "evaluation_metrics": {
+    "threshold": 0.7799999999999999,
+    "roc_auc": 0.9871569342543728,
+    "pr_auc_average_precision": 0.9175302510346671,
+    "precision": 0.90625,
+    "recall": 0.7581699346405228,
+    "f1": 0.8256227758007118,
+    "confusion_matrix_labels_0_1": [
+      [
+        1816,
+        12
+      ],
+      [
+        37,
+        116
+      ]
+    ],
+    "fraud_class_support": 153
+  },
+  "threshold": 0.7799999999999999,
+  "trained_at": "2026-10-07T04:09:28.710686+00:00",
+  "scikit_learn_version": "1.6.1",
+  "warning": "Fraud.csv is a public simulated transaction dataset, not upay BD production/customer data; FlowFreeze scenarios remain synthetic."
+}
