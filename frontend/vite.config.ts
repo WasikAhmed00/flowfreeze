@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['5173-i05w5uyo0tjqvpjwst4yd-1d854ef1.us4.manus.computer'],
+    allowedHosts: ['5173-iyzuzdqii0vbn060q39zf-f7a1a4cb.us1.manus.computer'],
     proxy: {
       '/api': 'http://127.0.0.1:8000',
       '/health': 'http://127.0.0.1:8000',

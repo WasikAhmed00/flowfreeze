@@ -10,6 +10,7 @@ from fastapi import APIRouter
 
 from backend.db import application_connection
 from core.business_impact import run_business_impact
+from core.shadow_mode import run_shadow_mode
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
@@ -78,3 +79,29 @@ def get_metrics() -> dict:
 def get_business_impact() -> dict:
     """Return a fresh, synthetic-only impact simulation from generated CSV data."""
     return run_business_impact()
+
+
+@router.get("/shadow-mode")
+def get_shadow_mode() -> dict:
+    """Return synthetic shadow-mode results plus any analyst feedback collected locally."""
+    result = run_shadow_mode()
+    with application_connection() as db:
+        rows = db.execute(
+            """SELECT d.decision, f.was_useful, f.recommendation_feedback, f.trace_accuracy, f.confidence
+            FROM analyst_feedback f JOIN analyst_decisions d ON d.decision_id = f.decision_id"""
+        ).fetchall()
+    count = len(rows)
+    result["feedback_summary"] = {
+        "feedback_records": count,
+        "analyst_agreement_rate": round(sum(1.0 if row["decision"] == "approve" else 0.5 if row["decision"] == "modify" else 0.0 for row in rows) / count, 4) if count else None,
+        "recommendation_helpful_rate": round(sum(row["recommendation_feedback"] == "helpful" for row in rows) / count, 4) if count else None,
+        "override_rate": round(sum(row["decision"] in {"reject", "modify"} for row in rows) / count, 4) if count else None,
+        "usefulness_counts": {value: sum(row["was_useful"] == value for row in rows) for value in ("yes", "partially", "no")},
+        "trace_accuracy_counts": {value: sum(row["trace_accuracy"] == value for row in rows) for value in ("accurate", "partially_accurate", "inaccurate")},
+        "confidence_counts": {value: sum(row["confidence"] == value for row in rows) for value in ("low", "medium", "high")},
+        "synthetic_records_only": True,
+    }
+    result["human"] = {**result["human"], "analyst_agreement_rate": result["feedback_summary"]["analyst_agreement_rate"],
+                        "recommendation_override_rate": result["feedback_summary"]["override_rate"],
+                        "recommendation_usefulness_rate": result["feedback_summary"]["recommendation_helpful_rate"]}
+    return result

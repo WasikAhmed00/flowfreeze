@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.db import application_connection
 from backend.security import require_demo_write_access
-from backend.schemas import DecisionCreate
+from backend.schemas import AnalystFeedbackCreate, DecisionCreate
 from core.intervention import load_policy
 from core.simulator import TransactionSimulator
 from core.taint import calculate_proportional_taint
@@ -64,6 +64,30 @@ def create_decision(payload: DecisionCreate) -> dict:
         "synthetic": True,
         "automatic_execution": False,
     }
+
+
+@router.post("/{decision_id}/feedback", status_code=201, dependencies=[Depends(require_demo_write_access)])
+def create_analyst_feedback(decision_id: int, payload: AnalystFeedbackCreate) -> dict:
+    """Append a single validated feedback record for an existing decision."""
+    created_at = datetime.now(timezone.utc).isoformat()
+    with application_connection() as db:
+        exists = db.execute("SELECT 1 FROM analyst_decisions WHERE decision_id = ?", (decision_id,)).fetchone()
+        if exists is None:
+            raise HTTPException(status_code=404, detail="Analyst decision was not found.")
+        try:
+            cursor = db.execute(
+                """INSERT INTO analyst_feedback
+                (decision_id, was_useful, recommendation_feedback, trace_accuracy, confidence, reason, actor, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (decision_id, payload.was_useful, payload.recommendation_feedback, payload.trace_accuracy,
+                 payload.confidence, payload.reason, payload.actor, created_at),
+            )
+        except Exception as exc:
+            if "UNIQUE constraint failed" in str(exc):
+                raise HTTPException(status_code=409, detail="Feedback for this decision has already been recorded.") from exc
+            raise
+    return {"feedback_id": cursor.lastrowid, "decision_id": decision_id, **payload.model_dump(),
+            "created_at": created_at, "synthetic": True, "append_only": True}
 
 
 @router.get("")

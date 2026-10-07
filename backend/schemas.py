@@ -32,6 +32,17 @@ class DecisionRecord(BaseModel):
     synthetic: bool = True
 
 
+class AnalystFeedbackCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    was_useful: Literal["yes", "partially", "no"]
+    recommendation_feedback: Literal["helpful", "not_helpful"]
+    trace_accuracy: Literal["accurate", "partially_accurate", "inaccurate"]
+    confidence: Literal["low", "medium", "high"]
+    reason: str = Field(default="", max_length=1000)
+    actor: str = Field(default="demo_analyst", min_length=1, max_length=100)
+
+
 class HealthResponse(BaseModel):
     status: str
     synthetic_data_only: bool = True

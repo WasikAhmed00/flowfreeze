@@ -97,5 +97,25 @@ def _ensure_audit_tables(connection: sqlite3.Connection) -> None:
             created_at TEXT NOT NULL,
             synthetic INTEGER NOT NULL DEFAULT 1 CHECK (synthetic = 1)
         );
+        CREATE TABLE IF NOT EXISTS analyst_feedback (
+            feedback_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            decision_id INTEGER NOT NULL UNIQUE REFERENCES analyst_decisions(decision_id),
+            was_useful TEXT NOT NULL CHECK (was_useful IN ('yes', 'partially', 'no')),
+            recommendation_feedback TEXT NOT NULL CHECK (recommendation_feedback IN ('helpful', 'not_helpful')),
+            trace_accuracy TEXT NOT NULL CHECK (trace_accuracy IN ('accurate', 'partially_accurate', 'inaccurate')),
+            confidence TEXT NOT NULL CHECK (confidence IN ('low', 'medium', 'high')),
+            reason TEXT NOT NULL DEFAULT '' CHECK (length(reason) <= 1000),
+            actor TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            synthetic INTEGER NOT NULL DEFAULT 1 CHECK (synthetic = 1)
+        );
+        CREATE TRIGGER IF NOT EXISTS analyst_feedback_no_update
+        BEFORE UPDATE ON analyst_feedback BEGIN
+            SELECT RAISE(ABORT, 'analyst feedback is append-only');
+        END;
+        CREATE TRIGGER IF NOT EXISTS analyst_feedback_no_delete
+        BEFORE DELETE ON analyst_feedback BEGIN
+            SELECT RAISE(ABORT, 'analyst feedback is append-only');
+        END;
         """
     )

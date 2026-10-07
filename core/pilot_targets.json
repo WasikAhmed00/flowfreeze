@@ -1,0 +1,11 @@
+{
+  "status": "TARGET TO BE AGREED DURING PILOT",
+  "targets": {
+    "median_investigation_time_reduction": {"target": null, "unit": "fraction", "direction": "higher_is_better"},
+    "downstream_exposure_identified_increase": {"target": null, "unit": "BDT or fraction", "direction": "higher_is_better"},
+    "unnecessary_hold_reduction": {"target": null, "unit": "fraction", "direction": "higher_is_better"},
+    "analyst_acceptance_rate": {"target": null, "unit": "fraction", "direction": "partner_defined"},
+    "cashout_detection_recall": {"target": null, "unit": "fraction", "direction": "higher_is_better"},
+    "false_positive_rate": {"target": null, "unit": "fraction", "direction": "lower_is_better"}
+  }
+}

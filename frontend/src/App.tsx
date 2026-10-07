@@ -15,9 +15,11 @@ const API_HEADERS: HeadersInit = { 'Content-Type': 'application/json', ...(WRITE
 const DEMO_LABEL = 'SYNTHETIC DEMO';
 const DEFAULT_DEMO_SCENARIO = 'SCN-02-FANOUT-0001';
 
-type View = 'dashboard' | 'incidents' | 'case' | 'graph' | 'wallets' | 'recommendations' | 'simulator' | 'evaluation' | 'business-impact' | 'audit';
+type View = 'dashboard' | 'incidents' | 'case' | 'graph' | 'wallets' | 'recommendations' | 'simulator' | 'evaluation' | 'business-impact' | 'shadow-mode' | 'audit';
 type Edge = { id: string; from: string; to: string; amount: number; taint: number; time: string; cashout: boolean; type: string };
 type BusinessImpact = { synthetic: boolean; label: string; case_count: number; fraud_loss: Record<string, any>; investigation_efficiency: Record<string, any>; customer_harm: Record<string, any>; analyst_productivity: Record<string, any>; baseline_vs_flowfreeze: Record<string, any>; assumptions: string[]; limitations: string[]; validation_targets: Record<string, any> };
+type ShadowImpact = { synthetic: boolean; label: string; pilot_label: string; cases_evaluated: number; current_process: Record<string, any>; flowfreeze_shadow: Record<string, any>; investigation: Record<string, any>; business: Record<string, any>; human: Record<string, any>; feedback_summary: Record<string, any>; business_success_targets: Record<string, any>; assumptions: string[]; limitations: string[]; automatic_execution: boolean; financial_actions_executed: number };
+type FeedbackInput = { was_useful: 'yes' | 'partially' | 'no'; recommendation_feedback: 'helpful' | 'not_helpful'; trace_accuracy: 'accurate' | 'partially_accurate' | 'inaccurate'; confidence: 'low' | 'medium' | 'high'; reason: string };
 
 type DecisionDraft = { recommendation: WalletRecommendation; decision: 'approve' | 'reject' | 'modify' } | null;
 
@@ -62,6 +64,7 @@ const NAV: { id: View; label: string; icon: typeof Activity; group: string }[] =
   { id: 'simulator', label: 'What-if simulator', icon: FlaskConical, group: 'Decisioning' },
   { id: 'evaluation', label: 'Evaluation', icon: Gauge, group: 'Governance' },
   { id: 'business-impact', label: 'Business impact', icon: CircleDollarSign, group: 'Governance' },
+  { id: 'shadow-mode', label: 'Shadow mode', icon: ShieldCheck, group: 'Governance' },
   { id: 'audit', label: 'Audit history', icon: History, group: 'Governance' },
 ];
 
@@ -94,6 +97,7 @@ function App() {
   const [incidentTotal, setIncidentTotal] = useState(0);
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [businessImpact, setBusinessImpact] = useState<BusinessImpact | null>(null);
+  const [shadowImpact, setShadowImpact] = useState<ShadowImpact | null>(null);
   const [decisions, setDecisions] = useState<DecisionRecord[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
@@ -124,11 +128,12 @@ function App() {
     let live = true;
     const load = async () => {
       setBusy(true);
-      const [healthResult, incidentResult, metricResult, impactResult, decisionResult, pendingResult] = await Promise.allSettled([
+      const [healthResult, incidentResult, metricResult, impactResult, shadowResult, decisionResult, pendingResult] = await Promise.allSettled([
         api<{ status: string }>('/health'),
         api<{ incidents: Incident[]; total: number }>(`/api/incidents?limit=100&offset=${incidentOffset}`),
         api<Metrics>('/api/metrics'),
         api<BusinessImpact>('/api/metrics/business-impact'),
+        api<ShadowImpact>('/api/metrics/shadow-mode'),
         api<{ decisions: DecisionRecord[] }>('/api/decisions?limit=100'),
         api<{ total: number }>('/api/incidents?status=new&limit=1'),
       ]);
@@ -142,6 +147,7 @@ function App() {
       } else setIncidents([]);
       if (metricResult.status === 'fulfilled') setMetrics(metricResult.value);
       if (impactResult.status === 'fulfilled') setBusinessImpact(impactResult.value);
+      if (shadowResult.status === 'fulfilled') setShadowImpact(shadowResult.value);
       if (decisionResult.status === 'fulfilled') setDecisions(decisionResult.value.decisions || []);
       if (pendingResult.status === 'fulfilled') setPendingCount(pendingResult.value.total);
       setBusy(false);
@@ -185,7 +191,7 @@ function App() {
     setMobileNav(false);
   };
 
-  const makeDecision = async (decision: 'approve' | 'reject' | 'modify', recommendation: WalletRecommendation, amount: number, reason: string) => {
+  const makeDecision = async (decision: 'approve' | 'reject' | 'modify', recommendation: WalletRecommendation, amount: number, reason: string, feedback: FeedbackInput) => {
     if (!selectedId || !reason.trim()) return;
     try {
       const saved = await api<DecisionRecord>('/api/decisions', {
@@ -199,6 +205,13 @@ function App() {
           actor: analyst || 'Demo Analyst',
         }),
       });
+      let feedbackNote = '';
+      try {
+        await api(`/api/decisions/${saved.decision_id}/feedback`, { method: 'POST', body: JSON.stringify({ ...feedback, actor: analyst || 'Demo Analyst' }) });
+        feedbackNote = ' · feedback saved to the append-only audit log';
+      } catch (feedbackError) {
+        feedbackNote = ` · decision saved, but feedback could not be recorded (${feedbackError instanceof Error ? feedbackError.message : 'API error'})`;
+      }
       let outcomeNote = '';
       try {
         const outcome = await api<Record<string, any>>(`/api/simulation/${saved.decision_id}`, { method: 'POST' });
@@ -206,7 +219,7 @@ function App() {
       } catch (simulationError) {
         outcomeNote = ` · decision recorded; outcome simulation unavailable (${simulationError instanceof Error ? simulationError.message : 'API error'})`;
       }
-      setToast(`Decision recorded${outcomeNote}. No wallet or ledger action was taken.`);
+      setToast(`Decision recorded${outcomeNote}${feedbackNote}. No wallet or ledger action was taken.`);
       setDecisionDraft(null);
       refresh();
     } catch (error) {
@@ -262,6 +275,8 @@ function App() {
         return <EvaluationPage metrics={metrics} />;
       case 'business-impact':
         return <BusinessImpactPage impact={businessImpact} />;
+      case 'shadow-mode':
+        return <ShadowModePage shadow={shadowImpact} />;
       case 'audit':
         return <AuditPage decisions={decisions} onOpen={(incident) => openIncident(incident, 'case')} />;
       default:
@@ -328,6 +343,7 @@ function pageDescription(view: View, incident: Incident | null) {
     simulator: 'Explore the trade-off between potentially preserved value and legitimate value affected.',
     evaluation: 'Compare FlowFreeze with a direct-recipient baseline on held-out synthetic cases.',
     'business-impact': 'Synthetic counterfactuals for exposure, investigation effort, and customer-harm trade-offs.',
+    'shadow-mode': 'Record-only simulation and readiness measures for a future partner-governed pilot.',
     audit: 'Append-only record of synthetic analyst decisions and simulated outcomes.',
   };
   return descriptions[view];
@@ -529,6 +545,28 @@ function EvaluationPage({ metrics }: { metrics: Metrics | null }) {
   </div>;
 }
 
+function ShadowModePage({ shadow }: { shadow: ShadowImpact | null }) {
+  if (!shadow) return <div className="panel impact-empty"><Info size={18} /><span>Shadow-mode simulation unavailable. Ensure the backend and generated data are available.</span></div>;
+  const ff = shadow.flowfreeze_shadow, human = shadow.feedback_summary;
+  return <div className="page-stack shadow-page">
+    <div className="shadow-banner"><ShieldCheck size={20} /><div><b>SHADOW MODE — PILOT READINESS</b><span>{shadow.pilot_label} · Recommendations are record-only; no operational decision is changed.</span></div><strong>NO FINANCIAL ACTIONS</strong></div>
+    <div className="impact-kpis shadow-kpis">
+      <div className="impact-kpi"><span>CASES EVALUATED</span><b>{shadow.cases_evaluated.toLocaleString()}</b><small>Synthetic records only</small></div>
+      <div className="impact-kpi"><span>FLOWFREEZE RECOMMENDATIONS</span><b>{Number(ff.recommendations).toLocaleString()}</b><small>Would prioritize for analyst review</small></div>
+      <div className="impact-kpi"><span>ANALYST AGREEMENT</span><b>{human.analyst_agreement_rate == null ? 'Not measured' : pct(human.analyst_agreement_rate)}</b><small>{Number(human.feedback_records || 0)} feedback record(s)</small></div>
+      <div className="impact-kpi"><span>ANALYST OVERRIDE</span><b>{human.override_rate == null ? 'Not measured' : pct(human.override_rate)}</b><small>Based on audited demo decisions</small></div>
+      <div className="impact-kpi"><span>POTENTIAL EXPOSURE IDENTIFIED</span><b>{money(ff.estimated_exposure_identified_bdt, true)}</b><small>Generated labels; not recoverable funds</small></div>
+      <div className="impact-kpi"><span>ESTIMATED TIME SAVED</span><b>{Number(shadow.investigation.estimated_time_saved_minutes).toLocaleString()} min</b><small>Synthetic workload model, not analyst-measured: FlowFreeze {Number(shadow.investigation.synthetic_analyst_workload_minutes).toLocaleString()} min</small></div>
+      <div className="impact-kpi"><span>FALSE POSITIVES</span><b>{Number(ff.false_positives).toLocaleString()}</b><small>Against generated labels</small></div>
+      <div className="impact-kpi"><span>FALSE NEGATIVES</span><b>{Number(ff.false_negatives).toLocaleString()}</b><small>Against generated labels</small></div>
+    </div>
+    <section className="panel shadow-compare"><div className="panel-head"><div><div className="panel-eyebrow">INDEPENDENT COMPARISON · SYNTHETIC</div><h2>Current process vs FlowFreeze shadow output</h2><p>Neither comparator represents a real operator or a deployed model.</p></div><span className="micro-tag">{shadow.cases_evaluated.toLocaleString()} CASES</span></div><div className="shadow-columns"><div><h3>Current-process proxy</h3><p>{shadow.current_process.description}</p><b>{Number(shadow.current_process.recommendations).toLocaleString()}</b><small>synthetic priorities</small></div><div><h3>FlowFreeze shadow</h3><p>{shadow.flowfreeze_shadow.description}</p><b>{Number(ff.recommendations).toLocaleString()}</b><small>record-only recommendations</small></div><div><h3>Detection proxy</h3><p>Measured against synthetic generator labels, not real fraud outcomes.</p><b>{pct(ff.precision)} / {pct(ff.recall)}</b><small>precision / recall · PR-AUC {ff.pr_auc_average_precision == null ? 'N/A' : pct(ff.pr_auc_average_precision)}</small></div></div></section>
+    <div className="impact-lower-grid"><section className="panel impact-harm"><div className="panel-head"><div><div className="panel-eyebrow">HUMAN FEEDBACK</div><h2>Analyst feedback summary</h2><p>Only recorded demo feedback is included.</p></div></div><div className="impact-harm-rows"><div><span>Recommendation helpful rate</span><b>{human.recommendation_helpful_rate == null ? 'Not measured' : pct(human.recommendation_helpful_rate)}</b></div><div><span>Useful · yes / partially / no</span><b>{human.usefulness_counts ? `${human.usefulness_counts.yes} / ${human.usefulness_counts.partially} / ${human.usefulness_counts.no}` : '0 / 0 / 0'}</b></div><div><span>Trace · accurate / partial / inaccurate</span><b>{human.trace_accuracy_counts ? `${human.trace_accuracy_counts.accurate} / ${human.trace_accuracy_counts.partially_accurate} / ${human.trace_accuracy_counts.inaccurate}` : '0 / 0 / 0'}</b></div><div><span>Confidence · low / medium / high</span><b>{human.confidence_counts ? `${human.confidence_counts.low} / ${human.confidence_counts.medium} / ${human.confidence_counts.high}` : '0 / 0 / 0'}</b></div></div></section>
+      <section className="panel impact-productivity"><div className="panel-head"><div><div className="panel-eyebrow">CUSTOMER-HARM INDICATORS</div><h2>Synthetic only</h2><p>Not customer impact measurements</p></div></div><div className="impact-harm-rows"><div><span>Unnecessary intervention rate</span><b>{pct(shadow.business.unnecessary_intervention_rate)}</b></div><div><span>Legitimate value affected</span><b>{money(shadow.business.legitimate_value_affected_bdt)}</b></div><div><span>Simulated prevented exposure</span><b>{money(shadow.business.simulated_prevented_exposure_bdt)}</b></div><div><span>Financial actions executed</span><b>{shadow.financial_actions_executed}</b></div></div></section></div>
+    <details className="panel impact-method"><summary>Safety, limitations & partner-agreed targets</summary><div>All success thresholds are labeled <b>{shadow.business_success_targets.status}</b>; none are represented as achieved. Edit <code>core/pilot_targets.json</code> with a partner-approved value when agreed.</div><div className="target-list">{Object.entries(shadow.business_success_targets.targets || {}).map(([key, item]: [string, any]) => <div key={key}><span>{titleCase(key.replaceAll('_', ' '))}</span><b>{item.target == null ? 'Not agreed' : item.target} · {item.unit}</b></div>)}</div><ul>{shadow.assumptions.map((item: string) => <li key={item}>{item}</li>)}</ul><ul>{shadow.limitations.map((item: string) => <li key={item}>{item}</li>)}</ul><span>See docs/PILOT_PLAN.md for the staged partner pilot plan.</span></details>
+  </div>;
+}
+
 function BusinessImpactPage({ impact }: { impact: BusinessImpact | null }) {
   if (!impact) return <div className="panel impact-empty"><Info size={18} /><span>Business impact simulation is unavailable. Start the backend and ensure generated synthetic CSV data is present.</span></div>;
   const loss = impact.fraud_loss;
@@ -562,7 +600,7 @@ function AuditPage({ decisions, onOpen }: { decisions: DecisionRecord[]; onOpen:
   return <div className="page-stack"><section className="panel audit-panel"><div className="panel-head"><div><div className="panel-eyebrow">APPEND-ONLY DECISION LOG</div><h2>Analyst audit history</h2><p>Decision records from the local synthetic SQLite database. No underlying wallet balances are changed.</p></div><span className="micro-tag">{decisions.length} RECORDS LOADED</span></div>{decisions.length ? <div className="table-wrap"><table className="data-table audit-table"><thead><tr><th>Decision</th><th>Case / scenario</th><th>Wallet</th><th>Simulated amount</th><th>Analyst</th><th>Recorded</th><th>Reason</th></tr></thead><tbody>{decisions.map((decision) => <tr key={decision.decision_id}><td><span className={`decision-tag decision-${decision.decision}`}>{decision.decision === 'approve' ? <Check size={12} /> : decision.decision === 'reject' ? <X size={12} /> : <SlidersHorizontal size={12} />}{titleCase(decision.decision)}</span></td><td><button className="audit-case-link" onClick={() => onOpen({ incident_id: decision.incident_id, scenario_id: decision.scenario_id } as Incident)}>{shortId(decision.incident_id)}<small>{shortId(decision.scenario_id)}</small></button></td><td className="mono">{shortId(decision.wallet_id)}</td><td className="amount-cell">{money(decision.proposed_amount_bdt)}</td><td>{decision.actor}</td><td>{dateTime(decision.created_at)}</td><td className="reason-cell" title={decision.reason}>{decision.reason}</td></tr>)}</tbody></table></div> : <div className="audit-empty"><div className="audit-empty-icon"><History size={21} /></div><h3>No decisions recorded yet</h3><p>Once an analyst approves, rejects or modifies a recommendation, the decision will appear here.</p><span>Writes are governed by the backend demo-write configuration.</span></div>}<div className="audit-foot"><ShieldCheck size={14} /> These records document synthetic analyst decisions; they are not regulatory records.</div></section></div>;
 }
 
-function DecisionModal({ draft, analyst, onClose, onSubmit }: { draft: NonNullable<DecisionDraft>; analyst: string; onClose: () => void; onSubmit: (decision: 'approve' | 'reject' | 'modify', item: WalletRecommendation, amount: number, reason: string) => void }) {
+function DecisionModal({ draft, analyst, onClose, onSubmit }: { draft: NonNullable<DecisionDraft>; analyst: string; onClose: () => void; onSubmit: (decision: 'approve' | 'reject' | 'modify', item: WalletRecommendation, amount: number, reason: string, feedback: FeedbackInput) => void }) {
   const { recommendation } = draft;
   const [decision, setDecision] = useState(draft.decision);
   const max = Number(recommendation.balance_bdt || 0);
@@ -570,13 +608,18 @@ function DecisionModal({ draft, analyst, onClose, onSubmit }: { draft: NonNullab
   const [amount, setAmount] = useState(Math.min(max, recommended || Math.min(Number(recommendation.potentially_tainted_bdt || 1000), 10000)));
   const rationaleFor = (choice: 'approve' | 'reject' | 'modify') => choice === 'reject' ? 'Recommendation reviewed; no simulated hold approved.' : choice === 'modify' ? 'Modified simulated amount for further analyst review.' : 'Approved for synthetic outcome simulation, subject to analyst review.';
   const [reason, setReason] = useState(rationaleFor(draft.decision));
+  const [wasUseful, setWasUseful] = useState<FeedbackInput['was_useful'] | ''>('');
+  const [recommendationFeedback, setRecommendationFeedback] = useState<FeedbackInput['recommendation_feedback'] | ''>('');
+  const [traceAccuracy, setTraceAccuracy] = useState<FeedbackInput['trace_accuracy'] | ''>('');
+  const [confidence, setConfidence] = useState<FeedbackInput['confidence'] | ''>('');
+  const [feedbackReason, setFeedbackReason] = useState('');
   const [reasonEdited, setReasonEdited] = useState(false);
   const chooseDecision = (choice: 'approve' | 'reject' | 'modify') => {
     setDecision(choice);
     if (!reasonEdited) setReason(rationaleFor(choice));
   };
-  const disabled = reason.trim().length < 3 || (decision !== 'reject' && (amount <= 0 || amount > max));
-  return <div className="modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}><div className="decision-modal" role="dialog" aria-modal="true" aria-labelledby="decision-title"><div className="modal-head"><div><div className="panel-eyebrow">ANALYST DECISION</div><h2 id="decision-title">Review this proposal</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X size={18} /></button></div><div className="modal-wallet"><span className="wallet-ident-icon"><WalletCards size={16} /></span><div><b>{walletName(recommendation.wallet_id)}</b><small>{recommendation.wallet_id}</small></div><div className="modal-taint"><span>Potential taint</span><b>{money(recommendation.potentially_tainted_bdt)}</b></div></div><div className="modal-proposal"><div><span>Policy recommendation</span><b>{money(recommendation.proposed_simulated_hold_bdt)}</b></div><div><span>Wallet replay balance</span><b>{money(recommendation.balance_bdt)}</b></div><div><span>Estimated legitimate impact</span><b>{money(recommendation.estimated_legitimate_value_affected_bdt)}</b></div></div><div className="decision-choice"><span className="form-label">Decision</span><div className="choice-buttons"><button className={decision === 'approve' ? 'choice-active choice-approve' : ''} onClick={() => chooseDecision('approve')}><Check size={14} /> Approve</button><button className={decision === 'modify' ? 'choice-active choice-modify' : ''} onClick={() => chooseDecision('modify')}><SlidersHorizontal size={14} /> Modify</button><button className={decision === 'reject' ? 'choice-active choice-reject' : ''} onClick={() => chooseDecision('reject')}><X size={14} /> Reject</button></div></div>{decision !== 'reject' && <label className="form-label">Simulated hold amount (BDT)<div className="amount-input modal-amount"><span>৳</span><input type="number" min="0.01" max={max} step="0.01" value={amount} onChange={(event) => setAmount(Math.min(max, Number(event.target.value)))} /></div><small className="field-hint">Must be positive and no greater than the current replay balance or the backend policy maximum.</small></label>}<label className="form-label">Decision rationale<textarea rows={3} value={reason} onChange={(event) => { setReasonEdited(true); setReason(event.target.value); }} maxLength={1000} /></label><div className="decision-impact-note"><ShieldCheck size={15} /><span>Recording this decision creates an append-only audit entry and attempts a synthetic outcome calculation. It does <b>not</b> execute a wallet action.</span></div><div className="modal-footer"><span>Recorded as <b>{analyst}</b></span><button className="button button-light" onClick={onClose}>Cancel</button><button className={`button ${decision === 'reject' ? 'button-danger' : 'button-primary'}`} onClick={() => onSubmit(decision, recommendation, amount, reason)} disabled={disabled}>{decision === 'reject' ? 'Record rejection' : decision === 'modify' ? 'Record modified proposal' : 'Approve simulation'} <ArrowRight size={15} /></button></div></div></div>;
+  const disabled = reason.trim().length < 3 || !wasUseful || !recommendationFeedback || !traceAccuracy || !confidence || (decision !== 'reject' && (amount <= 0 || amount > max));
+  return <div className="modal-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget) onClose(); }}><div className="decision-modal" role="dialog" aria-modal="true" aria-labelledby="decision-title"><div className="modal-head"><div><div className="panel-eyebrow">ANALYST DECISION · SYNTHETIC</div><h2 id="decision-title">Review this proposal</h2></div><button className="icon-button" onClick={onClose} aria-label="Close"><X size={18} /></button></div><div className="modal-wallet"><span className="wallet-ident-icon"><WalletCards size={16} /></span><div><b>{walletName(recommendation.wallet_id)}</b><small>{recommendation.wallet_id}</small></div><div className="modal-taint"><span>Potential taint</span><b>{money(recommendation.potentially_tainted_bdt)}</b></div></div><div className="modal-proposal"><div><span>Policy recommendation</span><b>{money(recommendation.proposed_simulated_hold_bdt)}</b></div><div><span>Wallet replay balance</span><b>{money(recommendation.balance_bdt)}</b></div><div><span>Estimated legitimate impact</span><b>{money(recommendation.estimated_legitimate_value_affected_bdt)}</b></div></div><div className="decision-choice"><span className="form-label">Decision</span><div className="choice-buttons"><button className={decision === 'approve' ? 'choice-active choice-approve' : ''} onClick={() => chooseDecision('approve')}><Check size={14} /> Approve</button><button className={decision === 'modify' ? 'choice-active choice-modify' : ''} onClick={() => chooseDecision('modify')}><SlidersHorizontal size={14} /> Modify</button><button className={decision === 'reject' ? 'choice-active choice-reject' : ''} onClick={() => chooseDecision('reject')}><X size={14} /> Reject</button></div></div>{decision !== 'reject' && <label className="form-label">Simulated amount (BDT)<div className="amount-input modal-amount"><span>৳</span><input type="number" min="0.01" max={max} step="0.01" value={amount} onChange={(event) => setAmount(Math.min(max, Number(event.target.value)))} /></div><small className="field-hint">Prototype-only hypothetical amount. No hold is executed.</small></label>}<label className="form-label">Decision rationale<textarea rows={2} value={reason} onChange={(event) => { setReasonEdited(true); setReason(event.target.value); }} maxLength={1000} /></label><div className="feedback-inputs"><b>Was FlowFreeze useful?</b><div className="feedback-grid"><label>Useful<select required value={wasUseful} onChange={(e) => setWasUseful(e.target.value as FeedbackInput['was_useful'] | '')}><option value="" disabled>Choose</option><option value="yes">Yes</option><option value="partially">Partially</option><option value="no">No</option></select></label><label>Recommendation<select required value={recommendationFeedback} onChange={(e) => setRecommendationFeedback(e.target.value as FeedbackInput['recommendation_feedback'] | '')}><option value="" disabled>Choose</option><option value="helpful">Helpful</option><option value="not_helpful">Not helpful</option></select></label><label>Trace<select required value={traceAccuracy} onChange={(e) => setTraceAccuracy(e.target.value as FeedbackInput['trace_accuracy'] | '')}><option value="" disabled>Choose</option><option value="accurate">Accurate</option><option value="partially_accurate">Partially accurate</option><option value="inaccurate">Inaccurate</option></select></label><label>Confidence<select required value={confidence} onChange={(e) => setConfidence(e.target.value as FeedbackInput['confidence'] | '')}><option value="" disabled>Choose</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label></div><label>Feedback reason<textarea rows={2} value={feedbackReason} maxLength={1000} onChange={(e) => setFeedbackReason(e.target.value)} placeholder="Optional: briefly explain your assessment" /></label></div><div className="decision-impact-note"><ShieldCheck size={15} /><span>Decision and feedback are separately recorded in an append-only synthetic audit log. No wallet action is executed.</span></div><div className="modal-footer"><span>Recorded as <b>{analyst}</b></span><button className="button button-light" onClick={onClose}>Cancel</button><button className={`button ${decision === 'reject' ? 'button-danger' : 'button-primary'}`} onClick={() => onSubmit(decision, recommendation, amount, reason, { was_useful: wasUseful as FeedbackInput['was_useful'], recommendation_feedback: recommendationFeedback as FeedbackInput['recommendation_feedback'], trace_accuracy: traceAccuracy as FeedbackInput['trace_accuracy'], confidence: confidence as FeedbackInput['confidence'], reason: feedbackReason })} disabled={disabled}>{decision === 'reject' ? 'Record rejection' : decision === 'modify' ? 'Record modified proposal' : 'Approve simulation'} <ArrowRight size={15} /></button></div></div></div>;
 }
 
 function LoadingInline({ text }: { text: string }) { return <div className="loading-inline"><div className="loading-spinner small-spinner" />{text}</div>; }
