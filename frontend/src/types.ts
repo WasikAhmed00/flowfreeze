@@ -60,6 +60,12 @@ export type Metrics = {
     estimated_legitimate_value_affected_bdt: string;
   };
   ml_evaluation?: Record<string, any>;
+  real_public_model?: {
+    available: boolean;
+    synthetic: boolean;
+    metadata?: { rows_loaded?: number; model_type?: string; evaluation_metrics?: Record<string, any> } | null;
+    warning?: string;
+  };
   end_to_end_evaluation?: { metrics_available: boolean; results?: Record<string, any> | null; warning?: string };
   financial_impact?: { metrics_available: boolean; synthetic_data: boolean; results?: Record<string, any> | null; warning?: string };
   warning?: string;
