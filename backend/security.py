@@ -11,8 +11,16 @@ import json
 import os
 import secrets
 
-from fastapi import Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from backend.db import connect_database
+
+_FAIRNESS_BEARER = HTTPBearer(auto_error=False)
+_ROLE_PERMISSIONS = {
+    "fairness_analyst": frozenset({"fairness:read"}),
+    "model_auditor": frozenset({"fairness:read"}),
+    "risk_admin": frozenset({"fairness:read"}),
+}
 
 
 @dataclass(frozen=True)
@@ -134,6 +142,35 @@ def require_roles(*roles: str):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Your role cannot perform this action.")
         return user
     return dependency
+
+
+def require_fairness_read_access(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_FAIRNESS_BEARER),
+) -> str:
+    """Authorize aggregate fairness reads using operator-mapped bearer tokens.
+
+    FLOWFREEZE_RBAC_TOKENS is a JSON object mapping high-entropy bearer tokens
+    to fixed role names. No default token or request-supplied role is trusted.
+    """
+    raw_tokens = os.getenv("FLOWFREEZE_RBAC_TOKENS", "").strip()
+    if not raw_tokens:
+        raise HTTPException(status_code=503, detail="Fairness RBAC is not configured on this service.")
+    try:
+        token_roles = json.loads(raw_tokens)
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=503, detail="Fairness RBAC configuration is invalid.") from exc
+    if not isinstance(token_roles, dict) or not token_roles:
+        raise HTTPException(status_code=503, detail="Fairness RBAC configuration is invalid.")
+    if any(not isinstance(token, str) or len(token) < 32 or not isinstance(role, str) for token, role in token_roles.items()):
+        raise HTTPException(status_code=503, detail="Fairness RBAC tokens must be at least 32 characters and map to role names.")
+    if credentials is None or credentials.scheme.lower() != "bearer":
+        raise HTTPException(status_code=401, detail="A bearer token with fairness:read permission is required.", headers={"WWW-Authenticate": "Bearer"})
+    role = next((candidate_role for token, candidate_role in token_roles.items() if hmac.compare_digest(credentials.credentials, token)), None)
+    if role is None:
+        raise HTTPException(status_code=401, detail="Invalid bearer token.", headers={"WWW-Authenticate": "Bearer"})
+    if "fairness:read" not in _ROLE_PERMISSIONS.get(role, frozenset()):
+        raise HTTPException(status_code=403, detail="The configured role does not have fairness:read permission.")
+    return role
 
 
 def require_demo_write_access(

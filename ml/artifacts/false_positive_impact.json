@@ -1,0 +1,214 @@
+{
+  "synthetic": true,
+  "label": "SYNTHETIC FALSE-POSITIVE IMPACT EVALUATION",
+  "evaluation_split": "test",
+  "threshold": 0.739618,
+  "threshold_source": "Existing ml.train.py decision threshold selected on validation split; test split was not used to select or tune it.",
+  "overall": {
+    "false_positive_count": 5,
+    "false_positive_rate": 0.005258,
+    "legitimate_wallet_population": 951,
+    "affected_legitimate_transaction_count": 6,
+    "legitimate_value_affected_bdt": 103550.0,
+    "average_legitimate_value_affected_bdt": 17258.33,
+    "median_legitimate_value_affected_bdt": 16592.0,
+    "customer_segments_affected": [
+      {
+        "segment_dimension": "customer_type",
+        "segment": "individual",
+        "false_positive_wallets": 4
+      },
+      {
+        "segment_dimension": "customer_type",
+        "segment": "merchant",
+        "false_positive_wallets": 1
+      },
+      {
+        "segment_dimension": "account_age_bucket",
+        "segment": "LONG_TENURE",
+        "false_positive_wallets": 5
+      },
+      {
+        "segment_dimension": "transaction_activity_bucket",
+        "segment": "HIGH",
+        "false_positive_wallets": 1
+      },
+      {
+        "segment_dimension": "transaction_activity_bucket",
+        "segment": "MEDIUM",
+        "false_positive_wallets": 4
+      },
+      {
+        "segment_dimension": "amount_profile_bucket",
+        "segment": "HIGH_VALUE",
+        "false_positive_wallets": 3
+      },
+      {
+        "segment_dimension": "amount_profile_bucket",
+        "segment": "MEDIUM_VALUE",
+        "false_positive_wallets": 2
+      }
+    ],
+    "cases_per_segment": {
+      "customer_type": {
+        "agent": 0,
+        "individual": 4,
+        "merchant": 1
+      },
+      "account_age_bucket": {
+        "ESTABLISHED": 0,
+        "LONG_TENURE": 5,
+        "NEW": 0
+      },
+      "transaction_activity_bucket": {
+        "HIGH": 1,
+        "LOW": 0,
+        "MEDIUM": 4
+      },
+      "amount_profile_bucket": {
+        "HIGH_VALUE": 3,
+        "LOW_VALUE": 0,
+        "MEDIUM_VALUE": 2
+      }
+    },
+    "value_per_segment": {
+      "customer_type": {
+        "agent": 0.0,
+        "individual": 70628.0,
+        "merchant": 32922.0
+      },
+      "account_age_bucket": {
+        "ESTABLISHED": 0.0,
+        "LONG_TENURE": 103550.0,
+        "NEW": 0.0
+      },
+      "transaction_activity_bucket": {
+        "HIGH": 555.0,
+        "LOW": 0.0,
+        "MEDIUM": 102995.0
+      },
+      "amount_profile_bucket": {
+        "HIGH_VALUE": 60578.0,
+        "LOW_VALUE": 0.0,
+        "MEDIUM_VALUE": 42972.0
+      }
+    },
+    "segment_impact": [
+      {
+        "segment_dimension": "customer_type",
+        "segment": "agent",
+        "legitimate_wallet_population": 30,
+        "false_positive_wallets": 0,
+        "affected_case_count": 0,
+        "affected_legitimate_transaction_count": 0,
+        "simulated_legitimate_value_affected_bdt": 0.0
+      },
+      {
+        "segment_dimension": "customer_type",
+        "segment": "individual",
+        "legitimate_wallet_population": 693,
+        "false_positive_wallets": 4,
+        "affected_case_count": 4,
+        "affected_legitimate_transaction_count": 5,
+        "simulated_legitimate_value_affected_bdt": 70628.0
+      },
+      {
+        "segment_dimension": "customer_type",
+        "segment": "merchant",
+        "legitimate_wallet_population": 228,
+        "false_positive_wallets": 1,
+        "affected_case_count": 1,
+        "affected_legitimate_transaction_count": 1,
+        "simulated_legitimate_value_affected_bdt": 32922.0
+      },
+      {
+        "segment_dimension": "account_age_bucket",
+        "segment": "ESTABLISHED",
+        "legitimate_wallet_population": 121,
+        "false_positive_wallets": 0,
+        "affected_case_count": 0,
+        "affected_legitimate_transaction_count": 0,
+        "simulated_legitimate_value_affected_bdt": 0.0
+      },
+      {
+        "segment_dimension": "account_age_bucket",
+        "segment": "LONG_TENURE",
+        "legitimate_wallet_population": 801,
+        "false_positive_wallets": 5,
+        "affected_case_count": 5,
+        "affected_legitimate_transaction_count": 6,
+        "simulated_legitimate_value_affected_bdt": 103550.0
+      },
+      {
+        "segment_dimension": "account_age_bucket",
+        "segment": "NEW",
+        "legitimate_wallet_population": 29,
+        "false_positive_wallets": 0,
+        "affected_case_count": 0,
+        "affected_legitimate_transaction_count": 0,
+        "simulated_legitimate_value_affected_bdt": 0.0
+      },
+      {
+        "segment_dimension": "transaction_activity_bucket",
+        "segment": "HIGH",
+        "legitimate_wallet_population": 250,
+        "false_positive_wallets": 1,
+        "affected_case_count": 1,
+        "affected_legitimate_transaction_count": 1,
+        "simulated_legitimate_value_affected_bdt": 555.0
+      },
+      {
+        "segment_dimension": "transaction_activity_bucket",
+        "segment": "LOW",
+        "legitimate_wallet_population": 496,
+        "false_positive_wallets": 0,
+        "affected_case_count": 0,
+        "affected_legitimate_transaction_count": 0,
+        "simulated_legitimate_value_affected_bdt": 0.0
+      },
+      {
+        "segment_dimension": "transaction_activity_bucket",
+        "segment": "MEDIUM",
+        "legitimate_wallet_population": 205,
+        "false_positive_wallets": 4,
+        "affected_case_count": 4,
+        "affected_legitimate_transaction_count": 5,
+        "simulated_legitimate_value_affected_bdt": 102995.0
+      },
+      {
+        "segment_dimension": "amount_profile_bucket",
+        "segment": "HIGH_VALUE",
+        "legitimate_wallet_population": 274,
+        "false_positive_wallets": 3,
+        "affected_case_count": 3,
+        "affected_legitimate_transaction_count": 4,
+        "simulated_legitimate_value_affected_bdt": 60578.0
+      },
+      {
+        "segment_dimension": "amount_profile_bucket",
+        "segment": "LOW_VALUE",
+        "legitimate_wallet_population": 379,
+        "false_positive_wallets": 0,
+        "affected_case_count": 0,
+        "affected_legitimate_transaction_count": 0,
+        "simulated_legitimate_value_affected_bdt": 0.0
+      },
+      {
+        "segment_dimension": "amount_profile_bucket",
+        "segment": "MEDIUM_VALUE",
+        "legitimate_wallet_population": 298,
+        "false_positive_wallets": 2,
+        "affected_case_count": 2,
+        "affected_legitimate_transaction_count": 2,
+        "simulated_legitimate_value_affected_bdt": 42972.0
+      }
+    ],
+    "value_definition": "Deduplicated gross amount of generated, pre-analysis transactions between ground-truth legitimate profiles (or to an explicit cash_destination) associated with a false-positive wallet-case. This is simulated legitimate transaction value exposed to possible interruption under the stated policy, not actual customer harm, loss, or a hold."
+  },
+  "unit_of_analysis": "wallet-case prediction; false-positive rate is false-positive legitimate wallet-cases divided by all legitimate wallet-cases in the evaluation split.",
+  "limitations": [
+    "Ground-truth labels, segments and transaction values are generated synthetic records, not real customers or real service events.",
+    "Affected value is deduplicated generated legitimate transaction volume associated with a false-positive wallet-case; it is not a loss, actual hold, or verified customer harm.",
+    "Group support flags are exploratory minimums, not significance tests or confidence intervals."
+  ]
+}

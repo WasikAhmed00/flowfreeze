@@ -35,6 +35,7 @@ export function IntegrationCenter() {
   return <section className="integration-center">
     <div className="integration-heading"><div><div className="panel-eyebrow"><Activity size={13} /> SCALABILITY &amp; INTEGRATION</div><h2>Event stream &amp; case operations</h2><p>Synthetic adapter workflow; ready for a partner-governed MFS connector, with no production connection enabled.</p></div><span className="integration-synthetic">SYNTHETIC ONLY</span></div>
     <div className="integration-grid"><LiveSimulationPanel onEvent={onEvent} events={events} /><CaseManagementPanel latest={latest} refreshKey={refreshKey} /></div>
+    <FairnessDashboardPanel />
   </section>;
 }
 
@@ -136,5 +137,63 @@ function CaseManagementPanel({ latest, refreshKey }: { latest: StreamEvent | nul
       {!cases.length && <tr><td colSpan={4} className="case-empty"><Gauge size={14} />No cases yet. Generate a stream event, then create a review case.</td></tr>}
     </tbody></table></div>
     <div className="case-panel-foot"><span><Activity size={13} /> {cases.filter((item) => !['resolved', 'closed'].includes(item.status)).length} open cases</span><button className="integration-refresh" onClick={() => void load()}><RefreshCw size={13} /> Refresh</button></div>
+  </section>;
+}
+
+type FairnessMetrics = {
+  synthetic: boolean;
+  evaluation_split: string;
+  test_threshold: number;
+  overall_test_metrics: Record<string, any>;
+  test_metrics_by_segment: Record<string, Array<{ segment: string; metrics: Record<string, any>; gaps_vs_overall: Record<string, any> }>>;
+  gap_comparisons: Record<string, Record<string, any>>;
+  threshold_analysis: { split: string; warning: string; points: Array<{ threshold: number; matches_model_selected_threshold: boolean; metrics: Record<string, any>; false_positive_count: number; legitimate_value_affected_bdt: number; analyst_workload: Record<string, any> }> };
+  intervention_policy_comparison: { results: Array<{ label: string; candidate_wallet_case_recommendations: number; false_positive_count: number; false_positive_rate: number | null; false_negative_count: number; missed_fraud_rate: number | null; precision: number | null; simulated_legitimate_value_affected_bdt: number; analyst_workload: { estimated_analyst_workload_minutes: number }; human_review_required_before_any_action: boolean }> };
+  false_positive_impact: { false_positive_count: number; false_positive_rate: number | null; legitimate_value_affected_bdt: number; affected_legitimate_transaction_count: number };
+  limitations: string[];
+};
+type FalsePositiveMetrics = { synthetic: boolean; overall: { false_positive_count: number; false_positive_rate: number | null; legitimate_value_affected_bdt: number; average_legitimate_value_affected_bdt: number | null; median_legitimate_value_affected_bdt: number | null; affected_legitimate_transaction_count: number; segment_impact: Array<{ segment_dimension: string; segment: string; false_positive_wallets: number; affected_case_count: number; simulated_legitimate_value_affected_bdt: number }> } };
+
+const percent = (value: unknown) => value === null || value === undefined || !Number.isFinite(Number(value)) ? '—' : `${(Number(value) * 100).toFixed(1)}%`;
+
+function FairnessDashboardPanel() {
+  const [token, setToken] = useState('');
+  const [report, setReport] = useState<FairnessMetrics | null>(null);
+  const [impact, setImpact] = useState<FalsePositiveMetrics | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const load = async () => {
+    if (!token.trim()) { setError('Enter a configured fairness:read bearer token.'); return; }
+    setBusy(true); setError('');
+    const headers = { Authorization: `Bearer ${token.trim()}` };
+    try {
+      const [metrics, harm] = await Promise.all([
+        api<FairnessMetrics>('/api/metrics/fairness', { headers }),
+        api<FalsePositiveMetrics>('/api/metrics/false-positive-impact', { headers }),
+      ]);
+      setReport(metrics); setImpact(harm);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Protected fairness metrics could not be loaded.'); }
+    finally { setBusy(false); }
+  };
+  const segmentRows = report ? Object.entries(report.test_metrics_by_segment).flatMap(([dimension, rows]) => rows.map((row) => ({ dimension, ...row }))) : [];
+  const segmentImpact = impact?.overall.segment_impact ?? [];
+  const gapRows = report ? Object.entries(report.gap_comparisons) : [];
+  return <section className="integration-panel fairness-panel">
+    <div className="integration-panel-head"><div className="integration-icon fairness-icon"><ShieldCheck size={17} /></div><div><div className="panel-eyebrow">SYNTHETIC EVALUATION — NOT PRODUCTION FAIRNESS VALIDATION</div><h3>Subgroup errors &amp; customer-impact review</h3></div><span className="case-total">AGGREGATE ONLY</span></div>
+    <p className="integration-copy">Compares false-positive/false-negative rates, true-positive rates, precision and policy counterfactuals across existing synthetic operational cohorts. This is not evidence of fairness on real MFS customers.</p>
+    <div className="fairness-auth"><label>Fairness read token <small>Sent only to this API request; kept in memory and never saved.</small><input type="password" autoComplete="off" value={token} onChange={(event) => setToken(event.target.value)} placeholder="Operator-configured bearer token" /></label><button className="button button-secondary" onClick={() => void load()} disabled={busy}>{busy ? 'Loading…' : 'Load protected metrics'}</button></div>
+    {error && <div className="integration-error"><AlertTriangle size={14} />{error}</div>}
+    {!report && <div className="integration-empty">Fairness metrics are access-controlled. Configure <code>FLOWFREEZE_RBAC_TOKENS</code> on the API, then enter a role token here.</div>}
+    {report && <>
+      <div className="fairness-kpis"><div><span>Held-out test FPR</span><b>{percent(report.overall_test_metrics.false_positive_rate)}</b></div><div><span>Held-out test FNR</span><b>{percent(report.overall_test_metrics.false_negative_rate)}</b></div><div><span>Precision</span><b>{percent(report.overall_test_metrics.precision)}</b></div><div><span>False-positive wallet-cases</span><b>{(impact?.overall.false_positive_count ?? report.false_positive_impact.false_positive_count).toLocaleString()}</b></div><div><span>Legitimate value exposed</span><b>{amount(impact?.overall.legitimate_value_affected_bdt ?? report.false_positive_impact.legitimate_value_affected_bdt)}</b></div><div><span>Operating threshold</span><b>{percent(report.test_threshold)}</b></div></div>
+      <div className="fairness-value-stats"><span>Per affected legitimate synthetic transaction:</span><b>mean {impact?.overall.average_legitimate_value_affected_bdt !== null && impact?.overall.average_legitimate_value_affected_bdt !== undefined ? amount(impact.overall.average_legitimate_value_affected_bdt) : '—'}</b><b>median {impact?.overall.median_legitimate_value_affected_bdt !== null && impact?.overall.median_legitimate_value_affected_bdt !== undefined ? amount(impact.overall.median_legitimate_value_affected_bdt) : '—'}</b><small>{impact?.overall.affected_legitimate_transaction_count ?? report.false_positive_impact.affected_legitimate_transaction_count} distinct generated transactions</small></div>
+      <div className="fairness-table-wrap"><table className="fairness-table"><thead><tr><th>Cohort</th><th>Population (n)</th><th>Fraud prevalence</th><th>TPR</th><th>FPR</th><th>FNR</th><th>Precision</th><th>FP wallets / cases</th><th>Legitimate value</th><th>Support</th></tr></thead><tbody>
+        {segmentRows.map((row) => { const harm = segmentImpact.find((item) => item.segment_dimension === row.dimension && item.segment === row.segment); return <tr key={`${row.dimension}:${row.segment}`}><td><b>{row.segment}</b><small>{row.dimension.replaceAll('_', ' ')}</small></td><td>{row.metrics.sample_count}</td><td>{percent(row.metrics.fraud_prevalence)}</td><td>{row.metrics.reliability.metric_reliable.true_positive_rate ? percent(row.metrics.true_positive_rate) : '—'}</td><td>{row.metrics.reliability.metric_reliable.false_positive_rate ? percent(row.metrics.false_positive_rate) : '—'}</td><td>{row.metrics.reliability.metric_reliable.false_negative_rate ? percent(row.metrics.false_negative_rate) : '—'}</td><td>{row.metrics.reliability.metric_reliable.precision ? percent(row.metrics.precision) : '—'}</td><td>{harm ? `${harm.false_positive_wallets} / ${harm.affected_case_count}` : '—'}</td><td>{amount(harm?.simulated_legitimate_value_affected_bdt ?? 0)}</td><td>{row.metrics.reliability.status === 'meets_exploratory_minimums' ? 'Exploratory' : 'Low support'}</td></tr>; })}
+      </tbody></table></div>
+      <div className="fairness-gap-summary"><b>Observed best-to-worst cohort gaps · held-out test split</b>{gapRows.map(([dimension, metrics]) => <div key={dimension}><strong>{dimension.replaceAll('_', ' ')}</strong><span>FPR {percent(metrics.false_positive_rate?.best_to_worst_absolute_gap)} · FNR {percent(metrics.false_negative_rate?.best_to_worst_absolute_gap)} · TPR {percent(metrics.true_positive_rate?.best_to_worst_absolute_gap)} · precision {percent(metrics.precision?.best_to_worst_absolute_gap)}</span><small>Descriptive ranges only · unsupported one-class comparisons are suppressed.</small></div>)}</div>
+      <div className="fairness-strategies"><b>Test-split strategy comparison</b><div className="fairness-strategy-grid">{report.intervention_policy_comparison.results.map((strategy) => <div key={strategy.label}><strong>{strategy.label}</strong><span>{strategy.candidate_wallet_case_recommendations.toLocaleString()} review candidates · {strategy.false_positive_count.toLocaleString()} false positives · {percent(strategy.false_positive_rate)} FPR</span><span>{strategy.false_negative_count.toLocaleString()} missed fraud wallet-cases · {percent(strategy.missed_fraud_rate)} FNR · {percent(strategy.precision)} precision</span><span>{amount(strategy.simulated_legitimate_value_affected_bdt)} legitimate transaction value exposed · {strategy.analyst_workload.estimated_analyst_workload_minutes.toFixed(0)} assumed analyst min</span><small>{strategy.human_review_required_before_any_action ? 'Human review required; no action executed.' : 'Aggressive counterfactual only; no action executed.'}</small></div>)}</div></div>
+      <details className="fairness-threshold-details"><summary>Validation threshold diagnostics ({report.threshold_analysis.split} split only)</summary><p>{report.threshold_analysis.warning}</p><div className="fairness-table-wrap"><table className="fairness-table"><thead><tr><th>Threshold</th><th>FPR</th><th>FNR</th><th>False positives</th><th>Value exposed</th></tr></thead><tbody>{report.threshold_analysis.points.map((point) => <tr key={point.threshold}><td>{percent(point.threshold)}{point.matches_model_selected_threshold ? ' · selected' : ''}</td><td>{percent(point.metrics.false_positive_rate)}</td><td>{percent(point.metrics.false_negative_rate)}</td><td>{point.false_positive_count}</td><td>{amount(point.legitimate_value_affected_bdt)}</td></tr>)}</tbody></table></div></details>
+      <div className="fairness-footnote">Synthetic records only · identifiers are not returned · value is a counterfactual transaction-volume proxy, not measured harm. Review gaps as investigation signals, not fairness claims.</div>
+    </>}
   </section>;
 }

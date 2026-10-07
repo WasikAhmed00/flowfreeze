@@ -20,11 +20,11 @@
 
 ## Operational limits
 
-- There is no production authentication, access control, provider integration, wallet-control endpoint, or real-time event feed.
+- A narrow, read-only role-token guard protects only aggregate fairness-report endpoints. There is no comprehensive production authentication/authorization, provider integration, wallet-control endpoint, or real MFS event feed.
 - The SQLite database and audit records are local prototype state. Demo reset replaces the database and clears that local audit history.
 - Models are locally trained synthetic artifacts and are ignored by Git; a new checkout must train them before showing live model outputs.
-- No formal fairness, subgroup, out-of-distribution, calibration-in-production, robustness, or security assessment has been completed.
-- There is no incident case-management or customer appeal workflow.
+- An exploratory synthetic-cohort error/false-positive analysis is available in `docs/FAIRNESS_AND_HARM.md`; no formal demographic-fairness, out-of-distribution, calibration-in-production, robustness, or security assessment has been completed.
+- A basic synthetic case CRUD API/dashboard is present; there is no governed enterprise case-management integration or customer appeal workflow.
 
 ## Before any real-world validation
 

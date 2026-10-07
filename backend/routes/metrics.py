@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.db import application_connection
+from backend.security import require_fairness_read_access
 from backend.telemetry import snapshot as api_snapshot
 from core.business_impact import run_business_impact
 from core.shadow_mode import run_shadow_mode
@@ -19,6 +20,31 @@ REAL_MODEL_METADATA_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifac
 ROBUSTNESS_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "robustness.json"
 END_TO_END_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "end_to_end_metrics.json"
 IMPACT_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "impact_analysis.json"
+FAIRNESS_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "fairness_evaluation.json"
+FALSE_POSITIVE_IMPACT_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "false_positive_impact.json"
+_IDENTIFIER_KEYS = {"wallet_id", "scenario_id", "transaction_id", "case_id", "customer_id", "phone_number", "msisdn"}
+
+
+def _has_identifier_fields(value: object) -> bool:
+    if isinstance(value, dict):
+        return any(str(key).lower() in _IDENTIFIER_KEYS or _has_identifier_fields(item) for key, item in value.items())
+    if isinstance(value, list):
+        return any(_has_identifier_fields(item) for item in value)
+    return False
+
+
+def _load_aggregate_artifact(path: Path, label: str) -> dict:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=f"{label} is not generated yet.") from exc
+    except (OSError, json.JSONDecodeError) as exc:
+        raise HTTPException(status_code=503, detail=f"{label} artifact is unavailable or invalid.") from exc
+    if not isinstance(payload, dict) or payload.get("synthetic") is not True:
+        raise HTTPException(status_code=503, detail=f"{label} artifact failed its synthetic-only validation.")
+    if _has_identifier_fields(payload):
+        raise HTTPException(status_code=503, detail=f"{label} artifact contains a prohibited identifier field.")
+    return payload
 
 
 @router.get("")
@@ -110,6 +136,18 @@ def get_metrics() -> dict:
             "synthetic_only": True,
         },
     }
+
+
+@router.get("/fairness", dependencies=[Depends(require_fairness_read_access)])
+def get_fairness_metrics() -> dict:
+    """Return protected aggregate synthetic subgroup metrics only."""
+    return _load_aggregate_artifact(FAIRNESS_METRICS_PATH, "Fairness evaluation")
+
+
+@router.get("/false-positive-impact", dependencies=[Depends(require_fairness_read_access)])
+def get_false_positive_impact() -> dict:
+    """Return protected aggregate synthetic false-positive impact estimates."""
+    return _load_aggregate_artifact(FALSE_POSITIVE_IMPACT_PATH, "False-positive impact evaluation")
 
 
 @router.get("/business-impact")
