@@ -11,8 +11,29 @@ from backend.db import application_connection
 from backend.security import require_demo_write_access
 from core.simulator import TransactionSimulator
 from core.taint import calculate_proportional_taint
+from core.intelligence import simulate_what_if
+from backend.pipeline import analyze_scenario
+from backend.schemas import WhatIfRequest
 
 router = APIRouter(prefix="/simulation", tags=["simulation"])
+
+
+@router.post("/what-if")
+def what_if(payload: WhatIfRequest) -> dict:
+    try:
+        analysis = analyze_scenario(payload.scenario_id)
+        replay = TransactionSimulator().replay(payload.scenario_id)
+        taint = calculate_proportional_taint(replay)
+        result = simulate_what_if(
+            analysis["intelligence"], taint, action=payload.action,
+            source_wallet=payload.source_wallet, target_wallet=payload.target_wallet,
+            amount=float(payload.amount_bdt),
+        )
+        return {"scenario_id": payload.scenario_id, **result}
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/{decision_id}", status_code=201, dependencies=[Depends(require_demo_write_access)])
