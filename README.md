@@ -17,6 +17,16 @@ FlowFreeze is an AI-assisted fraud containment and fund-flow intelligence platfo
 
 The platform provides explainable evidence and decision-support tools to help investigators analyze suspicious incidents using synthetic data in a safe demonstration environment.
 
+### Public transaction model MVP
+
+The optional fraud classifier can be trained on the bounded 10,000-row sample in `data/ml/Fraud.csv`:
+
+```bash
+python -m ml.train_real --data-path data/ml/Fraud.csv --max-rows 10000 --seed 42
+```
+
+See [`docs/REAL_DATA_ML_MVP.md`](docs/REAL_DATA_ML_MVP.md) for the feature mapping, evaluation method, artifacts, and limitations. The public dataset is **not upay BD production/customer data**; FlowFreeze scenarios, graphs, taint, and audit records remain synthetic. The model is decision support only and does not execute wallet actions.
+
 ### Purpose
 
 The project was developed as a prototype for the upay BD sponsored hackathon to demonstrate how AI can assist fraud investigation workflows while maintaining human oversight and responsible decision-making.
@@ -352,3 +362,9 @@ The following project documents provide additional configuration, methodology, a
 * No real fund freezing capability
 * Human analyst review required for recommendations
 * All intervention actions are simulated
+
+## Innovation: adaptive, explainable fund-flow intelligence
+
+FlowFreeze combines **graph intelligence + ML + anomaly/behavior analysis + taint analysis + adaptive prediction + what-if simulation** in one investigator workflow. Existing trained wallet-risk and next-movement classifiers remain the learned ML inputs. A deterministic, two-iteration graph-risk propagation step shares model risk across observed counterparty links and reports linked-wallet evidence; it complements (rather than replaces) graph tracing. The 0–100 Fraud Intelligence Score exposes its ML, graph, behavior/velocity proxy, proportional-taint, cash-out and suspicious-connection components. Forecasts include the next movement, probability, estimated minutes, cash-out likelihood, confidence and explanation.
+
+The dashboard's **AI Fraud Intelligence** panel includes these component scores, a human-reviewed minimum-hold proposal with policy reasons and estimated risk reduction, and a counterfactual endpoint for transfer, cash-out or applying an intervention. What-if results compare a baseline with an estimate; they never modify the replay ledger, decide ownership, or freeze/confiscate funds. Data and predictions are synthetic, not calibrated production risk estimates. Behavior anomaly is a transparent proxy, not an Isolation Forest or separately trained anomaly model; estimated time uses observed inter-event cadence or the model window as a heuristic.

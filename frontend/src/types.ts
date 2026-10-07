@@ -32,6 +32,9 @@ export type WalletRecommendation = {
   action: string;
   reasons: string[];
   evidence_transaction_ids: string[];
+  fraud_intelligence_score?: number;
+  expected_risk_reduction_points?: number;
+  recommendation_reasons?: string[];
 };
 
 export type Analysis = {
@@ -44,6 +47,7 @@ export type Analysis = {
   trace: Record<string, any>;
   taint: Record<string, any> & { wallets: WalletTaint[]; movements: Record<string, any>[] };
   recommendation: Record<string, any> & { recommendations: WalletRecommendation[] };
+  intelligence?: { method: string; wallets: Record<string, { fraud_score: number; components: Record<string, number>; graph_explanation: string[]; prediction: Record<string, any> }> };
 };
 
 export type Metrics = {

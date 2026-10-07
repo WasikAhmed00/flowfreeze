@@ -14,6 +14,7 @@ from core.shadow_mode import run_shadow_mode
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
+REAL_MODEL_METADATA_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "real_model_metadata.json"
 ROBUSTNESS_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "robustness.json"
 END_TO_END_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "end_to_end_metrics.json"
 IMPACT_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "impact_analysis.json"
@@ -37,6 +38,10 @@ def get_metrics() -> dict:
         ml_metrics = json.loads(ML_METRICS_PATH.read_text(encoding="utf-8")) if ML_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
         ml_metrics = None
+    try:
+        real_metadata = json.loads(REAL_MODEL_METADATA_PATH.read_text(encoding="utf-8")) if REAL_MODEL_METADATA_PATH.exists() else None
+    except (OSError, json.JSONDecodeError):
+        real_metadata = None
     try:
         robustness_metrics = json.loads(ROBUSTNESS_METRICS_PATH.read_text(encoding="utf-8")) if ROBUSTNESS_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
@@ -69,6 +74,12 @@ def get_metrics() -> dict:
                 for key in ("seed", "split_scenarios", "split_wallet_rows", "fraud_model_selection")
             } if ml_metrics else None,
             "warning": ml_metrics.get("warning") if ml_metrics else "Train with python -m ml.train to generate held-out synthetic metrics.",
+        },
+        "real_public_model": {
+            "available": (REAL_MODEL_METADATA_PATH.parent / "real_fraud_model.joblib").exists(),
+            "metadata": real_metadata,
+            "synthetic": False,
+            "warning": "Public Fraud.csv is not upay BD production/customer data; FlowFreeze scenarios remain synthetic.",
         },
         "robustness": robustness_metrics,
         "end_to_end_evaluation": {

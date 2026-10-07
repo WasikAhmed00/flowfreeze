@@ -28,7 +28,7 @@ Also checked the local HTTP endpoints `GET /health`, `GET /api/metrics`, `GET /a
 
 ## C. Test results
 
-- Backend: **24 passed** on the latest-main integration branch; 27 scikit-learn warnings were emitted by sparse-class robustness tests and an existing logistic-regression solver option.
+- Backend: **29 passed** after merging the latest `main`; 29 scikit-learn warnings were emitted by sparse-class diagnostics and an existing logistic-regression solver option.
 - Frontend: **TypeScript check and Vite production build passed**.
 - API smoke test: all five endpoints returned successfully; the selected-case response carried `synthetic: true` and the expected three-hop/cash-out evidence.
 - Impact artifacts: valid JSON and CSV with 1,100 matching scenario rows and six response-delay windows.

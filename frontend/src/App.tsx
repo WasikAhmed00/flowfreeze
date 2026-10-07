@@ -246,7 +246,7 @@ function App() {
   const averageAnalysisMs = analysisTimes.length ? analysisTimes.reduce((sum, value) => sum + value, 0) / analysisTimes.length : analysisMs;
   const preservedValue = metrics?.simulations?.estimated_tainted_value_preserved_bdt || '0';
   const remainingTaint = analysis?.taint?.remaining_potentially_tainted_bdt || 0;
-  const highRiskWalletCount = analysis?.model_predictions?.source === 'trained_synthetic_models' ? recommendationList.filter((item) => item.risk_score != null && item.risk_score >= 0.65).length : null;
+  const highRiskWalletCount = ['trained_synthetic_models', 'real_transaction_dataset'].includes(String(analysis?.model_predictions?.source)) ? recommendationList.filter((item) => item.risk_score != null && item.risk_score >= 0.65).length : null;
   const pendingReviewCount = recommendationList.filter((item) => !decisions.some((decision) => decision.scenario_id === selectedId && decision.wallet_id === item.wallet_id)).length;
 
   const renderPage = () => {
@@ -370,6 +370,59 @@ function LoginScreen({ value, onChange, onEnter, apiState }: { value: string; on
   </div>;
 }
 
+function IntelligencePanel({ analysis }: { analysis: Analysis | null }) {
+  const [action, setAction] = useState<'transfer' | 'cashout' | 'intervention'>('transfer');
+  const [source, setSource] = useState('');
+  const [target, setTarget] = useState('');
+  const [amount, setAmount] = useState('1000');
+  const [result, setResult] = useState<Record<string, any> | null>(null);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const walletRows = Object.entries((analysis?.intelligence as any)?.wallets || {}) as [string, any][];
+  const ranked = [...walletRows].sort((a, b) => b[1].fraud_score - a[1].fraud_score);
+  const featured = ranked[0];
+  const weights = [
+    ['ML risk', 'ml_risk'], ['Graph risk', 'graph_risk'], ['Anomaly risk', 'anomaly_risk'],
+    ['Taint exposure', 'taint_exposure'], ['Cash-out probability', 'cashout_probability'],
+    ['Suspicious connections', 'suspicious_connections'],
+  ];
+  const runWhatIf = async () => {
+    if (!analysis) return;
+    setBusy(true); setError('');
+    try {
+      const value = await api<Record<string, any>>('/api/simulation/what-if', {
+        method: 'POST', body: JSON.stringify({ scenario_id: analysis.scenario_id, action,
+          source_wallet: source || featured?.[0], target_wallet: target || ranked.find(([id]) => id !== (source || featured?.[0]))?.[0],
+          amount_bdt: Number(amount) || 0 }),
+      });
+      setResult(value);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Simulation unavailable'); }
+    finally { setBusy(false); }
+  };
+  const recommendation = featured && analysis?.recommendation?.recommendations?.find((row) => row.wallet_id === featured[0]);
+  const forecast = featured?.[1]?.prediction;
+  const hasForecast = Boolean(forecast && forecast.next_movement !== 'insufficient_model_data');
+  return <section className="panel ai-intelligence">
+    <div className="panel-head"><div><div className="panel-eyebrow"><Sparkles size={13} /> AI FRAUD INTELLIGENCE</div><h2>Evidence-led, adaptive risk view</h2><p>{analysis?.intelligence?.method || 'Loading explainable graph propagation'} · synthetic analysis only</p></div>
+      {featured && <div className="ai-score"><span>FRAUD INTELLIGENCE SCORE</span><b>{featured[1].fraud_score}<small>/100</small></b></div>}</div>
+    {!analysis ? <LoadingInline text="Select a case to calculate intelligence signals…" /> : <>
+      {featured && <div className="ai-featured"><div><span className="panel-eyebrow">HIGHEST-SCORING WALLET</span><b>{walletName(featured[0])}</b><small>{featured[0]}</small></div><div className="ai-rationale">{(featured[1].graph_explanation || []).map((item: string) => <span key={item}><CheckCircle2 size={13} />{item}</span>)}</div></div>}
+      <div className="ai-flow">{['Fraud Score', 'ML Risk', 'Graph Risk', 'Anomaly Risk', 'Taint Exposure', 'Cash-out Probability', 'Prediction', 'Recommendation'].map((item, index) => <span key={item} className={index === 0 ? 'ai-flow-primary' : ''}>{item}</span>)}</div>
+      {featured && <div className="ai-components">{weights.map(([label, key]) => <div key={key}><span>{label}</span><b>{Number(featured[1].components?.[key] || 0).toFixed(0)}%</b><i><em style={{ width: `${Math.min(100, Number(featured[1].components?.[key] || 0))}%` }} /></i></div>)}</div>}
+      <div className="ai-lower-grid"><div className="ai-prediction"><span className="panel-eyebrow">ADAPTIVE NEXT-MOVEMENT PREDICTION</span><b>{hasForecast ? `${titleCase(forecast.next_movement)} · ${pct(forecast.probability)}` : 'Insufficient model data'}</b><small>{hasForecast ? `Estimated in ~${forecast.estimated_minutes} min · cash-out ${pct(forecast.cashout_likelihood)} · confidence ${pct(forecast.confidence)}` : 'Train local models to enable a learned forecast.'}</small><small>{hasForecast ? forecast.explanation?.slice(0, 2).join(' · ') : 'No trained model contribution is available.'}</small></div>
+        <div className="ai-prediction"><span className="panel-eyebrow">HUMAN-APPROVED INTERVENTION</span><b>{recommendation ? money(recommendation.proposed_simulated_hold_bdt) : 'Monitor & review'}</b><small>{recommendation?.reasons?.slice(0, 2).join(' · ') || 'No bounded hold proposal for the top-scoring wallet.'}</small><small>Estimated risk reduction: {recommendation?.expected_risk_reduction_points ?? 0} points · no automatic wallet action</small></div></div>
+      <div className="ai-whatif"><div><span className="panel-eyebrow">WHAT-IF FRAUD SIMULATION</span><b>Estimate how a scenario could change the risk picture</b></div>
+        <select aria-label="What-if action" value={action} onChange={(e) => { setAction(e.target.value as typeof action); setResult(null); }}><option value="transfer">Transfer</option><option value="cashout">Cash-out</option><option value="intervention">Apply recommended intervention</option></select>
+        {action !== 'intervention' && <select aria-label="Source wallet" value={source} onChange={(e) => setSource(e.target.value)}><option value="">Top-risk wallet</option>{ranked.map(([id]) => <option key={id} value={id}>{walletName(id)}</option>)}</select>}
+        {action === 'transfer' && <select aria-label="Target wallet" value={target} onChange={(e) => setTarget(e.target.value)}><option value="">Choose destination</option>{ranked.map(([id]) => <option key={id} value={id}>{walletName(id)}</option>)}</select>}
+        <input aria-label="Scenario amount BDT" type="number" min="0" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <button className="button button-primary button-sm" onClick={runWhatIf} disabled={busy || !analysis}>{busy ? 'Estimating…' : 'Run simulation'}</button>
+      </div>
+      {error && <div className="ai-error">{error}</div>}{result && <div className="ai-result"><b>Counterfactual estimate · no ledger changes</b><span>Risk {result.baseline.risk} → {result.counterfactual.risk} ({result.delta.risk >= 0 ? '+' : ''}{result.delta.risk})</span><span>Taint {money(result.baseline.taint_bdt)} → {money(result.counterfactual.taint_bdt)} ({money(result.delta.taint_bdt)})</span><span>Predicted wallet: {walletName(result.counterfactual.predicted_wallet || '')}</span><small>{result.explanation}</small></div>}
+    </>}
+  </section>;
+}
+
 function DashboardPage(props: {
   incidents: Incident[]; selected: Incident | null; onOpen: (incident: Incident) => void; onViewAll: () => void;
   pendingCount: number | null; totalCount?: number; latestValue: number; reachable: unknown; preserved: unknown;
@@ -385,6 +438,7 @@ function DashboardPage(props: {
       <KpiCard label="Potentially reachable" value={money(reachable, true)} note="Selected scenario · remaining taint estimate" icon={Network} accent="blue" />
       <KpiCard label="Value preserved" value={money(preservedValue, true)} note={`${simulationCount} recorded simulations`} icon={Landmark} accent="green" />
     </div>
+    <IntelligencePanel analysis={analysis} />
     <div className="dashboard-grid">
       <section className="panel panel-cases"><div className="panel-head"><div><div className="panel-eyebrow">INVESTIGATION QUEUE</div><h2>Recent incidents</h2><p>Cases from the generated synthetic dataset</p></div><button className="button button-light button-sm" onClick={onViewAll}>View all <ArrowRight size={14} /></button></div>
         {incidents.length ? <div className="table-wrap"><table className="data-table"><thead><tr><th>Incident</th><th>Scenario</th><th>Reported value</th><th>Status</th><th /></tr></thead><tbody>{incidents.map((incident) => <tr key={incident.incident_id} onClick={() => onOpen(incident)} className="click-row"><td><div className="incident-id"><span className="incident-icon"><ShieldAlert size={15} /></span><div><b>{shortId(incident.incident_id)}</b><small>{dateTime(incident.reported_at)}</small></div></div></td><td><span className="scenario-pill">{titleCase(incident.scenario_type)}</span></td><td className="amount-cell">{money(incident.reported_amount)}</td><td><StatusBadge status={incident.status} /></td><td><ChevronRight size={15} className="muted-icon" /></td></tr>)}</tbody></table></div> : <EmptyState title="No incident data yet" text="Connect the FastAPI backend and seed the synthetic database to load cases." />}
@@ -394,12 +448,12 @@ function DashboardPage(props: {
           <div className="review-metric-row"><div className="review-icon review-icon-orange"><ClipboardMark /></div><div><strong>{pendingReviewCount.toLocaleString()}</strong><span>Pending analyst reviews · selected case</span></div><ArrowUpRight size={15} /></div>
           <div className="review-metric-row"><div className="review-icon review-icon-red"><AlertTriangle size={16} /></div><div><strong>{highRiskCount == null ? '—' : highRiskCount}</strong><span>High-risk wallets in selected case</span></div><ArrowUpRight size={15} /></div>
           <div className="review-metric-row"><div className="review-icon review-icon-blue"><Clock3 size={16} /></div><div><strong>{analysisMs == null ? '—' : analysisMs < 1000 ? `${Math.max(1, Math.round(analysisMs))}ms` : `${(analysisMs / 1000).toFixed(1)}s`}</strong><span>Mean API response · this session</span></div><span className="live-measured">MEAN</span></div>
-          <div className="review-footnote">{modelStatus?.source === 'trained_synthetic_models' ? 'Synthetic model outputs are advisory only; all recommendations require analyst review.' : 'No trained scores? Recommendations remain conservative and require human review.'}</div>
+          <div className="review-footnote">{modelStatus?.source === 'real_transaction_dataset' ? 'Public transaction-trained fraud signal; the FlowFreeze case is synthetic and all recommendations require analyst review.' : modelStatus?.source === 'trained_synthetic_models' ? 'Synthetic model outputs are advisory only; all recommendations require analyst review.' : 'No trained scores? Recommendations remain conservative and require human review.'}</div>
         </section>
         <section className="panel selected-panel"><div className="selected-top"><span className="panel-eyebrow">ACTIVE CASE</span><span className="priority-chip"><span /> {analysis?.recommendation?.status === 'recommendations_available' ? 'IN REVIEW' : 'SELECTED'}</span></div><h3>{selected ? shortId(selected.incident_id) : 'Select a case'}</h3><p>{selected ? `${titleCase(selected.scenario_type)} · ${money(selected.reported_amount)} reported` : 'Open an incident to begin analysis.'}</p><div className="selected-progress"><div><span>Analysis status</span><b>{analysis ? 'Complete' : 'Loading'}</b></div><div className="progress-track"><span style={{ width: analysis ? '100%' : '42%' }} /></div><div className="selected-facts"><span><GitBranch size={14} /> {analysis?.trace?.downstream_wallet_ids?.length ?? 0} downstream wallets</span><span><WalletCards size={14} /> {analysis?.taint?.wallets?.length ?? 0} wallets in replay</span></div></div><button className="button button-primary button-full" onClick={() => selected && onOpen(selected)}>Continue investigation <ArrowRight size={15} /></button></section>
       </div>
     </div>
-    <section className="bottom-grid"><div className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">CASE SIGNALS</div><h2>Selected case at a glance</h2></div><span className="micro-tag">{DEMO_LABEL}</span></div><div className="signal-grid"><div className="signal-cell"><span>Incident value</span><b>{money(selected?.reported_amount)}</b><small>Reported transfer</small></div><div className="signal-cell"><span>Potential taint</span><b>{money(analysis?.taint?.remaining_potentially_tainted_bdt)}</b><small>Currently attributed in replay</small></div><div className="signal-cell"><span>Next move</span><b>{modelStatus?.source === 'trained_synthetic_models' ? 'Modelled' : 'Not scored'}</b><small>Only shown when model is available</small></div><div className="signal-cell"><span>Recorded decisions</span><b>{decisions.length}</b><small>Across loaded audit history</small></div></div></div><div className="panel model-note"><div className="model-note-icon"><Sparkles size={17} /></div><div><div className="panel-eyebrow">MODEL STATUS</div><h3>{modelStatus?.source === 'trained_synthetic_models' ? 'Synthetic models available' : 'Scores unavailable'}</h3><p>{String(modelStatus?.message || 'Risk and next-move predictions are not shown unless trained synthetic artifacts are available.')}</p><span className="model-note-foot"><Info size={13} /> Scores are advisory, not proof of fraud.</span></div></div></section>
+    <section className="bottom-grid"><div className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">CASE SIGNALS</div><h2>Selected case at a glance</h2></div><span className="micro-tag">{DEMO_LABEL}</span></div><div className="signal-grid"><div className="signal-cell"><span>Incident value</span><b>{money(selected?.reported_amount)}</b><small>Reported transfer</small></div><div className="signal-cell"><span>Potential taint</span><b>{money(analysis?.taint?.remaining_potentially_tainted_bdt)}</b><small>Currently attributed in replay</small></div><div className="signal-cell"><span>Next move</span><b>{['trained_synthetic_models', 'real_transaction_dataset'].includes(String(modelStatus?.source)) ? 'Modelled' : 'Not scored'}</b><small>Only shown when model is available</small></div><div className="signal-cell"><span>Recorded decisions</span><b>{decisions.length}</b><small>Across loaded audit history</small></div></div></div><div className="panel model-note"><div className="model-note-icon"><Sparkles size={17} /></div><div><div className="panel-eyebrow">MODEL STATUS</div><h3>{modelStatus?.source === 'real_transaction_dataset' ? 'Public-data fraud model available' : modelStatus?.source === 'trained_synthetic_models' ? 'Synthetic models available' : 'Scores unavailable'}</h3><p>{String(modelStatus?.message || 'Risk and next-move predictions are not shown unless trained model artifacts are available.')}</p><span className="model-note-foot"><Info size={13} /> Scores are advisory, not proof of fraud.</span></div></div></section>
   </div>;
 }
 
@@ -513,7 +567,7 @@ function RecommendationCard({ item, onDecide }: { item: WalletRecommendation; on
   const score = item.risk_score;
   return <article className="panel recommendation-card"><div className="rec-card-top"><div className="wallet-ident"><span className="wallet-ident-icon"><WalletCards size={16} /></span><div><b>{walletName(item.wallet_id)}</b><small title={item.wallet_id}>{item.wallet_id}</small></div></div><span className={`urgency-tag ${item.urgency === 'urgent_review' ? 'urgent' : ''}`}><i />{titleCase(item.urgency)}</span></div>
     <div className="rec-core-grid"><div className="rec-main-amount"><span>PROPOSED SIMULATED HOLD</span><b>{moneyExact(item.proposed_simulated_hold_bdt)}</b><small>{item.action === 'propose_bounded_simulated_hold' ? 'Bounded by replay balance and policy cap' : 'No hold amount proposed · monitor & review'}</small></div><div className="rec-info"><span>Wallet balance</span><b>{money(item.balance_bdt)}</b><small>At analysis snapshot</small></div><div className="rec-info"><span>Potential taint</span><b>{money(item.potentially_tainted_bdt)}</b><small>Proportional-flow estimate</small></div><div className="rec-info"><span>Legitimate value at risk</span><b>{money(item.estimated_legitimate_value_affected_bdt)}</b><small>Estimated collateral impact</small></div></div>
-    <div className="rec-signals"><div className="rec-risk"><span>Risk score</span>{score == null ? <b className="muted-score">Not available</b> : <><b className={score >= .65 ? 'text-danger' : 'text-success'}>{pct(score)}</b><div className="risk-progress"><i style={{ width: `${score * 100}%` }} /></div></>}</div><div className="rec-risk"><span>Likely cash-out</span><b>{item.next_move_probabilities ? pct(item.next_move_probabilities.cashout) : 'Not scored'}</b><small>Next-move estimate</small></div><div className="rec-risk"><span>Evidence references</span><b>{item.evidence_transaction_ids?.length || 0} transaction(s)</b><small>{item.evidence_transaction_ids?.slice(0, 2).map(shortId).join(', ') || 'No linked transaction IDs'}</small></div></div>
+    <div className="rec-signals"><div className="rec-risk"><span>Risk score</span>{score == null ? <b className="muted-score">Not available</b> : <><b className={score >= .65 ? 'text-danger' : 'text-success'}>{pct(score)}</b><div className="risk-progress"><i style={{ width: `${score * 100}%` }} /></div></>}</div><div className="rec-risk"><span>Likely cash-out</span><b>{item.next_move_probabilities ? pct(item.next_move_probabilities.cashout) : 'Not scored'}</b><small>Next-move estimate</small></div><div className="rec-risk"><span>Evidence references</span><b>{item.evidence_transaction_ids?.length || 0} transaction(s)</b><small>{item.evidence_transaction_ids?.slice(0, 2).map(shortId).join(', ') || 'No linked transaction IDs'}</small></div><div className="rec-risk"><span>Expected impact</span><b>{item.expected_risk_reduction_points ?? 0} pts</b><small>Estimate only; human approval required</small></div></div>
     <div className="rec-reasons"><div className="panel-eyebrow">WHY THIS WAS SUGGESTED</div><ul>{(item.reasons || []).slice(0, 4).map((reason) => <li key={reason}><span><Check size={12} /></span>{reason}</li>)}</ul></div>
     <div className="rec-actions"><button className="button button-primary" onClick={() => onDecide(item, 'approve')}><Check size={15} /> Approve simulation</button><button className="button button-light" onClick={() => onDecide(item, 'modify')}><SlidersHorizontal size={15} /> Modify amount</button><button className="button button-quiet-danger" onClick={() => onDecide(item, 'reject')}><X size={15} /> Reject</button></div>
   </article>;

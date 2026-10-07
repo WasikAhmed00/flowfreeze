@@ -8,6 +8,7 @@ from core.graph import trace_downstream
 from core.intervention import load_policy, recommend_intervention
 from core.simulator import ReplayResult, TransactionSimulator
 from core.taint import calculate_proportional_taint
+from core.intelligence import build_intelligence
 from ml.predict import predict_scenario
 
 
@@ -45,14 +46,19 @@ def analyze_scenario(
             wallet_moves = {
                 wallet_id: item["next_move_probabilities"]
                 for wallet_id, item in predictions["wallet_predictions"].items()
+                if item.get("next_move_probabilities") is not None
             }
+            if not wallet_moves:
+                wallet_moves = None
             model_status = {
-                "synthetic": True,
-                "source": "trained_synthetic_models",
-                "fraud_model": predictions["fraud_model"],
-                "fraud_threshold": predictions["fraud_threshold"],
-                "next_move_window_minutes": predictions["next_move_window_minutes"],
-                "message": predictions["warning"],
+                "synthetic": predictions.get("synthetic", True),
+                "source": predictions.get("fraud_model_source", "synthetic_flowfreeze_data"),
+                "scenario_data_source": predictions.get("scenario_data_source", "synthetic_flowfreeze_scenario"),
+                "fraud_model": predictions.get("fraud_model"),
+                "fraud_threshold": predictions.get("fraud_threshold"),
+                "next_move_model_source": predictions.get("next_move_model_source", "unavailable"),
+                "wallet_risk_aggregation": predictions.get("wallet_risk_aggregation"),
+                "message": predictions.get("warning"),
             }
         except FileNotFoundError:
             pass
@@ -66,12 +72,38 @@ def analyze_scenario(
         wallet_next_move_probabilities=wallet_moves,
         policy=load_policy(),
     )
+    intelligence_predictions = {
+        wallet: {"fraud_risk": risk, "next_move_probabilities": (wallet_moves or {}).get(wallet, {})}
+        for wallet, risk in (wallet_risk or {}).items()
+    }
+    if not intelligence_predictions and (fraud_risk is not None or next_move_probabilities is not None):
+        illustrative_moves = dict(next_move_probabilities or {})
+        intelligence_predictions = {
+            wallet.wallet_id: {"fraud_risk": float(fraud_risk or 0.0),
+                               "next_move_probabilities": illustrative_moves}
+            for wallet in taint.wallets
+        }
+    intelligence = build_intelligence(
+        replay, trace, taint,
+        intelligence_predictions,
+        prediction_window_minutes=int(model_status.get("next_move_window_minutes", 60)),
+    )
+    recommendation_payload = recommendation.to_dict()
+    for item in recommendation_payload["recommendations"]:
+        details = intelligence["wallets"].get(item["wallet_id"])
+        if details:
+            item["fraud_intelligence_score"] = details["fraud_score"]
+            item["expected_risk_reduction_points"] = round(
+                details["fraud_score"] * min(1.0, float(item["proposed_simulated_hold_bdt"]) /
+                max(1.0, float(item["balance_bdt"]))) * 0.5, 1)
+            item["recommendation_reasons"] = list(item["reasons"])
     return {
         "scenario_id": scenario_id,
         "incident": replay.incident,
         "as_of": replay.as_of.isoformat(),
         "synthetic": True,
         "model_predictions": model_status,
+        "intelligence": intelligence,
         "replay": {
             "transaction_count": len(replay.transactions),
             "cashout_count": len(replay.cashouts),
@@ -80,5 +112,5 @@ def analyze_scenario(
         },
         "trace": trace.to_dict(),
         "taint": taint.to_dict(),
-        "recommendation": recommendation.to_dict(),
+        "recommendation": recommendation_payload,
     }

@@ -47,3 +47,13 @@ class HealthResponse(BaseModel):
     status: str
     synthetic_data_only: bool = True
     automatic_wallet_actions: bool = False
+
+
+class WhatIfRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scenario_id: str = Field(min_length=1, max_length=100)
+    action: Literal["transfer", "cashout", "intervention"]
+    source_wallet: str | None = Field(default=None, max_length=100)
+    target_wallet: str | None = Field(default=None, max_length=100)
+    amount_bdt: Decimal = Field(default=Decimal("0"), ge=0, max_digits=12, decimal_places=2)
