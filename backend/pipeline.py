@@ -42,6 +42,7 @@ def analyze_scenario(
             wallet_risk = {
                 wallet_id: item["fraud_risk"]
                 for wallet_id, item in predictions["wallet_predictions"].items()
+                if item.get("fraud_risk") is not None
             }
             wallet_moves = {
                 wallet_id: item["next_move_probabilities"]
