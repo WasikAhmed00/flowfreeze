@@ -76,6 +76,21 @@ Prediction of likely wallet behavior:
 * Evaluation metrics
 * Synthetic case replay
 
+### Financial Exposure & Response-Delay Analysis (Synthetic)
+
+The Evaluation page now includes generated-ledger estimates for reported suspicious value, potentially exposed value, value identified beyond the direct recipient, downstream wallets, cash-outs, and response-delay snapshots. The **Why Multi-Hop Matters** view uses the currently selected synthetic case and displays its actual generated trace paths. With seed 42, the default case `SCN-06-FANOUT-CASHOUT-0003` shows three chronologically ordered digital-wallet hops ending in a cash-out.
+
+Create the local database and reproduce the aggregate JSON/CSV artifacts:
+
+```bash
+python -m data_generator.generate --seed 42
+python -m core.impact_analysis
+```
+
+The command writes `ml/artifacts/impact_analysis.json` and `ml/artifacts/impact_analysis.csv`. `GET /api/metrics` serves the aggregate artifact; `GET /api/metrics/impact/{scenario_id}` calculates the selected case's direct-recipient comparison and 0/5/10/15/30/60-minute replay curve from transaction timestamps.
+
+**Interpretation:** potentially exposed value means remaining proportional taint in digital wallets plus taint attributed to observed cash-outs. “Missed exposure” is the multi-hop amount identified minus the amount identified at the direct recipient, floored at zero. Gross transaction volume deduplicates transaction IDs, but funds moving in separate hops may appear again as transaction volume. Potentially legitimate value at risk is an explicitly labeled per-wallet policy-cap illustration. None of these quantities is actual financial loss, ownership, observed prevention, or upay BD operational performance; delay windows are hypothetical, not measured response times. See [`docs/END_TO_END_EVALUATION.md`](docs/END_TO_END_EVALUATION.md), [`docs/LIMITATIONS.md`](docs/LIMITATIONS.md), and [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md).
+
 ---
 
 ## Technology Stack

@@ -30,3 +30,9 @@ Scores are labeled synthetic in the API and UI. The intervention policy is an in
 ## End-to-end policy experiment
 
 `python -m core.baseline --split test` compares direct-recipient-only and traced-network policy proposals on the same held-out scenarios. It uses remaining generator taint labels only for counterfactual outcome scoring; it assumes an instantaneous intervention at `analysis_at`. It is not measured loss prevention and it does not validate model quality beyond the separately reported held-out classifier metrics. See `docs/END_TO_END_EVALUATION.md` for the recorded results and detailed assumptions.
+
+## Financial-impact diagnostics (not model outputs)
+
+`python -m core.impact_analysis` separately derives reported amounts, remaining and already-cashed-out proportional taint, direct-only versus multi-hop coverage, and delay snapshots from the generated event-time ledger. These figures are neither model predictions nor financial-loss labels. “Missed exposure” is the incremental estimated taint found by tracing beyond the direct recipient. “Exposure recovery rate” is a trace-coverage ratio; it does not measure money recovered or loss prevented. The response-delay points are hypothetical cutoffs applied to synthetic timestamps, not observed time-to-investigation. See `docs/END_TO_END_EVALUATION.md` for formulas, assumptions, artifacts, and external validation needs.
+
+No financial-impact metric is evidence about upay BD production outcomes. Before any external evaluation, the institution must authorize appropriate representative data and operational timelines, and independently define verified cash-out, return, recovery, and loss outcomes. Privacy, security, legal, regulatory, human-review, appeal, time-split, and subgroup assessments are also required.

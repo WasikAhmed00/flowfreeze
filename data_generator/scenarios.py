@@ -53,7 +53,7 @@ SCENARIOS = [
         "incident_type": "suspected_fraud",
         "source": "W1",
         "wallets": {"VICTIM": ("individual", 70000), "W1": ("individual", 300), "W2": ("individual", 500), "W3": ("individual", 1000), "W4": ("individual", 200), "AGENT1": ("agent", 300000), "CASH1": ("cash_destination", 0)},
-        "events": [(0, "VICTIM", "W1", 50000, "transfer"), (2, "W1", "W2", 22000, "transfer"), (3, "W1", "CASH1", 15000, "cashout"), (3, "W2", "W3", 18000, "transfer"), (6, "W3", "W4", 9000, "transfer")],
+        "events": [(0, "VICTIM", "W1", 50000, "transfer"), (2, "W1", "W2", 22000, "transfer"), (3, "W1", "CASH1", 15000, "cashout"), (3, "W2", "W3", 18000, "transfer"), (6, "W3", "W4", 9000, "transfer"), (10, "W4", "CASH1", 5000, "cashout")],
     },
     {
         "scenario_id": "SCN-07-NEAR-MISS",

@@ -61,7 +61,84 @@ export type Metrics = {
   };
   ml_evaluation?: Record<string, any>;
   end_to_end_evaluation?: { metrics_available: boolean; results?: Record<string, any> | null; warning?: string };
+  financial_impact?: { metrics_available: boolean; synthetic_data: boolean; results?: Record<string, any> | null; warning?: string };
   warning?: string;
+};
+
+export type ImpactStrategy = {
+  wallets_identified: number;
+  downstream_wallets_identified: number;
+  downstream_hops_identified: number;
+  maximum_downstream_depth: number;
+  potentially_tainted_value_identified_bdt: string;
+  remaining_potentially_tainted_value_bdt: string;
+  already_cashed_out_potentially_tainted_value_bdt: string;
+  cashouts_identified: number;
+  unique_transaction_value_examined_bdt: string;
+  potentially_legitimate_value_at_risk_bdt: string;
+};
+
+export type ImpactPath = {
+  wallet_ids: string[];
+  terminal_cashout: boolean;
+  edges: Array<{
+    transaction_id: string;
+    from_wallet: string;
+    to_wallet: string;
+    gross_amount_bdt: string | number;
+    potentially_tainted_bdt: string;
+    transaction_type: string;
+    cashout: boolean;
+  }>;
+};
+
+export type ImpactCase = {
+  synthetic: boolean;
+  scenario_id: string;
+  incident_id: string;
+  as_of: string;
+  source_wallet_id: string;
+  direct_recipient_wallet_id: string;
+  reported_amount_bdt: string;
+  total_potentially_exposed_value_bdt: string;
+  remaining_potentially_tainted_value_bdt: string;
+  already_cashed_out_potentially_tainted_value_bdt: string;
+  comparison: {
+    direct_recipient_only: ImpactStrategy;
+    flowfreeze_multi_hop: ImpactStrategy;
+    missed_exposure_bdt: string;
+    additional_exposure_identified_by_multi_hop_bdt: string;
+    exposure_recovery_rate: number;
+    direct_only_coverage_of_traced_exposure_rate: number;
+  };
+  graph: {
+    trace_window_minutes: number;
+    hop_limit: number;
+    truncated: boolean;
+    downstream_wallet_ids: string[];
+    downstream_unique_gross_transaction_value_bdt: string;
+    representative_paths: ImpactPath[];
+  };
+  response_delay_curve: Array<{
+    delay_minutes: number;
+    as_of: string;
+    cumulative_downstream_transaction_value_bdt: string;
+    cumulative_potentially_tainted_value_bdt: string;
+    downstream_wallets_identified: number;
+    maximum_downstream_hops_identified: number;
+    cashout_events_before_intervention: number;
+    estimated_exposure_remaining_bdt: string;
+    estimated_exposure_already_cashed_out_bdt: string;
+    estimated_total_potentially_exposed_bdt: string;
+    synthetic: boolean;
+    comparison?: {
+      direct_recipient_only: ImpactStrategy;
+      flowfreeze_multi_hop: ImpactStrategy;
+      missed_exposure_bdt: string;
+    };
+    representative_paths?: ImpactPath[];
+    trace_truncated?: boolean;
+  }>;
 };
 
 export type DecisionRecord = {

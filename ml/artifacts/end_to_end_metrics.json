@@ -13,37 +13,37 @@
     "These are generated-data counterfactual estimates, not observed prevented losses or customer impact."
   ],
   "direct_recipient_only": {
-    "cases_with_proposal": 53,
-    "wallets_with_proposal": 53,
-    "proposed_hold_bdt": "530000.00",
-    "estimated_tainted_value_preserved_bdt": "530000.00",
-    "estimated_legitimate_value_affected_bdt": "0.00",
+    "cases_with_proposal": 52,
+    "wallets_with_proposal": 52,
+    "proposed_hold_bdt": "519823.00",
+    "estimated_tainted_value_preserved_bdt": "519774.39",
+    "estimated_legitimate_value_affected_bdt": "48.61",
     "case_count": 165,
-    "case_proposal_rate": 0.3212
+    "case_proposal_rate": 0.3152
   },
   "flowfreeze_network": {
-    "cases_with_proposal": 88,
-    "wallets_with_proposal": 109,
-    "proposed_hold_bdt": "1087280.00",
-    "estimated_tainted_value_preserved_bdt": "1058554.03",
-    "estimated_legitimate_value_affected_bdt": "28725.97",
+    "cases_with_proposal": 86,
+    "wallets_with_proposal": 103,
+    "proposed_hold_bdt": "1007488.00",
+    "estimated_tainted_value_preserved_bdt": "987379.25",
+    "estimated_legitimate_value_affected_bdt": "20108.75",
     "case_count": 165,
-    "case_proposal_rate": 0.5333
+    "case_proposal_rate": 0.5212
   },
   "network_minus_baseline": {
-    "estimated_tainted_value_preserved_bdt": "528554.03",
-    "estimated_legitimate_value_affected_bdt": "28725.97",
-    "proposed_hold_bdt": "557280.00"
+    "estimated_tainted_value_preserved_bdt": "467604.86",
+    "estimated_legitimate_value_affected_bdt": "20060.14",
+    "proposed_hold_bdt": "487665.00"
   },
   "tracing": {
-    "average_downstream_wallets_found_per_case": 0.812,
-    "total_downstream_wallets_found_across_cases": 134,
-    "ground_truth_tainted_downstream_wallets_found": 130
+    "average_downstream_wallets_found_per_case": 0.794,
+    "total_downstream_wallets_found_across_cases": 131,
+    "ground_truth_tainted_downstream_wallets_found": 119
   },
   "timing": {
     "measurement": "Per-case local CPU wall time for batched-row model inference, replay, graph, taint, and policy recommendation; excludes process startup and initial feature-table/model loading.",
-    "median_recommendation_ms": 64.194,
-    "p95_recommendation_ms": 77.571
+    "median_recommendation_ms": 61.826,
+    "p95_recommendation_ms": 77.553
   },
   "by_scenario_family": {
     "direct_fraud": {
@@ -101,9 +101,9 @@
       },
       "flowfreeze_network": {
         "cases_with_proposal": 15,
-        "wallets_with_proposal": 24,
-        "proposed_hold_bdt": "240000.00",
-        "estimated_tainted_value_preserved_bdt": "239442.83",
+        "wallets_with_proposal": 25,
+        "proposed_hold_bdt": "250000.00",
+        "estimated_tainted_value_preserved_bdt": "249442.83",
         "estimated_legitimate_value_affected_bdt": "557.17",
         "case_count": 15,
         "case_proposal_rate": 1.0
@@ -112,43 +112,43 @@
     "fanout_cashout": {
       "case_count": 15,
       "direct_recipient_only": {
-        "cases_with_proposal": 13,
-        "wallets_with_proposal": 13,
-        "proposed_hold_bdt": "130000.00",
-        "estimated_tainted_value_preserved_bdt": "130000.00",
+        "cases_with_proposal": 12,
+        "wallets_with_proposal": 12,
+        "proposed_hold_bdt": "120000.00",
+        "estimated_tainted_value_preserved_bdt": "120000.00",
         "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.8667
+        "case_proposal_rate": 0.8
       },
       "flowfreeze_network": {
-        "cases_with_proposal": 14,
-        "wallets_with_proposal": 26,
-        "proposed_hold_bdt": "257280.00",
-        "estimated_tainted_value_preserved_bdt": "256537.20",
-        "estimated_legitimate_value_affected_bdt": "742.80",
+        "cases_with_proposal": 15,
+        "wallets_with_proposal": 20,
+        "proposed_hold_bdt": "177665.00",
+        "estimated_tainted_value_preserved_bdt": "177665.00",
+        "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.9333
+        "case_proposal_rate": 1.0
       }
     },
     "legitimate_relay": {
       "case_count": 15,
       "direct_recipient_only": {
-        "cases_with_proposal": 0,
-        "wallets_with_proposal": 0,
-        "proposed_hold_bdt": "0.00",
-        "estimated_tainted_value_preserved_bdt": "0.00",
+        "cases_with_proposal": 1,
+        "wallets_with_proposal": 1,
+        "proposed_hold_bdt": "10000.00",
+        "estimated_tainted_value_preserved_bdt": "10000.00",
         "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.0
+        "case_proposal_rate": 0.0667
       },
       "flowfreeze_network": {
-        "cases_with_proposal": 0,
-        "wallets_with_proposal": 0,
-        "proposed_hold_bdt": "0.00",
-        "estimated_tainted_value_preserved_bdt": "0.00",
+        "cases_with_proposal": 1,
+        "wallets_with_proposal": 1,
+        "proposed_hold_bdt": "10000.00",
+        "estimated_tainted_value_preserved_bdt": "10000.00",
         "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.0
+        "case_proposal_rate": 0.0667
       }
     },
     "mixed_balance": {
@@ -163,34 +163,34 @@
         "case_proposal_rate": 0.1333
       },
       "flowfreeze_network": {
-        "cases_with_proposal": 8,
-        "wallets_with_proposal": 8,
-        "proposed_hold_bdt": "80000.00",
-        "estimated_tainted_value_preserved_bdt": "52574.00",
-        "estimated_legitimate_value_affected_bdt": "27426.00",
+        "cases_with_proposal": 6,
+        "wallets_with_proposal": 6,
+        "proposed_hold_bdt": "60000.00",
+        "estimated_tainted_value_preserved_bdt": "40497.03",
+        "estimated_legitimate_value_affected_bdt": "19502.97",
         "case_count": 15,
-        "case_proposal_rate": 0.5333
+        "case_proposal_rate": 0.4
       }
     },
     "multi_hop": {
       "case_count": 15,
       "direct_recipient_only": {
-        "cases_with_proposal": 1,
-        "wallets_with_proposal": 1,
-        "proposed_hold_bdt": "10000.00",
-        "estimated_tainted_value_preserved_bdt": "10000.00",
-        "estimated_legitimate_value_affected_bdt": "0.00",
+        "cases_with_proposal": 3,
+        "wallets_with_proposal": 3,
+        "proposed_hold_bdt": "29823.00",
+        "estimated_tainted_value_preserved_bdt": "29774.39",
+        "estimated_legitimate_value_affected_bdt": "48.61",
         "case_count": 15,
-        "case_proposal_rate": 0.0667
+        "case_proposal_rate": 0.2
       },
       "flowfreeze_network": {
-        "cases_with_proposal": 14,
-        "wallets_with_proposal": 14,
-        "proposed_hold_bdt": "140000.00",
-        "estimated_tainted_value_preserved_bdt": "140000.00",
-        "estimated_legitimate_value_affected_bdt": "0.00",
+        "cases_with_proposal": 15,
+        "wallets_with_proposal": 17,
+        "proposed_hold_bdt": "169823.00",
+        "estimated_tainted_value_preserved_bdt": "169774.39",
+        "estimated_legitimate_value_affected_bdt": "48.61",
         "case_count": 15,
-        "case_proposal_rate": 0.9333
+        "case_proposal_rate": 1.0
       }
     },
     "payroll_split": {
@@ -238,22 +238,22 @@
     "slow_mule": {
       "case_count": 15,
       "direct_recipient_only": {
-        "cases_with_proposal": 14,
-        "wallets_with_proposal": 14,
-        "proposed_hold_bdt": "140000.00",
-        "estimated_tainted_value_preserved_bdt": "140000.00",
+        "cases_with_proposal": 11,
+        "wallets_with_proposal": 11,
+        "proposed_hold_bdt": "110000.00",
+        "estimated_tainted_value_preserved_bdt": "110000.00",
         "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.9333
+        "case_proposal_rate": 0.7333
       },
       "flowfreeze_network": {
-        "cases_with_proposal": 14,
-        "wallets_with_proposal": 14,
-        "proposed_hold_bdt": "140000.00",
-        "estimated_tainted_value_preserved_bdt": "140000.00",
+        "cases_with_proposal": 11,
+        "wallets_with_proposal": 11,
+        "proposed_hold_bdt": "110000.00",
+        "estimated_tainted_value_preserved_bdt": "110000.00",
         "estimated_legitimate_value_affected_bdt": "0.00",
         "case_count": 15,
-        "case_proposal_rate": 0.9333
+        "case_proposal_rate": 0.7333
       }
     },
     "wrong_recipient": {

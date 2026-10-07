@@ -7,13 +7,13 @@ import {
   LogOut, Menu, Network, RefreshCw, Search, ShieldAlert, ShieldCheck, SlidersHorizontal,
   Sparkles, WalletCards, X, Zap,
 } from 'lucide-react';
-import type { Analysis, DecisionRecord, Incident, Metrics, WalletRecommendation, WalletTaint } from './types';
+import type { Analysis, DecisionRecord, ImpactCase, Incident, Metrics, WalletRecommendation, WalletTaint } from './types';
 
 const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const WRITE_KEY = import.meta.env.VITE_DEMO_WRITE_KEY || '';
 const API_HEADERS: HeadersInit = { 'Content-Type': 'application/json', ...(WRITE_KEY ? { 'X-FlowFreeze-Write-Key': WRITE_KEY } : {}) };
 const DEMO_LABEL = 'SYNTHETIC DEMO';
-const DEFAULT_DEMO_SCENARIO = 'SCN-02-FANOUT-0001';
+const DEFAULT_DEMO_SCENARIO = 'SCN-06-FANOUT-CASHOUT-0003';
 
 type View = 'dashboard' | 'incidents' | 'case' | 'graph' | 'wallets' | 'recommendations' | 'simulator' | 'evaluation' | 'business-impact' | 'shadow-mode' | 'audit';
 type Edge = { id: string; from: string; to: string; amount: number; taint: number; time: string; cashout: boolean; type: string };
@@ -101,6 +101,7 @@ function App() {
   const [decisions, setDecisions] = useState<DecisionRecord[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
+  const [caseImpact, setCaseImpact] = useState<ImpactCase | null>(null);
   const [apiState, setApiState] = useState<'checking' | 'online' | 'offline'>('checking');
   const [apiError, setApiError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -170,6 +171,16 @@ function App() {
         setAnalysisTimes((times) => [...times, elapsed].slice(-20));
       })
       .catch((error: Error) => { if (live) setApiError(error.message); });
+    return () => { live = false; };
+  }, [analyst, selectedId, reloadKey]);
+
+  useEffect(() => {
+    if (!analyst || !selectedId) { setCaseImpact(null); return; }
+    let live = true;
+    setCaseImpact(null);
+    api<ImpactCase>(`/api/metrics/impact/${encodeURIComponent(selectedId)}`)
+      .then((result) => { if (live) setCaseImpact(result); })
+      .catch(() => { if (live) setCaseImpact(null); });
     return () => { live = false; };
   }, [analyst, selectedId, reloadKey]);
 
@@ -272,7 +283,7 @@ function App() {
       case 'simulator':
         return <SimulatorPage incident={selectedIncident} analysis={analysis} metrics={metrics} />;
       case 'evaluation':
-        return <EvaluationPage metrics={metrics} />;
+        return <EvaluationPage metrics={metrics} caseImpact={caseImpact} selectedScenarioId={selectedId} />;
       case 'business-impact':
         return <BusinessImpactPage impact={businessImpact} />;
       case 'shadow-mode':
@@ -584,14 +595,28 @@ function SimulatorPage({ incident, analysis, metrics }: { incident: Incident | n
   </div>;
 }
 
-function EvaluationPage({ metrics }: { metrics: Metrics | null }) {
+function EvaluationPage({ metrics, caseImpact, selectedScenarioId }: { metrics: Metrics | null; caseImpact: ImpactCase | null; selectedScenarioId: string }) {
   const result = metrics?.end_to_end_evaluation?.results;
   const baseline = result?.direct_recipient_only;
   const network = result?.flowfreeze_network;
   const fraud = metrics?.ml_evaluation?.held_out_test?.fraud;
   const next = metrics?.ml_evaluation?.held_out_test?.next_move;
+  const impact = metrics?.financial_impact?.results;
+  const aggregate = impact?.aggregate_metrics;
   return <div className="page-stack"><div className="evaluation-banner"><div className="evaluation-banner-icon"><Gauge size={20} /></div><div><div className="panel-eyebrow">EVIDENCE, NOT A PROMISE</div><h2>How did the synthetic experiment perform?</h2><p>Evaluation data is tied to a held-out synthetic scenario split. It should not be read as a measure of upay BD performance.</p></div></div>
-    <div className="evaluation-kpis"><div className="evaluation-kpi"><span>Held-out cases</span><b>{result?.scenario_cases?.toLocaleString?.() || metrics?.ml_evaluation?.held_out_test?.scenario_cases || '—'}</b><small>Same test set for both strategies</small></div><div className="evaluation-kpi"><span>Median analysis time</span><b>{result?.timing?.median_recommendation_ms ? `${Number(result.timing.median_recommendation_ms).toFixed(0)} ms` : '—'}</b><small>Local CPU wall time · excludes startup</small></div><div className="evaluation-kpi"><span>Downstream wallets found</span><b>{result?.tracing?.total_downstream_wallets_found ?? '—'}</b><small>{result?.tracing?.ground_truth_tainted_downstream_wallets_found ?? '—'} labeled tainted in generator</small></div><div className="evaluation-kpi"><span>Model artifacts</span><b>{metrics?.ml_evaluation?.artifact_available ? 'Available' : 'Not loaded'}</b><small>{metrics?.ml_evaluation?.synthetic_only ? 'Synthetic-only evaluation' : 'Unavailable'}</small></div></div>
+    <section className="panel financial-impact-panel"><div className="panel-head"><div><div className="panel-eyebrow">FINANCIAL IMPACT · SYNTHETIC ESTIMATES</div><h2>What multi-hop investigation reveals</h2><p>Ledger-derived exposure estimates across {impact?.case_count?.toLocaleString?.() || '—'} generated incidents—not actual losses or customer outcomes.</p></div><span className="benchmark-badge">SYNTHETIC ONLY</span></div>
+      {aggregate ? <div className="impact-stat-grid">
+        <ImpactStat label="Reported suspicious value" value={money(aggregate.reported_suspicious_amount_bdt)} note="Sum of generated incident reports" accent="blue" />
+        <ImpactStat label="Potentially exposed value" value={money(aggregate.total_potentially_exposed_value_bdt)} note="Remaining taint + attributed cash-outs" accent="amber" />
+        <ImpactStat label="Missed by direct-only" value={money(aggregate.missed_exposure_bdt)} note="Incremental traced exposure estimate" accent="red" />
+        <ImpactStat label="Downstream wallets identified" value={Number(aggregate.downstream_wallets_found || 0).toLocaleString()} note="Across all generated cases" accent="teal" />
+        <ImpactStat label="Cash-out events identified" value={Number(aggregate.cashouts_found_traced || 0).toLocaleString()} note="On traced, taint-linked paths" accent="purple" />
+      </div> : <EmptyState title="Impact artifact unavailable" text={metrics?.financial_impact?.warning || 'Generate the synthetic impact-analysis artifact to display these calculated metrics.'} />}
+      <div className="impact-visual-grid"><ImpactDelayChart points={caseImpact?.response_delay_curve || []} scenarioId={caseImpact?.scenario_id || selectedScenarioId} /><ImpactCaseComparison impact={caseImpact} selectedScenarioId={selectedScenarioId} /></div>
+      <div className="impact-caveat"><ShieldCheck size={15} /><span>Potential taint is a proportional-flow estimate, not ground-truth financial loss. Delay windows are applied to generated transaction timestamps, not measured operational response times. No production upay BD performance is represented.</span></div>
+    </section>
+    <WhyMultiHop impact={caseImpact} selectedScenarioId={selectedScenarioId} />
+    <div className="evaluation-kpis"><div className="evaluation-kpi"><span>Held-out cases</span><b>{result?.scenario_cases?.toLocaleString?.() || metrics?.ml_evaluation?.held_out_test?.scenario_cases || '—'}</b><small>Same cases for both strategies</small></div><div className="evaluation-kpi"><span>Median analysis time</span><b>{result?.timing?.median_recommendation_ms ? `${Number(result.timing.median_recommendation_ms).toFixed(0)} ms` : '—'}</b><small>Local CPU wall time · excludes startup</small></div><div className="evaluation-kpi"><span>Downstream wallets found</span><b>{result?.tracing?.total_downstream_wallets_found ?? '—'}</b><small>{result?.tracing?.ground_truth_tainted_downstream_wallets_found ?? '—'} labeled tainted in generator</small></div><div className="evaluation-kpi"><span>Model artifacts</span><b>{metrics?.ml_evaluation?.artifact_available ? 'Available' : 'Not loaded'}</b><small>{metrics?.ml_evaluation?.synthetic_only ? 'Synthetic-only evaluation' : 'Unavailable'}</small></div></div>
     <section className="panel comparison-panel"><div className="panel-head"><div><div className="panel-eyebrow">SAME CASES · SAME ASSUMPTIONS</div><h2>Containment estimate comparison</h2><p>Baseline can propose only for the direct recipient; FlowFreeze can consider positively attributed downstream wallets.</p></div><span className="benchmark-badge">{result?.split ? `${titleCase(result.split)} split` : 'Synthetic benchmark'}</span></div>{baseline && network ? <div className="comparison-cards"><ComparisonCard label="Direct-recipient-only" tone="baseline" caseRate={baseline.case_proposal_rate} proposed={baseline.proposed_hold_bdt} preserved={baseline.estimated_tainted_value_preserved_bdt} affected={baseline.estimated_legitimate_value_affected_bdt} wallets={baseline.wallets_with_proposal} cases={baseline.case_count} /><div className="comparison-vs">VS</div><ComparisonCard label="FlowFreeze network trace" tone="network" caseRate={network.case_proposal_rate} proposed={network.proposed_hold_bdt} preserved={network.estimated_tainted_value_preserved_bdt} affected={network.estimated_legitimate_value_affected_bdt} wallets={network.wallets_with_proposal} cases={network.case_count} /></div> : <EmptyState title="Baseline artifact unavailable" text={metrics?.end_to_end_evaluation?.warning || 'Tracked end-to-end metrics are not available.'} />}
     {baseline && network && <div className="comparison-delta"><div><ArrowUpRight size={17} /><span>Additional estimated tainted value preserved</span><b>{money(result?.network_minus_baseline?.estimated_tainted_value_preserved_bdt)}</b></div><div><AlertTriangle size={17} /><span>Additional legitimate value affected</span><b>{money(result?.network_minus_baseline?.estimated_legitimate_value_affected_bdt)}</b></div><div><Network size={17} /><span>Average downstream wallets per case</span><b>{result?.tracing?.average_downstream_wallets_found_per_case ?? '—'}</b></div></div>}
     <div className="comparison-caveat"><Info size={15} /><span>{result?.limitation || metrics?.warning || 'Synthetic counterfactual estimates; not observed losses prevented, customer outcomes, or upay BD production statistics.'}</span></div></section>
@@ -643,6 +668,56 @@ function BusinessImpactPage({ impact }: { impact: BusinessImpact | null }) {
       <section className="panel impact-productivity"><div className="panel-head"><div><div className="panel-eyebrow">ANALYST PRODUCTIVITY</div><h2>Operational simulation</h2><p>Illustrative assumptions, not analyst trial timings</p></div></div><div className="impact-harm-rows"><div><span>Baseline modeled cases/hour</span><b>{efficiency.baseline_minutes_per_case ? (60 / Number(efficiency.baseline_minutes_per_case)).toFixed(1) : '—'}</b></div><div><span>FlowFreeze modeled cases/hour</span><b>{efficiency.flowfreeze_minutes_per_case ? (60 / Number(efficiency.flowfreeze_minutes_per_case)).toFixed(1) : '—'}</b></div><div><span>Downstream wallets identified</span><b>{Number(efficiency.downstream_wallets_identified).toLocaleString()}</b></div><div><span>Transactions reviewed · baseline / FlowFreeze</span><b>{Number(efficiency.transactions_reviewed_baseline).toLocaleString()} / {Number(efficiency.transactions_reviewed_flowfreeze).toLocaleString()}</b></div><div><span>Modeled alerts prioritized</span><b>{Number(impact.analyst_productivity.alerts_prioritized).toLocaleString()}</b></div></div></section></div>
     <details className="panel impact-method"><summary>Assumptions, limitations & future validation targets</summary><div><b>Timing assumption:</b> 4 min case intake + 1.5 min per reviewed transaction + 0.75 min per reviewed wallet.</div><ul>{impact.assumptions.map((item) => <li key={item}>{item}</li>)}</ul><ul>{impact.limitations.map((item) => <li key={item}>{item}</li>)}</ul><b>{String(impact.validation_targets.status || '')}</b></details>
   </div>;
+}
+function ImpactStat({ label, value, note, accent }: { label: string; value: string; note: string; accent: string }) {
+  return <div className={`impact-stat impact-stat-${accent}`}><span>{label}</span><b>{value}</b><small>{note}</small></div>;
+}
+
+function ImpactDelayChart({ points, scenarioId }: { points: ImpactCase['response_delay_curve']; scenarioId: string }) {
+  const width = 620; const height = 220; const left = 48; const right = 14; const top = 14; const bottom = 34;
+  const maxValue = Math.max(1, ...points.flatMap((point) => [Number(point.estimated_exposure_remaining_bdt), Number(point.estimated_exposure_already_cashed_out_bdt), Number(point.cumulative_downstream_transaction_value_bdt)]));
+  const x = (index: number) => points.length <= 1 ? left : left + (index / (points.length - 1)) * (width - left - right);
+  const y = (value: number) => top + (1 - value / maxValue) * (height - top - bottom);
+  const series = (field: 'estimated_exposure_remaining_bdt' | 'estimated_exposure_already_cashed_out_bdt') => points.map((point, index) => `${x(index)},${y(Number(point[field]))}`).join(' ');
+  const volumeSeries = points.map((point, index) => `${x(index)},${y(Number(point.cumulative_downstream_transaction_value_bdt))}`).join(' ');
+  return <section className="impact-chart-card"><div className="impact-chart-heading"><div><div className="panel-eyebrow">RESPONSE-DELAY ANALYSIS</div><h3>Exposure growth with response delay</h3><p>Event-time replay: remaining taint, attributed cash-outs and downstream gross volume—not observed loss growth.</p></div><span className="micro-tag">{shortId(scenarioId)}</span></div>
+    {points.length ? <><div className="impact-chart-wrap"><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`Potential exposure over response delay for ${scenarioId}`}>
+      {[0, 0.5, 1].map((fraction) => { const yy = top + fraction * (height - top - bottom); return <g key={fraction}><line x1={left} x2={width - right} y1={yy} y2={yy} className="impact-gridline" /><text x={left - 8} y={yy + 4} textAnchor="end" className="impact-axis-label">{money(maxValue * (1 - fraction), true)}</text></g>; })}
+      <polyline points={series('estimated_exposure_remaining_bdt')} fill="none" className="impact-line-remaining" />
+      <polyline points={series('estimated_exposure_already_cashed_out_bdt')} fill="none" className="impact-line-cashed" />
+      <polyline points={volumeSeries} fill="none" className="impact-line-volume" />
+      {points.map((point, index) => <g key={point.delay_minutes}><circle cx={x(index)} cy={y(Number(point.estimated_exposure_remaining_bdt))} r="4" className="impact-point-remaining" /><circle cx={x(index)} cy={y(Number(point.estimated_exposure_already_cashed_out_bdt))} r="4" className="impact-point-cashed" /><circle cx={x(index)} cy={y(Number(point.cumulative_downstream_transaction_value_bdt))} r="3.5" className="impact-point-volume" /><text x={x(index)} y={height - 10} textAnchor="middle" className="impact-axis-label">{point.delay_minutes}m</text></g>)}
+    </svg></div><div className="impact-chart-legend"><span><i className="legend-remaining" /> Estimated taint remaining</span><span><i className="legend-cashed" /> Estimated taint cashed out</span><span><i className="legend-volume" /> Cumulative downstream transaction value</span></div></> : <EmptyState title="Select a synthetic case" text="The response-delay curve is calculated from that case's transaction timestamps." />}
+  </section>;
+}
+
+function ImpactCaseComparison({ impact, selectedScenarioId }: { impact: ImpactCase | null; selectedScenarioId: string }) {
+  if (!impact) return <section className="impact-case-compare"><div className="panel-eyebrow">DIRECT VS. MULTI-HOP</div><h3>Case comparison</h3><EmptyState title="Loading case metrics" text={`Calculating ledger-derived metrics for ${shortId(selectedScenarioId)}.`} /></section>;
+  const finalDelay = impact.response_delay_curve[impact.response_delay_curve.length - 1];
+  const comparison = finalDelay?.comparison || impact.comparison;
+  const direct = comparison.direct_recipient_only;
+  const traced = comparison.flowfreeze_multi_hop;
+  const directValue = Number(direct.potentially_tainted_value_identified_bdt);
+  const networkValue = Number(traced.potentially_tainted_value_identified_bdt);
+  const scale = Math.max(1, directValue, networkValue);
+  return <section className="impact-case-compare"><div className="panel-eyebrow">SAME CASE · SAME {finalDelay?.delay_minutes ?? 0}-MINUTE CUTOFF</div><h3>Direct recipient vs. FlowFreeze</h3><p className="impact-selected-id">{shortId(impact.scenario_id)} · {money(impact.reported_amount_bdt)} reported</p>
+    <div className="impact-compare-row"><span>Direct recipient only</span><b>{money(directValue)}</b></div><div className="impact-compare-track"><i className="impact-track-direct" style={{ width: `${directValue / scale * 100}%` }} /></div><small>{direct.wallets_identified} wallet · {direct.cashouts_identified} cash-outs · {money(direct.unique_transaction_value_examined_bdt)} event value examined</small>
+    <div className="impact-compare-row impact-compare-network"><span>FlowFreeze multi-hop</span><b>{money(networkValue)}</b></div><div className="impact-compare-track"><i className="impact-track-network" style={{ width: `${networkValue / scale * 100}%` }} /></div><small>{traced.wallets_identified} wallets · {traced.downstream_hops_identified} downstream hops · {traced.cashouts_identified} cash-outs</small>
+    <div className="impact-increment"><ArrowUpRight size={16} /><span>Additional estimated exposure identified</span><b>{money(comparison.missed_exposure_bdt)}</b></div>
+  </section>;
+}
+
+function WhyMultiHop({ impact, selectedScenarioId }: { impact: ImpactCase | null; selectedScenarioId: string }) {
+  if (!impact) return <section className="panel why-multihop-panel"><div className="panel-head"><div><div className="panel-eyebrow">WHY MULTI-HOP MATTERS</div><h2>Follow the reported funds</h2></div></div><EmptyState title="Case trace loading" text={`The illustrated paths will come from selected case ${shortId(selectedScenarioId)}.`} /></section>;
+  const finalDelay = impact.response_delay_curve[impact.response_delay_curve.length - 1];
+  const paths = finalDelay?.representative_paths || impact.graph.representative_paths;
+  const comparison = finalDelay?.comparison || impact.comparison;
+  const cutoff = finalDelay?.delay_minutes ?? 0;
+  return <section className="panel why-multihop-panel"><div className="panel-head"><div><div className="panel-eyebrow">WHY MULTI-HOP MATTERS · SELECTED SYNTHETIC CASE</div><h2>Follow the reported funds</h2><p>Each transfer is from the selected case's generated ledger through the {cutoff}-minute replay cutoff.</p></div><span className="micro-tag">{shortId(impact.scenario_id)}</span></div>
+    <div className="impact-reported-transfer"><div className="reported-transfer-mark"><ArrowDownRight size={17} /></div><div><span>REPORTED TRANSACTION</span><b>{walletName(impact.source_wallet_id)} <ArrowRight size={13} /> {walletName(impact.direct_recipient_wallet_id)}</b><small>{impact.direct_recipient_wallet_id} · {moneyExact(impact.reported_amount_bdt)} reported</small></div><span className="synthetic-chip"><span /> SYNTHETIC</span></div>
+    {paths.length ? <div className="impact-path-list">{paths.map((path, index) => <div className="impact-path" key={`${impact.scenario_id}-${cutoff}-${index}`}><div className="impact-path-label"><GitBranch size={14} /> PATH {index + 1}{path.terminal_cashout ? ' · CASH-OUT PATH' : ' · DOWNSTREAM TRACE'}</div><div className="impact-path-nodes">{path.wallet_ids.map((walletId, walletIndex) => <span className="impact-path-node" key={`${walletId}-${walletIndex}`}><small>{walletIndex === 0 ? 'DIRECT RECIPIENT' : path.terminal_cashout && walletIndex === path.wallet_ids.length - 1 ? 'CASH-OUT DESTINATION' : `HOP ${walletIndex}`}</small><b title={walletId}>{walletName(walletId)}</b></span>)}</div><div className="impact-path-events">{path.edges.map((edge, edgeIndex) => <span key={edge.transaction_id}><b>{edge.cashout ? 'Cash-out' : `Hop ${edgeIndex + 1}`}</b>{' '}{money(edge.potentially_tainted_bdt)} attributed · {money(edge.gross_amount_bdt)} gross</span>)}</div></div>)}</div> : <EmptyState title="No downstream paths observed" text="No qualifying post-report downstream transfer was present in this case's replay window." />}
+    <div className="impact-path-footer"><span>Direct-only: <b>{comparison.direct_recipient_only.wallets_identified} wallet / {money(comparison.direct_recipient_only.potentially_tainted_value_identified_bdt)} exposure</b></span><span>Multi-hop: <b>{comparison.flowfreeze_multi_hop.wallets_identified} wallets / {money(comparison.flowfreeze_multi_hop.potentially_tainted_value_identified_bdt)} exposure</b></span><span className="impact-depth-note">Trace limit: {impact.graph.hop_limit} hops · {cutoff} minutes{finalDelay?.trace_truncated || impact.graph.truncated ? ' · result truncated' : ''}</span></div>
+  </section>;
 }
 
 function ComparisonCard({ label, tone, caseRate, proposed, preserved, affected, wallets, cases }: { label: string; tone: string; caseRate: number; proposed: string; preserved: string; affected: string; wallets: number; cases: number }) {
