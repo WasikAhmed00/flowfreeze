@@ -53,6 +53,15 @@ const walletName = (id = '') => id.split('-').slice(-1)[0].replaceAll('_', ' ');
 const titleCase = (value = '') => value.replaceAll('_', ' ').replaceAll('-', ' ').replace(/\b\w/g, (letter: string) => letter.toUpperCase());
 const dateTime = (value?: string) => value ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)) : '—';
 const pct = (value: unknown) => Number.isFinite(Number(value)) ? `${(Number(value) * 100).toFixed(0)}%` : '—';
+const priorityTier = (recommendation?: WalletRecommendation, exposure: unknown = 0) => {
+  const risk = Number(recommendation?.risk_score || 0);
+  const amount = Number(exposure || 0);
+  const urgent = ['urgent_review', 'critical', 'immediate'].includes(String(recommendation?.urgency || '').toLowerCase());
+  if (risk >= .85 || (risk >= .7 && urgent)) return 'CRITICAL';
+  if (risk >= .65 || amount >= 100000 || urgent) return 'HIGH';
+  if (risk > 0 || amount > 0) return 'MEDIUM';
+  return 'LOW';
+};
 
 const NAV: { id: View; label: string; icon: typeof Activity; group: string }[] = [
   { id: 'dashboard', label: 'Overview', icon: Activity, group: 'Workspace' },
@@ -439,6 +448,7 @@ function DashboardPage(props: {
       <KpiCard label="Value preserved" value={money(preservedValue, true)} note={`${simulationCount} recorded simulations`} icon={Landmark} accent="green" />
     </div>
     <IntelligencePanel analysis={analysis} />
+    <BusinessDecisionMap />
     <div className="dashboard-grid">
       <section className="panel panel-cases"><div className="panel-head"><div><div className="panel-eyebrow">INVESTIGATION QUEUE</div><h2>Recent incidents</h2><p>Cases from the generated synthetic dataset</p></div><button className="button button-light button-sm" onClick={onViewAll}>View all <ArrowRight size={14} /></button></div>
         {incidents.length ? <div className="table-wrap"><table className="data-table"><thead><tr><th>Incident</th><th>Scenario</th><th>Reported value</th><th>Status</th><th /></tr></thead><tbody>{incidents.map((incident) => <tr key={incident.incident_id} onClick={() => onOpen(incident)} className="click-row"><td><div className="incident-id"><span className="incident-icon"><ShieldAlert size={15} /></span><div><b>{shortId(incident.incident_id)}</b><small>{dateTime(incident.reported_at)}</small></div></div></td><td><span className="scenario-pill">{titleCase(incident.scenario_type)}</span></td><td className="amount-cell">{money(incident.reported_amount)}</td><td><StatusBadge status={incident.status} /></td><td><ChevronRight size={15} className="muted-icon" /></td></tr>)}</tbody></table></div> : <EmptyState title="No incident data yet" text="Connect the FastAPI backend and seed the synthetic database to load cases." />}
@@ -455,6 +465,36 @@ function DashboardPage(props: {
     </div>
     <section className="bottom-grid"><div className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">CASE SIGNALS</div><h2>Selected case at a glance</h2></div><span className="micro-tag">{DEMO_LABEL}</span></div><div className="signal-grid"><div className="signal-cell"><span>Incident value</span><b>{money(selected?.reported_amount)}</b><small>Reported transfer</small></div><div className="signal-cell"><span>Potential taint</span><b>{money(analysis?.taint?.remaining_potentially_tainted_bdt)}</b><small>Currently attributed in replay</small></div><div className="signal-cell"><span>Next move</span><b>{['trained_synthetic_models', 'real_transaction_dataset'].includes(String(modelStatus?.source)) ? 'Modelled' : 'Not scored'}</b><small>Only shown when model is available</small></div><div className="signal-cell"><span>Recorded decisions</span><b>{decisions.length}</b><small>Across loaded audit history</small></div></div></div><div className="panel model-note"><div className="model-note-icon"><Sparkles size={17} /></div><div><div className="panel-eyebrow">MODEL STATUS</div><h3>{modelStatus?.source === 'real_transaction_dataset' ? 'Public-data fraud model available' : modelStatus?.source === 'trained_synthetic_models' ? 'Synthetic models available' : 'Scores unavailable'}</h3><p>{modelStatus?.source === 'real_transaction_dataset' ? `Public Fraud.csv sample: ${Number(modelStatus.fraud_model_sample_rows || 0).toLocaleString()} transactions. The ${DEMO_LABEL.toLowerCase()} remains synthetic.` : String(modelStatus?.message || 'Risk and next-move predictions are not shown unless trained model artifacts are available.')}</p><span className="model-note-foot"><Info size={13} /> Scores are advisory, not proof of fraud.</span></div></div></section>
   </div>;
+}
+
+function BusinessDecisionMap() {
+  const rows = [
+    ['Risk score', 'Prioritize case review', 'Fraud analyst', 'Review now, monitor, or inspect evidence'],
+    ['Money-flow graph', 'Find downstream exposure', 'Fraud analyst', 'Select wallets and transfers for review'],
+    ['Tainted value', 'Estimate potential exposure', 'Risk manager', 'Size investigation; not loss or ownership'],
+    ['Next move', 'Prioritize response timing', 'Fraud analyst', 'Expedite review or continue monitoring'],
+    ['Recommendation', 'Support a policy decision', 'Fraud analyst', 'Accept, reject, modify, escalate, or close'],
+    ['Audit trail', 'Support accountability', 'Risk / compliance', 'Review rationale, actor, and feedback'],
+  ];
+  return <section className="panel business-map"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">INTELLIGENCE → BUSINESS DECISION</div><h2>Decision support, not automated action</h2><p>Each output informs a human decision under MFS policy.</p></div><span className="micro-tag">ANALYST-LED</span></div><div className="table-wrap"><table className="data-table"><thead><tr><th>AI output</th><th>Business use</th><th>User</th><th>Decision supported</th></tr></thead><tbody>{rows.map((row) => <tr key={row[0]}>{row.map((cell) => <td key={cell}>{cell}</td>)}</tr>)}</tbody></table></div><div className="business-map-foot"><ShieldCheck size={14} /> Help analysts spend attention where it matters most. No hold, transfer, or customer contact is executed automatically.</div></section>;
+}
+
+function OperationalCaseSummary({ incident, analysis, recommendation }: { incident: Incident; analysis: Analysis; recommendation?: WalletRecommendation }) {
+  const forecast = recommendation?.next_move_probabilities;
+  const nextMove = forecast ? Object.entries(forecast).sort((a, b) => Number(b[1]) - Number(a[1]))[0] : null;
+  const urgency = recommendation?.urgency ? titleCase(recommendation.urgency) : 'Review timing not scored';
+  const response = recommendation ? `${titleCase(recommendation.action)} · analyst review required` : 'Investigate first / monitor; no proposal available';
+  const reason = recommendation?.reasons?.slice(0, 2).join(' · ') || 'No recommendation rationale available; review transaction evidence.';
+  return <section className="panel operational-summary"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">FRAUD OPERATIONS CASE FILE</div><h2>Operational summary</h2><p>Decision owner: {sessionStorage.getItem('flowfreeze-analyst') || 'Assigned fraud analyst'} · synthetic case</p></div><span className={`priority-tier tier-${priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt).toLowerCase()}`}>{priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt)} PRIORITY · DEMO</span></div><div className="priority-method">Attention aid based on available risk, potential exposure, predicted movement, and urgency; demonstration thresholds only, not a live SLA or automatic action.</div><div className="operational-grid">
+    <div><span>What happened</span><b>{titleCase(incident.incident_type)} · {money(incident.reported_amount)} reported</b></div>
+    <div><span>Why risky</span><b>{reason}</b></div>
+    <div><span>Money at risk</span><b>{money(analysis.taint.remaining_potentially_tainted_bdt)} potentially attributed</b></div>
+    <div><span>Where money moved</span><b>{analysis.trace.downstream_wallet_ids?.length || 0} downstream wallets · {analysis.trace.paths?.length || 0} paths traced</b></div>
+    <div><span>Likely next move</span><b>{nextMove ? `${titleCase(nextMove[0])} · ${pct(nextMove[1])}` : 'Unavailable; do not infer no risk'}</b></div>
+    <div><span>Recommended response</span><b>{response}</b></div>
+    <div><span>Deadline / urgency</span><b>{urgency} · use operator SLA (not configured in demo)</b></div>
+    <div><span>Audit status</span><b>Decision record required · no action taken</b></div>
+  </div><div className="operational-caution"><Info size={14} /> Investigate first when appropriate. Exposure and model signals are uncertain estimates, not findings of fraud or ownership.</div></section>;
 }
 
 function ClipboardMark() { return <FileCheck2 size={16} />; }
@@ -487,7 +527,8 @@ function CaseReviewPage({ incident, analysis, loading, onGoGraph, onGoRecommenda
   const model = analysis.model_predictions || {};
   return <div className="page-stack"><div className="case-hero"><div className="case-hero-main"><div className="case-hero-label"><span className="case-live-dot" /> REPORTED INCIDENT <span className="hero-divider">/</span> {titleCase(incident.incident_type)}</div><h2>{shortId(incident.incident_id)}</h2><p>Scenario {shortId(incident.scenario_id)} <i>·</i> reported {dateTime(incident.reported_at)} <i>·</i> {titleCase(incident.scenario_type)}</p></div><div className="case-hero-value"><span>REPORTED VALUE</span><b>{moneyExact(incident.reported_amount)}</b><small>{incident.reported_transaction_id}</small></div></div>
     <div className="case-tabs"><button className={tab === 'overview' ? 'current' : ''} onClick={() => setTab('overview')}>Overview</button><button className={tab === 'evidence' ? 'current' : ''} onClick={() => setTab('evidence')}>Evidence <span>{graphEdges.length}</span></button><button className={tab === 'wallets' ? 'current' : ''} onClick={() => setTab('wallets')}>Wallets <span>{analysis.taint.wallets.length}</span></button><div className="case-tab-actions"><button className="button button-light button-sm" onClick={onGoGraph}><Network size={14} /> Open graph</button><button className="button button-primary button-sm" onClick={onGoRecommendation}>Review recommendation <ArrowRight size={14} /></button></div></div>
-    {tab === 'overview' && <div className="case-grid"><div className="case-main-column"><div className="mini-kpi-grid"><MiniMetric label="Risk score" value={recs[0]?.risk_score == null ? 'Unavailable' : pct(recs[0].risk_score)} sub={recs[0]?.risk_score == null ? 'No model score loaded' : 'Synthetic model estimate'} color="red" /><MiniMetric label="Remaining taint" value={money(analysis.taint.remaining_potentially_tainted_bdt)} sub="Proportional-flow estimate" color="amber" /><MiniMetric label="Downstream wallets" value={String(analysis.trace.downstream_wallet_ids?.length || 0)} sub={`Up to ${analysis.trace.limits?.hop_limit ?? '—'} hops`} color="blue" /></div>
+    {tab === 'overview' && <div className="case-grid"><div className="case-main-column">
+        <OperationalCaseSummary incident={incident} analysis={analysis} recommendation={recs[0]} /><div className="mini-kpi-grid"><MiniMetric label="Risk score" value={recs[0]?.risk_score == null ? 'Unavailable' : pct(recs[0].risk_score)} sub={recs[0]?.risk_score == null ? 'No model score loaded' : 'Synthetic model estimate'} color="red" /><MiniMetric label="Remaining taint" value={money(analysis.taint.remaining_potentially_tainted_bdt)} sub="Proportional-flow estimate" color="amber" /><MiniMetric label="Downstream wallets" value={String(analysis.trace.downstream_wallet_ids?.length || 0)} sub={`Up to ${analysis.trace.limits?.hop_limit ?? '—'} hops`} color="blue" /></div>
         <section className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">FUND MOVEMENT</div><h2>Transaction graph</h2></div><button className="text-button" onClick={onGoGraph}>Explore graph <ArrowRight size={14} /></button></div><GraphCanvas analysis={analysis} incident={incident} edges={graphEdges} compact /></section>
         <section className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">INVESTIGATION TIMELINE</div><h2>What happened</h2></div></div><Timeline incident={incident} analysis={analysis} reportedMove={reportedMove} /></section></div>
       <div className="case-side-column"><section className="panel risk-panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">RISK EXPLANATION</div><h2>Why this case matters</h2></div><span className="info-dot" title="Synthetic decision-support indicators">i</span></div><div className="risk-status-line"><div className="risk-score-ring" style={{ '--ring': recs[0]?.risk_score == null ? 0 : Number(recs[0].risk_score) * 100 } as CSSProperties}><strong>{recs[0]?.risk_score == null ? '—' : pct(recs[0].risk_score)}</strong><span>MODEL</span></div><div><span className="risk-label">{recs[0]?.risk_score == null ? 'Score unavailable' : Number(recs[0].risk_score) >= .65 ? 'Elevated signal' : 'Below model threshold'}</span><small>{String(model.message || 'Risk is not model-assessed unless trained synthetic artifacts are available.')}</small></div></div><div className="signal-list"><Signal icon={Zap} title="Movement behavior" text={analysis.trace.rapid_forwards?.length ? `${analysis.trace.rapid_forwards.length} rapid-forward signal(s) observed` : 'No rapid-forward evidence in the trace window'} /><Signal icon={GitBranch} title="Wallet branching" text={analysis.trace.fanout_wallets?.length ? `${analysis.trace.fanout_wallets.length} branching wallet(s) observed` : 'No fan-out evidence in the trace window'} /><Signal icon={ArrowDownRight} title="Cash-out evidence" text={analysis.trace.cashouts?.length ? `${analysis.trace.cashouts.length} cash-out path(s) identified` : 'No cash-out observed within the trace window'} /></div><div className="caution-note"><Info size={14} /><span>Signals are evidence for review—not a finding of fraud or ownership.</span></div></section>
@@ -653,7 +694,18 @@ function BusinessImpactPage({ impact }: { impact: BusinessImpact | null }) {
   const harm = impact.customer_harm;
   const comparison = impact.baseline_vs_flowfreeze;
   return <div className="page-stack business-impact-page">
-    <div className="impact-warning"><FlaskConical size={18} /><div><b>{impact.label}</b><span>Every result is synthetic. This is not measured MFS performance, actual loss avoided, or observed customer harm.</span></div><strong>{impact.case_count.toLocaleString()} CASES</strong></div>
+    <div className="impact-warning"><FlaskConical size={18} /><div><b>CURRENT SYNTHETIC RESULTS · {impact.label}</b><span>Generated cases only—not measured MFS performance, actual loss avoided, response-time improvement, or observed customer harm.</span></div><strong>{impact.case_count.toLocaleString()} CASES</strong></div>
+    <div className="impact-kpis executive-kpis">
+      <div className="impact-kpi"><span>CASES INVESTIGATED</span><b>{impact.case_count.toLocaleString()}</b><small>Generated synthetic cases evaluated</small></div>
+      <div className="impact-kpi"><span>HIGH-RISK CASES</span><b>Not measured</b><small>No aggregate validated case risk tier available</small></div>
+      <div className="impact-kpi"><span>TRACING-IDENTIFIED EXPOSURE</span><b>{money(comparison.flowfreeze_exposure_identified_bdt, true)}</b><small>Generated taint-label estimate only</small></div>
+      <div className="impact-kpi"><span>SIMULATED PREVENTED EXPOSURE</span><b>{money(loss.simulated_prevented_exposure_bdt, true)}</b><small>Immediate-action counterfactual; not prevented loss</small></div>
+      <div className="impact-kpi"><span>MEDIAN INVESTIGATION TIME</span><b>Not measured</b><small>Requires observed analyst trial timing</small></div>
+      <div className="impact-kpi"><span>MODELED ANALYST WORKLOAD</span><b>{efficiency.flowfreeze_minutes_per_case ? (60 / Number(efficiency.flowfreeze_minutes_per_case)).toFixed(1) : '—'} cases/hour</b><small>Illustrative timing model, not productivity evidence</small></div>
+      <div className="impact-kpi"><span>UNNECESSARY-INTERVENTION PROXY</span><b>{pct(harm.unnecessary_intervention_rate)}</b><small>Synthetic policy output, not a real false-positive rate</small></div>
+      <div className="impact-kpi"><span>CUSTOMER-HARM OUTCOMES</span><b>Not observed</b><small>Real legitimate cases, holds, and appeals need validation</small></div>
+    </div>
+    <section className="panel future-validation"><div className="panel-eyebrow">FUTURE BUSINESS VALIDATION · NOT YET MEASURED</div><h2>Evidence needed before impact claims</h2><p>Use partner-authorized, representative MFS cases and a governed analyst trial / read-only shadow phase to measure actual fraud-loss outcomes, median investigation and response time, false-positive rate, workload, legitimate cases affected, unnecessary holds, legitimate value affected, and proportionate interventions. Define independent labels, denominators, uncertainty, subgroup checks, and success/stop thresholds with the MFS operator before the study.</p><span>No monetary savings or real-world improvement is claimed from this prototype.</span></section>
     <div className="impact-kpis">
       <div className="impact-kpi"><span>POTENTIAL EXPOSURE IDENTIFIED</span><b>{money(comparison.flowfreeze_exposure_identified_bdt, true)}</b><small>Generated taint labels found through observed downstream tracing</small></div>
       <div className="impact-kpi"><span>SIMULATED PREVENTED EXPOSURE</span><b>{money(loss.simulated_prevented_exposure_bdt, true)}</b><small>Counterfactual, not actual prevented loss</small></div>
