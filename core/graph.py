@@ -181,7 +181,10 @@ def trace_downstream(
         current, wallet_path, edge_path = queue.popleft()
         if len(edge_path) >= hop_limit:
             continue
+        earliest_next_event = edge_path[-1].timestamp if edge_path else report_time
         for receiver, transaction_id, data in outgoing.get(current, []):
+            if data["timestamp"] < earliest_next_event:
+                continue
             if receiver in wallet_path:
                 continue
             edge = TraceEdge(

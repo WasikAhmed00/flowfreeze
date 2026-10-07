@@ -6,7 +6,7 @@ from decimal import Decimal
 import json
 from pathlib import Path
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from backend.db import application_connection
 from core.business_impact import run_business_impact
@@ -16,6 +16,7 @@ router = APIRouter(prefix="/metrics", tags=["metrics"])
 ML_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "metrics.json"
 ROBUSTNESS_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "robustness.json"
 END_TO_END_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "end_to_end_metrics.json"
+IMPACT_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" / "impact_analysis.json"
 
 
 @router.get("")
@@ -44,6 +45,10 @@ def get_metrics() -> dict:
         end_to_end = json.loads(END_TO_END_METRICS_PATH.read_text(encoding="utf-8")) if END_TO_END_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
         end_to_end = None
+    try:
+        impact_analysis = json.loads(IMPACT_METRICS_PATH.read_text(encoding="utf-8")) if IMPACT_METRICS_PATH.exists() else None
+    except (OSError, json.JSONDecodeError):
+        impact_analysis = None
     return {
         "synthetic": True,
         "dataset": {"incident_count": incidents, "transaction_count": transactions, "wallet_count": wallets},
@@ -70,6 +75,12 @@ def get_metrics() -> dict:
             "metrics_available": end_to_end is not None,
             "results": end_to_end,
             "warning": end_to_end.get("limitation") if end_to_end else "Run python -m core.baseline to compare the direct-recipient baseline with FlowFreeze on held-out synthetic cases.",
+        },
+        "financial_impact": {
+            "metrics_available": impact_analysis is not None,
+            "synthetic_data": True,
+            "results": impact_analysis,
+            "warning": "Synthetic exposure estimates are not actual financial loss, observed prevention, customer impact, or upay BD production performance.",
         },
         "warning": "Synthetic scenario metrics are not upay BD production statistics.",
     }
@@ -105,3 +116,14 @@ def get_shadow_mode() -> dict:
                         "recommendation_override_rate": result["feedback_summary"]["override_rate"],
                         "recommendation_usefulness_rate": result["feedback_summary"]["recommendation_helpful_rate"]}
     return result
+@router.get("/impact/{scenario_id}")
+def get_scenario_impact(scenario_id: str) -> dict:
+    """Calculate direct-only vs. multi-hop impact and delay snapshots for one case."""
+    from core.impact_analysis import analyze_scenario_impact
+
+    try:
+        return analyze_scenario_impact(scenario_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (ValueError, FileNotFoundError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc

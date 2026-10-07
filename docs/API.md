@@ -20,10 +20,20 @@ OpenAPI documentation is served at `/docs`. All endpoints are local demo APIs an
 | `POST` | `/api/decisions/{decision_id}/feedback` | Append one validated usefulness, trace-accuracy, confidence, and reason feedback record. Synthetic demo data only; update/delete are blocked. |
 | `GET` | `/api/decisions` | Read-only audit history, optionally filtered by `scenario_id`. |
 | `POST` | `/api/simulation/{decision_id}` | Record one synthetic outcome estimate for a prior decision; does not alter balances. |
-| `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, aggregate simulation estimates, held-out ML metrics, and the end-to-end baseline experiment when generated. |
+| `GET` | `/api/metrics` | Synthetic dataset counts, decision counts, aggregate simulation estimates, held-out ML metrics, end-to-end baseline results, and the financial-impact artifact when generated. |
 | `GET` | `/api/metrics/shadow-mode` | Synthetic shadow-mode events and heuristic metrics plus a separately aggregated local analyst-feedback summary. |
+| `GET` | `/api/metrics/business-impact` | Synthetic business-impact simulation results and assumptions. |
+| `GET` | `/api/metrics/impact/{scenario_id}` | Calculate a selected synthetic case's direct-recipient vs. multi-hop exposure comparison and event-time response-delay curve. |
 | `GET` | `/api/demo` | List seeded demo scenarios. |
 | `POST` | `/api/demo/reset?seed=42` | Regenerate synthetic CSV/SQLite data in development mode using the default `data/flowfreeze.db` location. This replaces the database and clears its local audit history. |
+
+### Financial-impact analysis
+
+Run `python -m data_generator.generate --seed 42` followed by `python -m core.impact_analysis` to create `ml/artifacts/impact_analysis.json` and `ml/artifacts/impact_analysis.csv`. `/api/metrics` serves the aggregate JSON artifact when present. The selected-case route replays the SQLite ledger directly and includes the incident snapshot, direct-vs-traced amounts, trace paths, and default 0/5/10/15/30/60-minute cutoffs. At each cutoff, comparisons and paths use the same event-time-bounded replay; future synthetic events are not included early.
+
+All such metrics are synthetic accounting estimates. Exposure is remaining proportional taint plus taint attributed to observed cash-outs, not actual loss or recovery. The delay points are hypothetical replay cutoffs, not measured operating response times. See `docs/END_TO_END_EVALUATION.md` for definitions and the seed-42 results.
+
+`downstream_hops_identified` counts unique reachable non-cash-out transaction edges; `maximum_downstream_depth` is the transfer-hop distance to the furthest digital wallet. Terminal cash-out destinations are excluded from wallet depth and reported through cash-out counts and values.
 
 ### Analyst decision example
 
