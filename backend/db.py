@@ -46,9 +46,10 @@ def connect_database(path: str | Path | None = None) -> sqlite3.Connection:
 
 
 def initialize_application_tables(path: str | Path | None = None) -> None:
-    """Create append-only decision and simulated-outcome tables in the demo DB."""
+    """Create application tables in the local synthetic demo DB."""
     connection = connect_database(path)
     try:
+        _ensure_auth_tables(connection)
         _ensure_audit_tables(connection)
         from backend.streaming import ensure_stream_tables
 
@@ -132,5 +133,23 @@ def _ensure_audit_tables(connection: sqlite3.Connection) -> None:
         BEFORE DELETE ON analyst_feedback BEGIN
             SELECT RAISE(ABORT, 'analyst feedback is append-only');
         END;
+        """
+    )
+
+
+def _ensure_auth_tables(connection: sqlite3.Connection) -> None:
+    """Store self-registered synthetic accounts without touching seeded users."""
+    connection.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS demo_users (
+            user_id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL COLLATE NOCASE UNIQUE,
+            role TEXT NOT NULL DEFAULT 'analyst' CHECK (role = 'analyst'),
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            synthetic INTEGER NOT NULL DEFAULT 1 CHECK (synthetic = 1)
+        );
+        CREATE INDEX IF NOT EXISTS idx_demo_users_email ON demo_users (email);
         """
     )

@@ -9,8 +9,10 @@ import hashlib
 import hmac
 import json
 import os
+import secrets
 
 from fastapi import Header, HTTPException, status
+from backend.db import connect_database
 
 
 @dataclass(frozen=True)
@@ -42,11 +44,59 @@ def _secret() -> bytes:
 
 
 def authenticate(email: str, password: str) -> CurrentUser | None:
-    record = DEMO_USERS.get(email.strip().lower())
+    normalized_email = email.strip().lower()
+    record = DEMO_USERS.get(normalized_email)
     if not record or not hmac.compare_digest(password, record[2]):
-        return None
+        try:
+            connection = connect_database()
+            try:
+                row = connection.execute(
+                    "SELECT user_id, name, email, role, password_hash FROM demo_users WHERE email = ?",
+                    (normalized_email,),
+                ).fetchone()
+            finally:
+                connection.close()
+        except (FileNotFoundError, OSError):
+            row = None
+        if row is None or not verify_password(password, row["password_hash"]):
+            return None
+        return CurrentUser(row["user_id"], row["name"], row["email"], row["role"])
     name, role, _ = record
-    return CurrentUser(email.split("@")[0], name, email.strip().lower(), role)
+    return CurrentUser(normalized_email.split("@")[0], name, normalized_email, role)
+
+
+def hash_password(password: str) -> str:
+    """Hash a synthetic-demo password with a salted, standard-library KDF."""
+    salt = secrets.token_bytes(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode(), salt, 120_000)
+    return f"pbkdf2_sha256$120000${salt.hex()}${digest.hex()}"
+
+
+def verify_password(password: str, encoded: str) -> bool:
+    try:
+        algorithm, rounds, salt_hex, digest_hex = encoded.split("$", 3)
+        if algorithm != "pbkdf2_sha256":
+            return False
+        digest = hashlib.pbkdf2_hmac("sha256", password.encode(), bytes.fromhex(salt_hex), int(rounds))
+        return hmac.compare_digest(digest.hex(), digest_hex)
+    except (ValueError, TypeError):
+        return False
+
+
+def create_synthetic_account(name: str, email: str, password: str) -> CurrentUser:
+    """Create an analyst-only account for this local synthetic workspace."""
+    normalized_email = email.strip().lower()
+    user = CurrentUser(f"user-{secrets.token_hex(8)}", name.strip(), normalized_email, "analyst")
+    connection = connect_database()
+    try:
+        connection.execute(
+            "INSERT INTO demo_users (user_id, name, email, role, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (user.user_id, user.name, user.email, user.role, hash_password(password), datetime.now(timezone.utc).isoformat()),
+        )
+        connection.commit()
+    finally:
+        connection.close()
+    return user
 
 
 def issue_token(user: CurrentUser, expires_minutes: int = 480) -> str:

@@ -35,3 +35,26 @@ def test_role_cannot_submit_analyst_decision(generated_fixture, monkeypatch):
         token = response.json()["access_token"]
         denied = client.post("/api/decisions", headers={"Authorization": f"Bearer {token}"}, json={})
         assert denied.status_code == 403
+
+
+def test_synthetic_account_can_register_and_login(generated_fixture, monkeypatch):
+    """A newly created synthetic analyst can sign in on a later request."""
+    from backend import db
+    from backend.main import app
+
+    monkeypatch.setattr(db, "DEFAULT_DATABASE_PATH", generated_fixture["database"])
+    monkeypatch.setenv("APP_ENV", "development")
+    with TestClient(app) as client:
+        created = client.post(
+            "/api/auth/register",
+            json={"name": "Upay Analyst", "email": "new.analyst@upay.bd", "password": "upay-demo-42"},
+        )
+        assert created.status_code == 201
+        assert created.json()["user"]["role"] == "analyst"
+
+        login = client.post(
+            "/api/auth/login",
+            json={"email": "new.analyst@upay.bd", "password": "upay-demo-42"},
+        )
+        assert login.status_code == 200
+        assert login.json()["user"]["email"] == "new.analyst@upay.bd"
