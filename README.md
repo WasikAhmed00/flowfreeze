@@ -393,3 +393,21 @@ The following project documents provide additional configuration, methodology, a
 FlowFreeze combines **graph intelligence + ML + anomaly/behavior analysis + taint analysis + adaptive prediction + what-if simulation** in one investigator workflow. Existing trained wallet-risk and next-movement classifiers remain the learned ML inputs. A deterministic, two-iteration graph-risk propagation step shares model risk across observed counterparty links and reports linked-wallet evidence; it complements (rather than replaces) graph tracing. The 0–100 Fraud Intelligence Score exposes its ML, graph, behavior/velocity proxy, proportional-taint, cash-out and suspicious-connection components. Forecasts include the next movement, probability, estimated minutes, cash-out likelihood, confidence and explanation.
 
 The dashboard's **AI Fraud Intelligence** panel includes these component scores, a human-reviewed minimum-hold proposal with policy reasons and estimated risk reduction, and a counterfactual endpoint for transfer, cash-out or applying an intervention. What-if results compare a baseline with an estimate; they never modify the replay ledger, decide ownership, or freeze/confiscate funds. Data and predictions are synthetic, not calibrated production risk estimates. Behavior anomaly is a transparent proxy, not an Isolation Forest or separately trained anomaly model; estimated time uses observed inter-event cadence or the model window as a heuristic.
+
+## Operational analyst workflow upgrade
+
+The prototype now opens through a signed, role-scoped demo session and presents the existing risk scoring, graph tracing, exposure analysis, next-move prediction, recommendations, simulation, and ML evaluation as one analyst workflow:
+
+`sign in → case queue → open case → assess risk → trace money flow → quantify potential exposure → review next move → review AI recommendation → analyst decision → case audit trail`
+
+The seeded demo accounts are synthetic only:
+
+| Role | Email | Password | Decision access |
+|---|---|---|---|
+| Fraud/Risk Analyst | `nadia.rahman@flowfreeze.demo` | `analyst-demo-42` | Submit decisions |
+| Risk Manager | `rahim.khan@flowfreeze.demo` | `manager-demo-42` | Submit decisions |
+| Compliance | `sadia.akter@flowfreeze.demo` | `compliance-demo-42` | Read-only investigations and audit |
+| Customer Support | `support@flowfreeze.demo` | `support-demo-42` | Read-only customer-facing workflow |
+| Admin | `admin@flowfreeze.demo` | `admin-demo-42` | Submit decisions in demo |
+
+Backend APIs require a bearer session. Decision submission and feedback are restricted to analyst, risk manager, and admin roles; customer support and compliance cannot submit financial decisions. Case audit events are append-only and expose only timestamp, actor, role, action, and result. No wallet or ledger action is executed.

@@ -8,16 +8,16 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.db import application_connection
-from backend.security import require_demo_write_access
+from backend.security import CurrentUser, get_current_user, require_demo_write_access, require_roles
 from backend.schemas import AnalystFeedbackCreate, DecisionCreate
 from core.intervention import load_policy
 from core.simulator import TransactionSimulator
 from core.taint import calculate_proportional_taint
 
-router = APIRouter(prefix="/decisions", tags=["decisions", "audit"])
+router = APIRouter(prefix="/decisions", tags=["decisions", "audit"], dependencies=[Depends(get_current_user)])
 
 
-@router.post("", status_code=201, dependencies=[Depends(require_demo_write_access)])
+@router.post("", status_code=201, dependencies=[Depends(require_demo_write_access), Depends(require_roles("analyst", "risk_manager", "admin"))])
 def create_decision(payload: DecisionCreate) -> dict:
     try:
         replay = TransactionSimulator().replay(payload.scenario_id)
@@ -51,6 +51,11 @@ def create_decision(payload: DecisionCreate) -> dict:
              f"{amount:.2f}", payload.reason, payload.actor, created_at),
         )
         decision_id = cursor.lastrowid
+        db.execute(
+            "INSERT INTO case_audit_events (scenario_id, timestamp, actor, role, action, result) VALUES (?, ?, ?, ?, ?, ?)",
+            (payload.scenario_id, created_at, payload.actor, "analyst", "Decision submitted",
+             f"{payload.decision} · {payload.reason}"),
+        )
     return {
         "decision_id": decision_id,
         "incident_id": incident_id,
@@ -66,7 +71,7 @@ def create_decision(payload: DecisionCreate) -> dict:
     }
 
 
-@router.post("/{decision_id}/feedback", status_code=201, dependencies=[Depends(require_demo_write_access)])
+@router.post("/{decision_id}/feedback", status_code=201, dependencies=[Depends(require_demo_write_access), Depends(require_roles("analyst", "risk_manager", "admin"))])
 def create_analyst_feedback(decision_id: int, payload: AnalystFeedbackCreate) -> dict:
     """Append a single validated feedback record for an existing decision."""
     created_at = datetime.now(timezone.utc).isoformat()
@@ -105,3 +110,41 @@ def list_decisions(
             [*params, limit, offset],
         ).fetchall()
     return {"synthetic": True, "total": total, "decisions": [dict(row) for row in rows]}
+
+
+@router.get("/{scenario_id}/audit")
+def list_case_audit(scenario_id: str, user: CurrentUser = Depends(get_current_user)) -> dict:
+    """Return a readable, case-scoped audit timeline without credentials or secrets."""
+    with application_connection() as db:
+        rows = db.execute(
+            "SELECT event_id, scenario_id, timestamp, actor, role, action, result, synthetic "
+            "FROM case_audit_events WHERE scenario_id = ? ORDER BY timestamp, event_id",
+            (scenario_id,),
+        ).fetchall()
+        decisions = db.execute(
+            "SELECT decision_id, created_at, actor, decision, reason FROM analyst_decisions "
+            "WHERE scenario_id = ? ORDER BY created_at, decision_id", (scenario_id,)
+        ).fetchall()
+    events = [dict(row) for row in rows]
+    if not events:
+        with application_connection() as db:
+            incident = db.execute("SELECT reported_at, analysis_at FROM incidents WHERE scenario_id = ? LIMIT 1", (scenario_id,)).fetchone()
+        if incident:
+            base = incident["reported_at"]
+            events = [
+                {"event_id": f"demo-{index}", "scenario_id": scenario_id, "timestamp": stamp,
+                 "actor": actor, "role": role, "action": action, "result": result, "synthetic": True}
+                for index, (stamp, actor, role, action, result) in enumerate([
+                    (base, "FlowFreeze", "system", "Case created", "Synthetic alert received"),
+                    (base, "FlowFreeze", "system", "Risk scored", "Explainable risk signals prepared"),
+                    (incident["analysis_at"] or base, "FlowFreeze", "system", "Investigation prepared", "Graph, exposure and next-move views available"),
+                ], start=1)
+            ]
+    for row in decisions:
+        events.append({"event_id": f"decision-{row['decision_id']}", "scenario_id": scenario_id,
+                       "timestamp": row["created_at"], "actor": row["actor"], "role": "analyst",
+                       "action": "Analyst decision recorded", "result": f"{row['decision']} · {row['reason']}",
+                       "synthetic": True})
+    events.sort(key=lambda item: (item["timestamp"], str(item["event_id"])))
+    return {"synthetic": True, "scenario_id": scenario_id, "events": events,
+            "viewer_role": user.role}

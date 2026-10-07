@@ -10,7 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.db import initialize_application_tables
-from backend.routes import analysis, cases, decisions, demo, incidents, metrics, simulation, transactions
+from backend.routes import analysis, auth, cases, decisions, demo, incidents, metrics, simulation, transactions
 from backend.schemas import HealthResponse
 from backend.telemetry import record_request
 
@@ -40,7 +40,7 @@ app.add_middleware(
     allow_origins=cors_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST", "PATCH"],
-    allow_headers=["Content-Type", "X-FlowFreeze-Write-Key"],
+    allow_headers=["Content-Type", "Authorization", "X-FlowFreeze-Write-Key"],
 )
 
 @app.middleware("http")
@@ -55,7 +55,7 @@ async def api_telemetry(request: Request, call_next):
         record_request(status_code, (time.perf_counter() - started) * 1000)
 
 
-for route_module in (incidents, analysis, decisions, simulation, transactions, cases, metrics, demo):
+for route_module in (auth, incidents, analysis, decisions, simulation, transactions, cases, metrics, demo):
     app.include_router(route_module.router, prefix="/api")
 
 

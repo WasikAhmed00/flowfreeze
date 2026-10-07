@@ -8,14 +8,14 @@ from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException
 
 from backend.db import application_connection
-from backend.security import require_demo_write_access
+from backend.security import get_current_user, require_demo_write_access
 from core.simulator import TransactionSimulator
 from core.taint import calculate_proportional_taint
 from core.intelligence import simulate_what_if
 from backend.pipeline import analyze_scenario
 from backend.schemas import WhatIfRequest
 
-router = APIRouter(prefix="/simulation", tags=["simulation"])
+router = APIRouter(prefix="/simulation", tags=["simulation"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/what-if")

@@ -8,6 +8,15 @@ export type Incident = {
   incident_type: string;
   scenario_type: string;
   status: string;
+  case_status?: string;
+  assigned_analyst?: string;
+  urgency?: string;
+  created_time?: string;
+  last_updated_time?: string;
+  priority?: string;
+  risk_score?: number | null;
+  potentially_exposed_value?: string | number | null;
+  predicted_next_move?: string;
 };
 
 export type WalletTaint = {

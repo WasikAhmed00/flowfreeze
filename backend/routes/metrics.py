@@ -6,7 +6,7 @@ from decimal import Decimal
 import json
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 
 from backend.db import application_connection
 from backend.telemetry import snapshot as api_snapshot

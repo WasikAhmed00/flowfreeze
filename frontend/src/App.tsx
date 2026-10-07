@@ -12,7 +12,9 @@ import { IntegrationCenter } from './IntegrationPanels';
 
 const API_ORIGIN = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/$/, '');
 const WRITE_KEY = import.meta.env.VITE_DEMO_WRITE_KEY || '';
-const API_HEADERS: HeadersInit = { 'Content-Type': 'application/json', ...(WRITE_KEY ? { 'X-FlowFreeze-Write-Key': WRITE_KEY } : {}) };
+type AuthUser = { user_id: string; name: string; email: string; role: string; role_label: string };
+const getToken = () => sessionStorage.getItem('flowfreeze-token') || '';
+const API_HEADERS = (): HeadersInit => ({ 'Content-Type': 'application/json', ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}), ...(WRITE_KEY ? { 'X-FlowFreeze-Write-Key': WRITE_KEY } : {}) });
 const DEMO_LABEL = 'SYNTHETIC DEMO';
 const DEFAULT_DEMO_SCENARIO = 'SCN-06-FANOUT-CASHOUT-0003';
 
@@ -27,7 +29,7 @@ type DecisionDraft = { recommendation: WalletRecommendation; decision: 'approve'
 async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_ORIGIN}${path}`, {
     ...options,
-    headers: { ...API_HEADERS, ...(options.headers || {}) },
+    headers: { ...API_HEADERS(), ...(options.headers || {}) },
   });
   if (!response.ok) {
     let message = `${response.status} ${response.statusText}`;
@@ -98,8 +100,9 @@ function buildEdges(analysis?: Analysis | null): Edge[] {
 }
 
 function App() {
-  const [analyst, setAnalyst] = useState(() => sessionStorage.getItem('flowfreeze-analyst') || '');
-  const [analystInput, setAnalystInput] = useState('Nadia Rahman');
+  const [user, setUser] = useState<AuthUser | null>(() => { try { return JSON.parse(sessionStorage.getItem('flowfreeze-user') || 'null'); } catch { return null; } });
+  const analyst = user?.name || '';
+  const [loginError, setLoginError] = useState('');
   const [view, setView] = useState<View>('dashboard');
   const [mobileNav, setMobileNav] = useState(false);
   const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -135,7 +138,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!analyst) return;
+    if (!user) return;
     let live = true;
     const load = async () => {
       setBusy(true);
@@ -165,10 +168,10 @@ function App() {
     };
     void load();
     return () => { live = false; };
-  }, [analyst, reloadKey, incidentOffset]);
+  }, [user, reloadKey, incidentOffset]);
 
   useEffect(() => {
-    if (!analyst || !selectedId) { setAnalysis(null); return; }
+    if (!user || !selectedId) { setAnalysis(null); return; }
     let live = true;
     const started = performance.now();
     setAnalysis(null);
@@ -182,17 +185,17 @@ function App() {
       })
       .catch((error: Error) => { if (live) setApiError(error.message); });
     return () => { live = false; };
-  }, [analyst, selectedId, reloadKey]);
+  }, [user, selectedId, reloadKey]);
 
   useEffect(() => {
-    if (!analyst || !selectedId) { setCaseImpact(null); return; }
+    if (!user || !selectedId) { setCaseImpact(null); return; }
     let live = true;
     setCaseImpact(null);
     api<ImpactCase>(`/api/metrics/impact/${encodeURIComponent(selectedId)}`)
       .then((result) => { if (live) setCaseImpact(result); })
       .catch(() => { if (live) setCaseImpact(null); });
     return () => { live = false; };
-  }, [analyst, selectedId, reloadKey]);
+  }, [user, selectedId, reloadKey]);
 
   useEffect(() => {
     if (!toast) return;
@@ -200,12 +203,7 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  const enterWorkspace = () => {
-    const name = analystInput.trim() || 'Demo Analyst';
-    sessionStorage.setItem('flowfreeze-analyst', name);
-    setAnalyst(name);
-  };
-  const signOut = () => { sessionStorage.removeItem('flowfreeze-analyst'); setAnalyst(''); setAnalysis(null); };
+  const signOut = () => { sessionStorage.removeItem('flowfreeze-token'); sessionStorage.removeItem('flowfreeze-user'); setUser(null); setAnalysis(null); };
   const openIncident = (incident: Incident, nextView: View = 'case') => {
     setSelectedId(incident.scenario_id);
     setView(nextView);
@@ -248,7 +246,7 @@ function App() {
     }
   };
 
-  if (!analyst) return <LoginScreen value={analystInput} onChange={setAnalystInput} onEnter={enterWorkspace} apiState={apiState} />;
+  if (!user) return <LoginScreen onLogin={(nextUser) => { setUser(nextUser); setLoginError(''); }} apiState={apiState} error={loginError} onError={setLoginError} />;
 
   const viewTitle = NAV.find((item) => item.id === view)?.label || 'Overview';
   const displayedIncidents = incidents.filter((incident) => `${incident.incident_id} ${incident.scenario_id} ${incident.scenario_type} ${incident.incident_type}`.toLowerCase().includes(searchText.toLowerCase()));
@@ -257,6 +255,7 @@ function App() {
   const preservedValue = metrics?.simulations?.estimated_tainted_value_preserved_bdt || '0';
   const remainingTaint = analysis?.taint?.remaining_potentially_tainted_bdt || 0;
   const highRiskWalletCount = ['trained_synthetic_models', 'real_transaction_dataset'].includes(String(analysis?.model_predictions?.source)) ? recommendationList.filter((item) => item.risk_score != null && item.risk_score >= 0.65).length : null;
+  const canDecide = ['analyst', 'risk_manager', 'admin'].includes(user?.role || '');
   const pendingReviewCount = recommendationList.filter((item) => !decisions.some((decision) => decision.scenario_id === selectedId && decision.wallet_id === item.wallet_id)).length;
 
   const renderPage = () => {
@@ -289,7 +288,7 @@ function App() {
       case 'wallets':
         return <WalletsPage wallets={selectedWallets} recommendations={recommendationList} analysis={analysis} onReview={(item) => setDecisionDraft({ recommendation: item, decision: 'approve' })} />;
       case 'recommendations':
-        return <RecommendationsPage incident={selectedIncident} analysis={analysis} recommendations={recommendationList} onDecide={(item, decision) => setDecisionDraft({ recommendation: item, decision })} />;
+        return <RecommendationsPage incident={selectedIncident} analysis={analysis} recommendations={recommendationList} onDecide={canDecide ? ((item, decision) => setDecisionDraft({ recommendation: item, decision })) : undefined} />;
       case 'simulator':
         return <SimulatorPage incident={selectedIncident} analysis={analysis} metrics={metrics} />;
       case 'evaluation':
@@ -326,7 +325,7 @@ function App() {
         </nav>
         <div className="sidebar-bottom">
           <div className="safe-card"><div className="safe-icon"><ShieldCheck size={17} /></div><div><b>Safe demo environment</b><span>Synthetic data · no live wallet access</span></div></div>
-          <button className="profile-row" onClick={signOut}><div className="avatar avatar-small">{analyst.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</div><div className="profile-meta"><b>{analyst}</b><span>Demo analyst access</span></div><LogOut size={15} /></button>
+          <button className="profile-row" onClick={signOut}><div className="avatar avatar-small">{analyst.split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</div><div className="profile-meta"><b>{analyst}</b><span>{user?.role_label || 'Authenticated user'}</span></div><LogOut size={15} /></button>
         </div>
       </aside>
 
@@ -370,16 +369,28 @@ function pageDescription(view: View, incident: Incident | null) {
   return descriptions[view];
 }
 
-function LoginScreen({ value, onChange, onEnter, apiState }: { value: string; onChange: (value: string) => void; onEnter: () => void; apiState: string }) {
+function LoginScreen({ onLogin, apiState, error, onError }: { onLogin: (user: AuthUser) => void; apiState: string; error: string; onError: (message: string) => void }) {
+  const [email, setEmail] = useState('nadia.rahman@flowfreeze.demo');
+  const [password, setPassword] = useState('analyst-demo-42');
+  const [busy, setBusy] = useState(false);
+  const submit = async () => {
+    setBusy(true); onError('');
+    try {
+      const result = await api<{ access_token: string; user: AuthUser }>('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+      sessionStorage.setItem('flowfreeze-token', result.access_token);
+      sessionStorage.setItem('flowfreeze-user', JSON.stringify(result.user));
+      onLogin(result.user);
+    } catch (e) { onError(e instanceof Error ? e.message : 'Authentication failed'); }
+    finally { setBusy(false); }
+  };
   return <div className="login-screen"><div className="login-glow login-glow-one" /><div className="login-glow login-glow-two" /><div className="login-top"><div className="brand brand-login"><div className="brand-mark"><span>F</span><i /></div><div><b>flowfreeze</b><small>ANALYST WORKSPACE</small></div></div><div className="login-demo-tag"><span className="status-dot" /> SYNTHETIC DEMO ENVIRONMENT</div></div>
     <div className="login-layout"><div className="login-story"><div className="login-kicker"><ShieldCheck size={15} /> PROTECTING THE DIGITAL FLOW</div><h1>Follow the money.<br /><span>Before it disappears.</span></h1><p>FlowFreeze helps fraud analysts trace reported MFS transfers through downstream wallets, understand potential exposure, and review proportionate next steps.</p>
       <div className="login-flow"><div className="flow-step"><span className="step-icon"><ArrowLeftRight size={17} /></span><div><b>Trace fund movement</b><small>Follow the path across wallet hops</small></div></div><div className="flow-connector" /><div className="flow-step"><span className="step-icon step-icon-amber"><Sparkles size={17} /></span><div><b>Assess risk & taint</b><small>Explore evidence and uncertainty</small></div></div><div className="flow-connector" /><div className="flow-step"><span className="step-icon step-icon-lime"><Check size={17} /></span><div><b>Keep people in control</b><small>Analyst review before any simulation</small></div></div></div>
       <div className="login-quote"><span>“</span><div>Trace suspicious funds, predict where they go next, and help contain them while they’re still digital.</div></div>
-    </div><div className="login-panel"><div className="login-panel-mark"><LockKeyhole size={18} /></div><div className="login-panel-eyebrow">ANALYST ACCESS</div><h2>Enter the workspace</h2><p>Choose a display name to continue to this local demonstration.</p><label className="form-label" htmlFor="analyst-name">Analyst name</label><div className="input-with-icon"><span className="initial-badge">{value.slice(0, 1).toUpperCase() || 'A'}</span><input id="analyst-name" value={value} onChange={(event) => onChange(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') onEnter(); }} placeholder="e.g. Nadia Rahman" /></div><button className="button button-primary login-submit" onClick={onEnter}>Open analyst workspace <ArrowRight size={16} /></button><div className="login-no-auth"><Info size={14} /><span>This demo gate is <b>not authentication</b>. Do not enter customer or production data.</span></div><div className="login-api"><span className={`status-dot ${apiState === 'offline' ? 'dot-red' : ''}`} />{apiState === 'online' ? 'Synthetic case API connected' : apiState === 'offline' ? 'API unavailable · start backend to load cases' : 'Checking API connection'}</div></div></div>
+    </div><div className="login-panel"><div className="login-panel-mark"><LockKeyhole size={18} /></div><div className="login-panel-eyebrow">SECURE DEMO ACCESS</div><h2>Sign in to the workspace</h2><p>Use a seeded synthetic account. Permissions are enforced by the backend.</p><label className="form-label" htmlFor="login-email">Work email</label><div className="input-with-icon"><span className="initial-badge">@</span><input id="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} /></div><label className="form-label" htmlFor="login-password">Password</label><div className="input-with-icon"><span className="initial-badge">••</span><input id="login-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') void submit(); }} /></div>{error && <div className="inline-alert login-error"><AlertTriangle size={15} /><span>{error}</span></div>}<button className="button button-primary login-submit" onClick={() => void submit()} disabled={busy}>{busy ? 'Authenticating…' : 'Sign in to analyst workspace'} <ArrowRight size={16} /></button><div className="login-no-auth"><Info size={14} /><span>Demo accounts are synthetic and role-scoped. Final financial action always requires an analyst.</span></div><div className="login-api"><span className={`status-dot ${apiState === 'offline' ? 'dot-red' : ''}`} />{apiState === 'online' ? 'Authentication service connected' : apiState === 'offline' ? 'API unavailable · start backend to sign in' : 'Checking API connection'}</div><small className="login-credentials">Analyst demo: nadia.rahman@flowfreeze.demo · analyst-demo-42</small></div></div>
     <div className="login-footer"><span>upay BD · Hackathon prototype</span><span>Advisory only <i>·</i> No real customer data <i>·</i> No wallet-control capability</span></div>
   </div>;
 }
-
 function IntelligencePanel({ analysis }: { analysis: Analysis | null }) {
   const [action, setAction] = useState<'transfer' | 'cashout' | 'intervention'>('transfer');
   const [source, setSource] = useState('');
@@ -487,7 +498,7 @@ function OperationalCaseSummary({ incident, analysis, recommendation }: { incide
   const urgency = recommendation?.urgency ? titleCase(recommendation.urgency) : 'Review timing not scored';
   const response = recommendation ? `${titleCase(recommendation.action)} · analyst review required` : 'Investigate first / monitor; no proposal available';
   const reason = recommendation?.reasons?.slice(0, 2).join(' · ') || 'No recommendation rationale available; review transaction evidence.';
-  return <section className="panel operational-summary"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">FRAUD OPERATIONS CASE FILE</div><h2>Operational summary</h2><p>Decision owner: {sessionStorage.getItem('flowfreeze-analyst') || 'Assigned fraud analyst'} · synthetic case</p></div><span className={`priority-tier tier-${priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt).toLowerCase()}`}>{priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt)} PRIORITY · DEMO</span></div><div className="priority-method">Attention aid based on available risk, potential exposure, predicted movement, and urgency; demonstration thresholds only, not a live SLA or automatic action.</div><div className="operational-grid">
+  return <section className="panel operational-summary"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">FRAUD OPERATIONS CASE FILE</div><h2>Operational summary</h2><p>Decision owner: Assigned fraud analyst · synthetic case</p></div><span className={`priority-tier tier-${priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt).toLowerCase()}`}>{priorityTier(recommendation, analysis.taint.remaining_potentially_tainted_bdt)} PRIORITY · DEMO</span></div><div className="priority-method">Attention aid based on available risk, potential exposure, predicted movement, and urgency; demonstration thresholds only, not a live SLA or automatic action.</div><div className="operational-grid">
     <div><span>What happened</span><b>{titleCase(incident.incident_type)} · {money(incident.reported_amount)} reported</b></div>
     <div><span>Why risky</span><b>{reason}</b></div>
     <div><span>Money at risk</span><b>{money(analysis.taint.remaining_potentially_tainted_bdt)} potentially attributed</b></div>
@@ -514,7 +525,7 @@ function IncidentsPage({ incidents, total, offset, pageSize, selectedId, onOpen,
   const [statusFilter, setStatusFilter] = useState('all');
   const filtered = incidents.filter((incident) => statusFilter === 'all' || incident.status.toLowerCase() === statusFilter);
   return <div className="page-stack"><section className="panel incident-list-panel"><div className="panel-head"><div><div className="panel-eyebrow">CASE INTAKE</div><h2>Incident register</h2><p>{total?.toLocaleString() || incidents.length} synthetic incidents · newest reports first</p></div><div className="filter-tools"><SlidersHorizontal size={16} /><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="all">All statuses</option><option value="new">New</option><option value="reviewing">Reviewing</option><option value="closed">Closed</option></select></div></div>
-    <div className="table-wrap"><table className="data-table incident-register"><thead><tr><th>Incident reference</th><th>Reported</th><th>Case type</th><th>Reported transaction</th><th>Amount</th><th>State</th><th /></tr></thead><tbody>{filtered.map((incident) => <tr key={incident.incident_id} className={`click-row ${incident.scenario_id === selectedId ? 'selected-row' : ''}`} onClick={() => onOpen(incident)}><td><div className="incident-id"><span className="incident-icon"><ShieldAlert size={15} /></span><div><b>{shortId(incident.incident_id)}</b><small>{shortId(incident.scenario_id)}</small></div></div></td><td>{dateTime(incident.reported_at)}</td><td><span className="scenario-pill">{titleCase(incident.scenario_type)}</span></td><td className="mono">{shortId(incident.reported_transaction_id)}</td><td className="amount-cell">{money(incident.reported_amount)}</td><td><StatusBadge status={incident.status} /></td><td><ChevronRight size={15} className="muted-icon" /></td></tr>)}</tbody></table></div>
+    <div className="table-wrap"><table className="data-table incident-register"><thead><tr><th>Case ID</th><th>Risk / priority</th><th>Reported amount</th><th>Potential exposure</th><th>Next move</th><th>Urgency</th><th>Status</th><th>Assigned analyst</th><th>Updated</th><th /></tr></thead><tbody>{filtered.map((incident) => <tr key={incident.incident_id} className={`click-row ${incident.scenario_id === selectedId ? 'selected-row' : ''}`} onClick={() => onOpen(incident)}><td><div className="incident-id"><span className="incident-icon"><ShieldAlert size={15} /></span><div><b>{shortId(incident.incident_id)}</b><small>{shortId(incident.scenario_id)}</small></div></div></td><td><b className={`priority-text priority-${(incident.priority || 'MEDIUM').toLowerCase()}`}>{incident.risk_score == null ? 'Not scored' : pct(incident.risk_score)}</b><small className="queue-subtext">{incident.priority || 'MEDIUM'}</small></td><td className="amount-cell">{money(incident.reported_amount)}</td><td>{incident.potentially_exposed_value == null ? <span className="no-score">Open to quantify</span> : money(incident.potentially_exposed_value)}</td><td><span className="queue-next-move">{incident.predicted_next_move || 'Not scored'}</span></td><td><span className={`urgency-pill urgency-${incident.urgency === 'urgent_review' ? 'urgent' : 'standard'}`}>{incident.urgency === 'urgent_review' ? 'Urgent' : 'Standard'}</span></td><td><StatusBadge status={incident.status} /></td><td>{incident.assigned_analyst || 'Unassigned'}</td><td>{dateTime(incident.last_updated_time || incident.reported_at)}</td><td><ChevronRight size={15} className="muted-icon" /></td></tr>)}</tbody></table></div>
     {filtered.length === 0 && <EmptyState title="No incidents match" text="Try a different status or clear the search in the toolbar." />}
     <div className="table-caption"><span>Showing {total ? `${Math.min(offset + 1, total)}–${Math.min(offset + incidents.length, total)} of ${total.toLocaleString()}` : '0'} synthetic incidents</span><div className="page-controls"><button disabled={offset <= 0} onClick={() => onPage(Math.max(0, offset - pageSize))}>Previous</button><b>{total ? `${Math.floor(offset / pageSize) + 1} / ${Math.ceil(total / pageSize)}` : '—'}</b><button disabled={!total || offset + pageSize >= total} onClick={() => onPage(offset + pageSize)}>Next</button></div></div></section></div>;
 }
@@ -532,7 +543,7 @@ function CaseReviewPage({ incident, analysis, loading, onGoGraph, onGoRecommenda
     {tab === 'overview' && <div className="case-grid"><div className="case-main-column">
         <OperationalCaseSummary incident={incident} analysis={analysis} recommendation={recs[0]} /><div className="mini-kpi-grid"><MiniMetric label="Risk score" value={recs[0]?.risk_score == null ? 'Unavailable' : pct(recs[0].risk_score)} sub={recs[0]?.risk_score == null ? 'No model score loaded' : 'Synthetic model estimate'} color="red" /><MiniMetric label="Remaining taint" value={money(analysis.taint.remaining_potentially_tainted_bdt)} sub="Proportional-flow estimate" color="amber" /><MiniMetric label="Downstream wallets" value={String(analysis.trace.downstream_wallet_ids?.length || 0)} sub={`Up to ${analysis.trace.limits?.hop_limit ?? '—'} hops`} color="blue" /></div>
         <section className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">FUND MOVEMENT</div><h2>Transaction graph</h2></div><button className="text-button" onClick={onGoGraph}>Explore graph <ArrowRight size={14} /></button></div><GraphCanvas analysis={analysis} incident={incident} edges={graphEdges} compact /></section>
-        <section className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">INVESTIGATION TIMELINE</div><h2>What happened</h2></div></div><Timeline incident={incident} analysis={analysis} reportedMove={reportedMove} /></section></div>
+        <section className="panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">INVESTIGATION TIMELINE</div><h2>What happened</h2></div></div><Timeline incident={incident} analysis={analysis} reportedMove={reportedMove} /></section><CaseAuditTimeline scenarioId={incident.scenario_id} /></div>
       <div className="case-side-column"><section className="panel risk-panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">RISK EXPLANATION</div><h2>Why this case matters</h2></div><span className="info-dot" title="Synthetic decision-support indicators">i</span></div><div className="risk-status-line"><div className="risk-score-ring" style={{ '--ring': recs[0]?.risk_score == null ? 0 : Number(recs[0].risk_score) * 100 } as CSSProperties}><strong>{recs[0]?.risk_score == null ? '—' : pct(recs[0].risk_score)}</strong><span>MODEL</span></div><div><span className="risk-label">{recs[0]?.risk_score == null ? 'Score unavailable' : Number(recs[0].risk_score) >= .65 ? 'Elevated signal' : 'Below model threshold'}</span><small>{String(model.message || 'Risk is not model-assessed unless trained synthetic artifacts are available.')}</small></div></div><div className="signal-list"><Signal icon={Zap} title="Movement behavior" text={analysis.trace.rapid_forwards?.length ? `${analysis.trace.rapid_forwards.length} rapid-forward signal(s) observed` : 'No rapid-forward evidence in the trace window'} /><Signal icon={GitBranch} title="Wallet branching" text={analysis.trace.fanout_wallets?.length ? `${analysis.trace.fanout_wallets.length} branching wallet(s) observed` : 'No fan-out evidence in the trace window'} /><Signal icon={ArrowDownRight} title="Cash-out evidence" text={analysis.trace.cashouts?.length ? `${analysis.trace.cashouts.length} cash-out path(s) identified` : 'No cash-out observed within the trace window'} /></div><div className="caution-note"><Info size={14} /><span>Signals are evidence for review—not a finding of fraud or ownership.</span></div></section>
         <section className="panel taint-panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">TAINT ASSESSMENT</div><h2>Potential exposure</h2></div></div><div className="taint-total"><strong>{money(analysis.taint.remaining_potentially_tainted_bdt)}</strong><span>still attributed to digital wallets</span></div><div className="taint-breakdown"><div><span><i className="taint-dot dot-teal" /> In wallets</span><b>{money(analysis.taint.remaining_potentially_tainted_bdt)}</b></div><div><span><i className="taint-dot dot-red" /> Cash-out attributed</span><b>{money(analysis.taint.cashed_out_potentially_tainted_bdt)}</b></div><div><span><i className="taint-dot dot-gray" /> Unattributed</span><b>{money(analysis.taint.unattributed_bdt)}</b></div></div><small className="method-caption">Method: proportional balance attribution · observed as of {dateTime(analysis.as_of)}</small></section>
         <section className="next-move-card"><div className="next-move-top"><span className="next-move-icon"><Activity size={16} /></span><span className="next-move-label">NEXT-MOVE OUTLOOK</span></div>{recs[0]?.next_move_probabilities ? <div className="move-probs">{[['Forward', recs[0].next_move_probabilities.forward], ['Cash-out', recs[0].next_move_probabilities.cashout], ['No movement', recs[0].next_move_probabilities.no_movement]].map(([label, value]) => <div key={String(label)}><div><span>{label}</span><b>{pct(value)}</b></div><div className="move-bar"><i style={{ width: `${Number(value) * 100}%` }} /></div></div>)}</div> : <div className="unavailable-note">Prediction is not available for this scenario yet. Train synthetic models to enable it.</div>}<div className="next-move-foot"><Info size={13} /> Synthetic model signal · advisory only</div></section></div></div>}
@@ -543,6 +554,12 @@ function CaseReviewPage({ incident, analysis, loading, onGoGraph, onGoRecommenda
 
 function MiniMetric({ label, value, sub, color }: { label: string; value: string; sub: string; color: string }) { return <div className={`mini-metric mini-${color}`}><span>{label}</span><strong>{value}</strong><small>{sub}</small></div>; }
 
+function CaseAuditTimeline({ scenarioId }: { scenarioId: string }) {
+  const [events, setEvents] = useState<Array<{ timestamp: string; actor: string; role: string; action: string; result: string }>>([]);
+  const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  useEffect(() => { let live = true; api<{ events: typeof events }>(`/api/decisions/${encodeURIComponent(scenarioId)}/audit`).then((result) => { if (live) { setEvents(result.events || []); setState('ready'); } }).catch(() => { if (live) setState('error'); }); return () => { live = false; }; }, [scenarioId]);
+  return <section className="panel case-audit-panel"><div className="panel-head panel-head-tight"><div><div className="panel-eyebrow">CASE AUDIT TRAIL</div><h2>Who did what, and when</h2><p>Append-only investigation events · actor, role, action and result</p></div><span className="micro-tag">{state === 'loading' ? 'LOADING' : `${events.length} EVENTS`}</span></div>{state === 'error' ? <EmptyState title="Audit temporarily unavailable" text="The case evidence is still available; retry after reconnecting to the API." /> : <div className="audit-event-list">{events.map((event) => <div className="audit-event" key={`${event.timestamp}-${event.action}`}><time>{dateTime(event.timestamp)}</time><div><b>{event.action}</b><span>{event.actor} · {titleCase(event.role)}</span></div><p>{event.result}</p></div>)}</div>}</section>;
+}
 function Timeline({ incident, analysis, reportedMove }: { incident: Incident; analysis: Analysis; reportedMove: Record<string, any> | undefined }) {
   const firstRecommendation = analysis.recommendation?.recommendations?.[0];
   const steps = [
@@ -596,23 +613,23 @@ function WalletsPage({ wallets, recommendations, analysis, onReview }: { wallets
   return <div className="page-stack"><div className="wallet-intro"><div className="wallet-intro-icon"><WalletCards size={20} /></div><div><b>Wallets in selected replay</b><span>{analysis ? `${analysis.taint.wallets.length} digital wallets · ${shortId(analysis.scenario_id)}` : 'Select an incident to load wallet intelligence.'}</span></div><div className="wallet-method-chip"><Info size={13} /> Synthetic replay only</div></div><section className="panel wallet-panel"><div className="panel-head"><div><div className="panel-eyebrow">WALLET INTELLIGENCE</div><h2>Balances & attributed value</h2><p>Proportional taint is an estimate—not an ownership determination.</p></div><div className="filter-tools"><SlidersHorizontal size={16} /><select value={filter} onChange={(event) => setFilter(event.target.value)}><option value="all">All wallets</option><option value="tainted">Potentially tainted</option><option value="risk">High model score</option></select></div></div><div className="table-wrap"><table className="data-table wallet-table"><thead><tr><th>Wallet</th><th>Type</th><th>Replay balance</th><th>Potential taint</th><th>Potentially legitimate</th><th>Taint ratio</th><th>Risk signal</th><th>Action</th></tr></thead><tbody>{visible.map((wallet) => { const rec = recById.get(wallet.wallet_id); return <tr key={wallet.wallet_id} id={`wallet-${wallet.wallet_id}`}><td><div className="wallet-ident"><span className="wallet-ident-icon"><WalletCards size={15} /></span><div><b>{walletName(wallet.wallet_id)}</b><small title={wallet.wallet_id}>{shortId(wallet.wallet_id)}</small></div></div></td><td><span className="type-label">{titleCase(wallet.customer_type)}</span></td><td className="amount-cell">{money(wallet.balance_bdt)}</td><td><div className="taint-cell"><b>{money(wallet.potentially_tainted_bdt)}</b><span className="tiny-progress"><i style={{ width: `${Math.min(100, Number(wallet.potentially_tainted_ratio) * 100)}%` }} /></span></div></td><td>{money(wallet.potentially_legitimate_bdt)}</td><td><span className="ratio-pill">{pct(wallet.potentially_tainted_ratio)}</span></td><td>{rec?.risk_score == null ? <span className="no-score">Not scored</span> : <span className={`risk-pill ${rec.risk_score >= .65 ? 'risk-high' : 'risk-low'}`}>{pct(rec.risk_score)}</span>}</td><td>{rec ? <button className="tiny-action" onClick={() => onReview(rec)}>Review <ChevronRight size={13} /></button> : <span className="no-score">—</span>}</td></tr>; })}</tbody></table></div>{visible.length === 0 && <EmptyState title="No wallets in this filter" text="Change the filter or select a different incident." />}<div className="table-caption"><span>{visible.length} of {wallets.length} wallets shown</span><span>Balances reflect analysis snapshot only</span></div></section><div className="wallet-caveat"><ShieldCheck size={16} /><span><b>Privacy and fairness note:</b> customer type is synthetic metadata. Do not use demographics as a decision criterion; rely on transaction evidence and human review.</span></div></div>;
 }
 
-function RecommendationsPage({ incident, analysis, recommendations, onDecide }: { incident: Incident | null; analysis: Analysis | null; recommendations: WalletRecommendation[]; onDecide: (item: WalletRecommendation, decision: 'approve' | 'reject' | 'modify') => void }) {
+function RecommendationsPage({ incident, analysis, recommendations, onDecide }: { incident: Incident | null; analysis: Analysis | null; recommendations: WalletRecommendation[]; onDecide?: (item: WalletRecommendation, decision: 'approve' | 'reject' | 'modify') => void }) {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const list = recommendations.filter((item) => selectedFilter === 'all' || item.urgency === selectedFilter || item.action === selectedFilter);
   return <div className="page-stack"><div className="recommendation-header"><div><div className="panel-eyebrow">HUMAN-IN-THE-LOOP DECISIONING</div><h2>{incident ? shortId(incident.incident_id) : 'Select a synthetic case'}</h2><p>Every suggestion is advisory. No action is executed automatically.</p></div><div className="recommendation-controls"><select value={selectedFilter} onChange={(event) => setSelectedFilter(event.target.value)}><option value="all">All recommendations</option><option value="urgent_review">Urgent review</option><option value="standard_review">Standard review</option><option value="propose_bounded_simulated_hold">Hold proposed</option><option value="monitor_and_review">Monitor & review</option></select></div></div>
-    <div className="decision-callout"><span><ShieldCheck size={17} /></span><div><b>Analyst approval required</b><p>Approve, reject or modify the proposed <i>simulation</i> amount. Decisions are stored in the local audit database; they do not freeze or move real funds.</p></div><div className="callout-badge">NO AUTOMATIC EXECUTION</div></div>
+    <div className="decision-callout"><span><ShieldCheck size={17} /></span><div><b>Analyst approval required</b><p>{onDecide ? 'Approve, reject or modify the proposed simulation amount.' : 'Read-only role: review evidence and audit history; decision submission is restricted.'} Decisions are stored in the local audit database; they do not freeze or move real funds.</p></div><div className="callout-badge">NO AUTOMATIC EXECUTION</div></div>
     {analysis && <div className="recommendation-summary"><div><span>Policy version</span><b>{analysis.recommendation.policy_version || '—'}</b></div><div><span>Model status</span><b>{String(analysis.model_predictions?.source || 'Unavailable').replaceAll('_', ' ')}</b></div><div><span>Potential taint</span><b>{money(analysis.taint.remaining_potentially_tainted_bdt)}</b></div><div><span>Review queue</span><b>{recommendations.length} wallet proposals</b></div></div>}
     <div className="recommendation-list">{list.map((item) => <RecommendationCard key={item.wallet_id} item={item} onDecide={onDecide} />)}</div>{list.length === 0 && <div className="panel no-recommendations"><div className="no-rec-icon"><ShieldCheck size={23} /></div><h3>No wallet proposal available</h3><p>{analysis?.recommendation?.status === 'no_tainted_wallets_at_analysis_time' ? 'No potentially tainted digital balance was present at this analysis snapshot.' : 'No wallet meets the configured proposal criteria. Monitoring and analyst review remain available.'}</p><span>Absence of a proposal is not a finding that a transaction is legitimate.</span></div>}
     {analysis && <div className="policy-limitations"><Info size={15} /><div><b>Recommendation limitations</b><ul>{(analysis.recommendation.limitations || []).map((line: string) => <li key={line}>{line}</li>)}</ul></div></div>}</div>;
 }
 
-function RecommendationCard({ item, onDecide }: { item: WalletRecommendation; onDecide: (item: WalletRecommendation, decision: 'approve' | 'reject' | 'modify') => void }) {
+function RecommendationCard({ item, onDecide }: { item: WalletRecommendation; onDecide?: (item: WalletRecommendation, decision: 'approve' | 'reject' | 'modify') => void }) {
   const score = item.risk_score;
   return <article className="panel recommendation-card"><div className="rec-card-top"><div className="wallet-ident"><span className="wallet-ident-icon"><WalletCards size={16} /></span><div><b>{walletName(item.wallet_id)}</b><small title={item.wallet_id}>{item.wallet_id}</small></div></div><span className={`urgency-tag ${item.urgency === 'urgent_review' ? 'urgent' : ''}`}><i />{titleCase(item.urgency)}</span></div>
     <div className="rec-core-grid"><div className="rec-main-amount"><span>PROPOSED SIMULATED HOLD</span><b>{moneyExact(item.proposed_simulated_hold_bdt)}</b><small>{item.action === 'propose_bounded_simulated_hold' ? 'Bounded by replay balance and policy cap' : 'No hold amount proposed · monitor & review'}</small></div><div className="rec-info"><span>Wallet balance</span><b>{money(item.balance_bdt)}</b><small>At analysis snapshot</small></div><div className="rec-info"><span>Potential taint</span><b>{money(item.potentially_tainted_bdt)}</b><small>Proportional-flow estimate</small></div><div className="rec-info"><span>Legitimate value at risk</span><b>{money(item.estimated_legitimate_value_affected_bdt)}</b><small>Estimated collateral impact</small></div></div>
     <div className="rec-signals"><div className="rec-risk"><span>Risk score</span>{score == null ? <b className="muted-score">Not available</b> : <><b className={score >= .65 ? 'text-danger' : 'text-success'}>{pct(score)}</b><div className="risk-progress"><i style={{ width: `${score * 100}%` }} /></div></>}</div><div className="rec-risk"><span>Likely cash-out</span><b>{item.next_move_probabilities ? pct(item.next_move_probabilities.cashout) : 'Not scored'}</b><small>Next-move estimate</small></div><div className="rec-risk"><span>Evidence references</span><b>{item.evidence_transaction_ids?.length || 0} transaction(s)</b><small>{item.evidence_transaction_ids?.slice(0, 2).map(shortId).join(', ') || 'No linked transaction IDs'}</small></div><div className="rec-risk"><span>Expected impact</span><b>{item.expected_risk_reduction_points ?? 0} pts</b><small>Estimate only; human approval required</small></div></div>
     <div className="rec-reasons"><div className="panel-eyebrow">WHY THIS WAS SUGGESTED</div><ul>{(item.reasons || []).slice(0, 4).map((reason) => <li key={reason}><span><Check size={12} /></span>{reason}</li>)}</ul></div>
-    <div className="rec-actions"><button className="button button-primary" onClick={() => onDecide(item, 'approve')}><Check size={15} /> Approve simulation</button><button className="button button-light" onClick={() => onDecide(item, 'modify')}><SlidersHorizontal size={15} /> Modify amount</button><button className="button button-quiet-danger" onClick={() => onDecide(item, 'reject')}><X size={15} /> Reject</button></div>
+    {onDecide && <div className="rec-actions"><button className="button button-primary" onClick={() => onDecide(item, 'approve')}><Check size={15} /> Approve simulation</button><button className="button button-light" onClick={() => onDecide(item, 'modify')}><SlidersHorizontal size={15} /> Modify amount</button><button className="button button-quiet-danger" onClick={() => onDecide(item, 'reject')}><X size={15} /> Reject</button></div>}
   </article>;
 }
 

@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.db import application_connection
+from backend.security import get_current_user
 
-router = APIRouter(prefix="/incidents", tags=["incidents"])
+router = APIRouter(prefix="/incidents", tags=["incidents"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("")
@@ -31,7 +32,22 @@ def list_incidents(
             f"SELECT * FROM incidents{where} ORDER BY reported_at DESC, incident_id LIMIT ? OFFSET ?",
             [*params, limit, offset],
         ).fetchall()
-    return {"synthetic": True, "total": total, "limit": limit, "offset": offset, "incidents": [dict(row) for row in rows]}
+    enriched = []
+    for row in rows:
+        item = dict(row)
+        item.update({
+            "case_status": str(item.get("status", "new")).upper(),
+            "assigned_analyst": "Nadia Rahman" if str(item["scenario_id"]).endswith(("0001", "0003")) else "Unassigned",
+            "urgency": "urgent_review" if str(item.get("scenario_type", "")).lower() in {"fanout", "cashout"} else "standard_review",
+            "priority": "HIGH" if str(item.get("scenario_type", "")).lower() in {"fanout", "cashout"} else "MEDIUM",
+            "risk_score": None,
+            "potentially_exposed_value": None,
+            "predicted_next_move": "Not scored until case is opened",
+            "created_time": item.get("reported_at"),
+            "last_updated_time": item.get("analysis_at") or item.get("reported_at"),
+        })
+        enriched.append(item)
+    return {"synthetic": True, "total": total, "limit": limit, "offset": offset, "incidents": enriched}
 
 
 @router.get("/{scenario_id}")

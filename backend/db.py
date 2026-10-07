@@ -89,6 +89,18 @@ def _ensure_audit_tables(connection: sqlite3.Connection) -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_decisions_scenario
             ON analyst_decisions (scenario_id, decision_id);
+        CREATE TABLE IF NOT EXISTS case_audit_events (
+            event_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            scenario_id TEXT NOT NULL,
+            timestamp TEXT NOT NULL,
+            actor TEXT NOT NULL,
+            role TEXT NOT NULL,
+            action TEXT NOT NULL,
+            result TEXT NOT NULL,
+            synthetic INTEGER NOT NULL DEFAULT 1 CHECK (synthetic = 1)
+        );
+        CREATE INDEX IF NOT EXISTS idx_case_audit_scenario
+            ON case_audit_events (scenario_id, event_id);
         CREATE TABLE IF NOT EXISTS simulated_outcomes (
             simulation_id INTEGER PRIMARY KEY AUTOINCREMENT,
             decision_id INTEGER NOT NULL UNIQUE REFERENCES analyst_decisions(decision_id),

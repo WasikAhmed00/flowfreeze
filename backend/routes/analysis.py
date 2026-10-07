@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.pipeline import analyze_scenario
+from backend.security import get_current_user
 
-router = APIRouter(prefix="/analysis", tags=["analysis"])
+router = APIRouter(prefix="/analysis", tags=["analysis"], dependencies=[Depends(get_current_user)])
 
 
 @router.get("/{scenario_id}")
