@@ -337,3 +337,9 @@ The following project documents provide additional configuration, methodology, a
 * No real fund freezing capability
 * Human analyst review required for recommendations
 * All intervention actions are simulated
+
+## Innovation: adaptive, explainable fund-flow intelligence
+
+FlowFreeze combines **graph intelligence + ML + anomaly/behavior analysis + taint analysis + adaptive prediction + what-if simulation** in one investigator workflow. Existing trained wallet-risk and next-movement classifiers remain the learned ML inputs. A deterministic, two-iteration graph-risk propagation step shares model risk across observed counterparty links and reports linked-wallet evidence; it complements (rather than replaces) graph tracing. The 0–100 Fraud Intelligence Score exposes its ML, graph, behavior/velocity proxy, proportional-taint, cash-out and suspicious-connection components. Forecasts include the next movement, probability, estimated minutes, cash-out likelihood, confidence and explanation.
+
+The dashboard's **AI Fraud Intelligence** panel includes these component scores, a human-reviewed minimum-hold proposal with policy reasons and estimated risk reduction, and a counterfactual endpoint for transfer, cash-out or applying an intervention. What-if results compare a baseline with an estimate; they never modify the replay ledger, decide ownership, or freeze/confiscate funds. Data and predictions are synthetic, not calibrated production risk estimates. Behavior anomaly is a transparent proxy, not an Isolation Forest or separately trained anomaly model; estimated time uses observed inter-event cadence or the model window as a heuristic.
