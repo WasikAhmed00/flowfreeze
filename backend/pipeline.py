@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Mapping
+from typing import Any, Mapping
 
 from core.graph import trace_downstream
 from core.intervention import load_policy, recommend_intervention
@@ -10,6 +10,19 @@ from core.simulator import ReplayResult, TransactionSimulator
 from core.taint import calculate_proportional_taint
 from core.intelligence import build_intelligence
 from ml.predict import predict_scenario
+
+
+def analyze_live_transaction(connection, transaction: Mapping[str, Any]) -> dict:
+    """Score one synthetic live event through the incremental analysis pipeline.
+
+    Scenario replay remains the source of full balance-proportional taint. The
+    real-time adapter uses bounded graph context and explicitly labeled
+    synthetic heuristic outputs so it can score events without rebuilding a
+    complete incident replay for every request.
+    """
+    from backend.streaming import process_transaction
+
+    return process_transaction(connection, dict(transaction))
 
 
 def analyze_scenario(

@@ -50,6 +50,9 @@ def initialize_application_tables(path: str | Path | None = None) -> None:
     connection = connect_database(path)
     try:
         _ensure_audit_tables(connection)
+        from backend.streaming import ensure_stream_tables
+
+        ensure_stream_tables(connection)
     finally:
         connection.close()
 

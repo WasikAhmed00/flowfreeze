@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException
 
 from backend.db import application_connection
+from backend.telemetry import snapshot as api_snapshot
 from core.business_impact import run_business_impact
 from core.shadow_mode import run_shadow_mode
 
@@ -23,9 +24,10 @@ IMPACT_METRICS_PATH = Path(__file__).resolve().parents[2] / "ml" / "artifacts" /
 @router.get("")
 def get_metrics() -> dict:
     with application_connection() as db:
-        incidents = db.execute("SELECT COUNT(*) FROM incidents").fetchone()[0]
-        transactions = db.execute("SELECT COUNT(*) FROM transactions").fetchone()[0]
-        wallets = db.execute("SELECT COUNT(*) FROM wallets").fetchone()[0]
+        tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+        incidents = db.execute("SELECT COUNT(*) FROM incidents").fetchone()[0] if "incidents" in tables else 0
+        transactions = db.execute("SELECT COUNT(*) FROM transactions").fetchone()[0] if "transactions" in tables else 0
+        wallets = db.execute("SELECT COUNT(*) FROM wallets").fetchone()[0] if "wallets" in tables else 0
         decisions = db.execute("SELECT COUNT(*) FROM analyst_decisions").fetchone()[0]
         simulations = db.execute(
             "SELECT estimated_tainted_preserved_bdt, estimated_legitimate_affected_bdt FROM simulated_outcomes"
@@ -34,6 +36,10 @@ def get_metrics() -> dict:
             row["decision"]: row["count"]
             for row in db.execute("SELECT decision, COUNT(*) AS count FROM analyst_decisions GROUP BY decision")
         }
+        stream_transactions = db.execute("SELECT COUNT(*) FROM flow_transactions").fetchone()[0] if "flow_transactions" in tables else 0
+        stream_alerts = db.execute("SELECT COUNT(*) FROM flow_transactions WHERE alerts_json != '[]'").fetchone()[0] if "flow_transactions" in tables else 0
+        case_count = db.execute("SELECT COUNT(*) FROM investigation_cases").fetchone()[0] if "investigation_cases" in tables else 0
+        open_case_count = db.execute("SELECT COUNT(*) FROM investigation_cases WHERE status NOT IN ('resolved', 'closed')").fetchone()[0] if "investigation_cases" in tables else 0
     try:
         ml_metrics = json.loads(ML_METRICS_PATH.read_text(encoding="utf-8")) if ML_METRICS_PATH.exists() else None
     except (OSError, json.JSONDecodeError):
@@ -94,6 +100,15 @@ def get_metrics() -> dict:
             "warning": "Synthetic exposure estimates are not actual financial loss, observed prevention, customer impact, or upay BD production performance.",
         },
         "warning": "Synthetic scenario metrics are not upay BD production statistics.",
+        "operational": {
+            "status": "ok",
+            "api": api_snapshot(),
+            "stream_transactions_total": stream_transactions,
+            "stream_transactions_with_alerts": stream_alerts,
+            "cases_total": case_count,
+            "open_cases": open_case_count,
+            "synthetic_only": True,
+        },
     }
 
 
