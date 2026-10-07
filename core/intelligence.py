@@ -10,6 +10,8 @@ from typing import Any, Mapping
 
 
 def _clamp(value: float) -> float:
+    if value is None:
+        return 0.0
     return max(0.0, min(1.0, float(value)))
 
 
