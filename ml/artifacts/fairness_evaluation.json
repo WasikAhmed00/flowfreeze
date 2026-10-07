@@ -1,0 +1,2017 @@
+{
+  "synthetic": true,
+  "label": "SYNTHETIC FAIRNESS EVALUATION \u2014 NOT PRODUCTION VALIDATION",
+  "data_seed": 42,
+  "model_name": "random_forest",
+  "evaluation_split": "test",
+  "test_threshold": 0.739618,
+  "test_threshold_source": "Existing model threshold selected on validation by ml.train.py; no threshold optimization is performed on test.",
+  "threshold_analysis": {
+    "split": "validation",
+    "thresholds": [
+      0.5,
+      0.6,
+      0.7,
+      0.7396178225812642,
+      0.8,
+      0.9
+    ],
+    "configured_thresholds": [
+      0.5,
+      0.6,
+      0.7,
+      0.8,
+      0.9
+    ],
+    "selected_model_threshold": 0.739618,
+    "selected_threshold_criterion": "The existing ml.train.py validation F1 selection; this report does not select a new operating threshold.",
+    "validation_metrics_are_selection_data": true,
+    "points": [
+      {
+        "threshold": 0.5,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": false,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 195,
+          "false_positives": 13,
+          "true_negatives": 943,
+          "false_negatives": 4,
+          "precision": 0.9375,
+          "recall": 0.979899,
+          "true_positive_rate": 0.979899,
+          "specificity": 0.986402,
+          "true_negative_rate": 0.986402,
+          "false_positive_rate": 0.013598,
+          "false_negative_rate": 0.020101,
+          "f1": 0.958231,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.180087,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 13,
+        "legitimate_value_affected_bdt": 184268.0,
+        "analyst_workload": {
+          "review_case_count": 111,
+          "review_wallet_count": 208,
+          "unique_transactions_in_review_scope": 226,
+          "estimated_analyst_workload_minutes": 939.0,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      },
+      {
+        "threshold": 0.6,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": false,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 195,
+          "false_positives": 12,
+          "true_negatives": 944,
+          "false_negatives": 4,
+          "precision": 0.942029,
+          "recall": 0.979899,
+          "true_positive_rate": 0.979899,
+          "specificity": 0.987448,
+          "true_negative_rate": 0.987448,
+          "false_positive_rate": 0.012552,
+          "false_negative_rate": 0.020101,
+          "f1": 0.960591,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.179221,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 12,
+        "legitimate_value_affected_bdt": 176368.0,
+        "analyst_workload": {
+          "review_case_count": 110,
+          "review_wallet_count": 207,
+          "unique_transactions_in_review_scope": 225,
+          "estimated_analyst_workload_minutes": 932.75,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      },
+      {
+        "threshold": 0.7,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": false,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 193,
+          "false_positives": 10,
+          "true_negatives": 946,
+          "false_negatives": 6,
+          "precision": 0.950739,
+          "recall": 0.969849,
+          "true_positive_rate": 0.969849,
+          "specificity": 0.98954,
+          "true_negative_rate": 0.98954,
+          "false_positive_rate": 0.01046,
+          "false_negative_rate": 0.030151,
+          "f1": 0.960199,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.175758,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 10,
+        "legitimate_value_affected_bdt": 171311.0,
+        "analyst_workload": {
+          "review_case_count": 109,
+          "review_wallet_count": 203,
+          "unique_transactions_in_review_scope": 223,
+          "estimated_analyst_workload_minutes": 922.75,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      },
+      {
+        "threshold": 0.7396178225812642,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": true,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 193,
+          "false_positives": 9,
+          "true_negatives": 947,
+          "false_negatives": 6,
+          "precision": 0.955446,
+          "recall": 0.969849,
+          "true_positive_rate": 0.969849,
+          "specificity": 0.990586,
+          "true_negative_rate": 0.990586,
+          "false_positive_rate": 0.009414,
+          "false_negative_rate": 0.030151,
+          "f1": 0.962594,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.174892,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 9,
+        "legitimate_value_affected_bdt": 162336.0,
+        "analyst_workload": {
+          "review_case_count": 109,
+          "review_wallet_count": 202,
+          "unique_transactions_in_review_scope": 222,
+          "estimated_analyst_workload_minutes": 920.5,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      },
+      {
+        "threshold": 0.8,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": false,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 189,
+          "false_positives": 7,
+          "true_negatives": 949,
+          "false_negatives": 10,
+          "precision": 0.964286,
+          "recall": 0.949749,
+          "true_positive_rate": 0.949749,
+          "specificity": 0.992678,
+          "true_negative_rate": 0.992678,
+          "false_positive_rate": 0.007322,
+          "false_negative_rate": 0.050251,
+          "f1": 0.956962,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.169697,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 7,
+        "legitimate_value_affected_bdt": 133461.0,
+        "analyst_workload": {
+          "review_case_count": 106,
+          "review_wallet_count": 196,
+          "unique_transactions_in_review_scope": 216,
+          "estimated_analyst_workload_minutes": 895.0,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      },
+      {
+        "threshold": 0.9,
+        "threshold_analysis_split": "validation",
+        "selected_model_threshold": 0.739618,
+        "matches_model_selected_threshold": false,
+        "metrics": {
+          "sample_count": 1155,
+          "fraud_count": 199,
+          "legitimate_count": 956,
+          "fraud_prevalence": 0.172294,
+          "true_positives": 176,
+          "false_positives": 5,
+          "true_negatives": 951,
+          "false_negatives": 23,
+          "precision": 0.972376,
+          "recall": 0.884422,
+          "true_positive_rate": 0.884422,
+          "specificity": 0.99477,
+          "true_negative_rate": 0.99477,
+          "false_positive_rate": 0.00523,
+          "false_negative_rate": 0.115578,
+          "f1": 0.926316,
+          "pr_auc_average_precision": 0.99065,
+          "mean_risk_score": 0.184455,
+          "high_risk_alert_rate": 0.15671,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "false_positive_count": 5,
+        "legitimate_value_affected_bdt": 105361.0,
+        "analyst_workload": {
+          "review_case_count": 100,
+          "review_wallet_count": 181,
+          "unique_transactions_in_review_scope": 205,
+          "estimated_analyst_workload_minutes": 843.25,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        }
+      }
+    ],
+    "warning": "The validation sweep shares data with model/threshold selection and is descriptive only, not held-out performance. Use the test results only at the preselected model threshold and select any future operating point on validation followed by a real-world governed pilot."
+  },
+  "dataset": {
+    "synthetic_only": true,
+    "seed": 42,
+    "scenario_family_count": 11,
+    "scenario_cases_by_split": {
+      "train": 770,
+      "validation": 165,
+      "test": 165
+    },
+    "wallet_case_rows_by_split": {
+      "test": 1155,
+      "train": 5390,
+      "validation": 1155
+    }
+  },
+  "cohort_methodology": {
+    "segment_dimensions": [
+      "customer_type",
+      "account_age_bucket",
+      "transaction_activity_bucket",
+      "amount_profile_bucket"
+    ],
+    "boundaries": {
+      "account_age_bucket_days": {
+        "NEW": "<=90",
+        "ESTABLISHED": "91-365",
+        "LONG_TENURE": ">365"
+      },
+      "transaction_activity_bucket": {
+        "source_field": "transaction_frequency (synthetic historical transactions/day)",
+        "method": "one-third/two-thirds quantiles computed from train-split wallet profiles only",
+        "train_cutpoints": {
+          "low_upper_inclusive": 0.067,
+          "medium_upper_inclusive": 2.156
+        }
+      },
+      "amount_profile_bucket": {
+        "source_field": "average_transaction_amount (synthetic BDT profile)",
+        "method": "one-third/two-thirds quantiles computed from train-split wallet profiles only",
+        "train_cutpoints_bdt": {
+          "low_upper_inclusive": 1138.0,
+          "medium_upper_inclusive": 5177.85
+        }
+      },
+      "customer_type": {
+        "source_field": "existing synthetic wallets.csv customer_type categories",
+        "categories": [
+          "agent",
+          "individual",
+          "merchant"
+        ]
+      }
+    },
+    "variables_used": [
+      "customer_type",
+      "account_age",
+      "transaction_frequency",
+      "average_transaction_amount"
+    ],
+    "why_selected": {
+      "customer_type": "Existing synthetic operational customer categories in wallets.csv.",
+      "account_age_bucket": "Existing synthetic account age, grouped into new, established and longer-tenure operational cohorts.",
+      "transaction_activity_bucket": "Existing generated historical transaction-frequency profile; train-only tertiles avoid hand-tuned performance cohorts.",
+      "amount_profile_bucket": "Existing generated average-transaction-amount profile; train-only tertiles avoid hand-tuned performance cohorts."
+    },
+    "excluded_variables": [
+      "race",
+      "religion",
+      "political_affiliation",
+      "sexual_orientation",
+      "other protected or sensitive personal attributes",
+      "wallet_id",
+      "scenario_id"
+    ],
+    "unit_of_analysis": "one synthetic wallet-case prediction at the generator's analysis_at snapshot",
+    "warning": "These segments are evaluation cohorts, not protected-attribute proxies, and should not be interpreted as evidence of fairness across protected demographic groups. Synthetic fairness evaluation does not establish fairness on real MFS customers."
+  },
+  "overall_test_metrics": {
+    "sample_count": 1155,
+    "fraud_count": 204,
+    "legitimate_count": 951,
+    "fraud_prevalence": 0.176623,
+    "true_positives": 191,
+    "false_positives": 5,
+    "true_negatives": 946,
+    "false_negatives": 13,
+    "precision": 0.97449,
+    "recall": 0.936275,
+    "true_positive_rate": 0.936275,
+    "specificity": 0.994742,
+    "true_negative_rate": 0.994742,
+    "false_positive_rate": 0.005258,
+    "false_negative_rate": 0.063725,
+    "f1": 0.955,
+    "pr_auc_average_precision": 0.987278,
+    "mean_risk_score": 0.185068,
+    "high_risk_alert_rate": 0.169697,
+    "reliability": {
+      "minimum_group_size": 20,
+      "minimum_class_support": 5,
+      "positive_support_sufficient": true,
+      "negative_support_sufficient": true,
+      "status": "meets_exploratory_minimums",
+      "metric_reliable": {
+        "false_positive_rate": true,
+        "specificity": true,
+        "false_negative_rate": true,
+        "true_positive_rate": true,
+        "recall": true,
+        "precision": true,
+        "f1": true,
+        "pr_auc_average_precision": true,
+        "mean_risk_score": true,
+        "high_risk_alert_rate": true
+      },
+      "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+    }
+  },
+  "test_metrics_by_segment": {
+    "customer_type": [
+      {
+        "segment": "agent",
+        "metrics": {
+          "sample_count": 30,
+          "fraud_count": 0,
+          "legitimate_count": 30,
+          "fraud_prevalence": 0.0,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 30,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "true_positive_rate": null,
+          "specificity": 1.0,
+          "true_negative_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": null,
+          "f1": null,
+          "pr_auc_average_precision": null,
+          "mean_risk_score": 0.000204,
+          "high_risk_alert_rate": 0.0,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": false,
+            "negative_support_sufficient": true,
+            "status": "unreliable_small_or_one_class_sample",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": false,
+              "true_positive_rate": false,
+              "recall": false,
+              "precision": false,
+              "f1": false,
+              "pr_auc_average_precision": false,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.005258,
+            "absolute_gap_vs_overall": 0.005258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          },
+          "precision": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          }
+        }
+      },
+      {
+        "segment": "individual",
+        "metrics": {
+          "sample_count": 885,
+          "fraud_count": 192,
+          "legitimate_count": 693,
+          "fraud_prevalence": 0.216949,
+          "true_positives": 180,
+          "false_positives": 4,
+          "true_negatives": 689,
+          "false_negatives": 12,
+          "precision": 0.978261,
+          "recall": 0.9375,
+          "true_positive_rate": 0.9375,
+          "specificity": 0.994228,
+          "true_negative_rate": 0.994228,
+          "false_positive_rate": 0.005772,
+          "false_negative_rate": 0.0625,
+          "f1": 0.957447,
+          "pr_auc_average_precision": 0.993364,
+          "mean_risk_score": 0.225059,
+          "high_risk_alert_rate": 0.20791,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": 0.000514,
+            "absolute_gap_vs_overall": 0.000514,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": -0.001225,
+            "absolute_gap_vs_overall": 0.001225,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": 0.001225,
+            "absolute_gap_vs_overall": 0.001225,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.003771,
+            "absolute_gap_vs_overall": 0.003771,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "merchant",
+        "metrics": {
+          "sample_count": 240,
+          "fraud_count": 12,
+          "legitimate_count": 228,
+          "fraud_prevalence": 0.05,
+          "true_positives": 11,
+          "false_positives": 1,
+          "true_negatives": 227,
+          "false_negatives": 1,
+          "precision": 0.916667,
+          "recall": 0.916667,
+          "true_positive_rate": 0.916667,
+          "specificity": 0.995614,
+          "true_negative_rate": 0.995614,
+          "false_positive_rate": 0.004386,
+          "false_negative_rate": 0.083333,
+          "f1": 0.916667,
+          "pr_auc_average_precision": 0.818322,
+          "mean_risk_score": 0.060708,
+          "high_risk_alert_rate": 0.05,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.000872,
+            "absolute_gap_vs_overall": 0.000872,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": 0.019608,
+            "absolute_gap_vs_overall": 0.019608,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": -0.019608,
+            "absolute_gap_vs_overall": 0.019608,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": -0.057823,
+            "absolute_gap_vs_overall": 0.057823,
+            "reliable": true
+          }
+        }
+      }
+    ],
+    "account_age_bucket": [
+      {
+        "segment": "ESTABLISHED",
+        "metrics": {
+          "sample_count": 148,
+          "fraud_count": 27,
+          "legitimate_count": 121,
+          "fraud_prevalence": 0.182432,
+          "true_positives": 24,
+          "false_positives": 0,
+          "true_negatives": 121,
+          "false_negatives": 3,
+          "precision": 1.0,
+          "recall": 0.888889,
+          "true_positive_rate": 0.888889,
+          "specificity": 1.0,
+          "true_negative_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.111111,
+          "f1": 0.941176,
+          "pr_auc_average_precision": 1.0,
+          "mean_risk_score": 0.18371,
+          "high_risk_alert_rate": 0.162162,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.005258,
+            "absolute_gap_vs_overall": 0.005258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": 0.047386,
+            "absolute_gap_vs_overall": 0.047386,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": -0.047386,
+            "absolute_gap_vs_overall": 0.047386,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.02551,
+            "absolute_gap_vs_overall": 0.02551,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "LONG_TENURE",
+        "metrics": {
+          "sample_count": 966,
+          "fraud_count": 165,
+          "legitimate_count": 801,
+          "fraud_prevalence": 0.170807,
+          "true_positives": 155,
+          "false_positives": 5,
+          "true_negatives": 796,
+          "false_negatives": 10,
+          "precision": 0.96875,
+          "recall": 0.939394,
+          "true_positive_rate": 0.939394,
+          "specificity": 0.993758,
+          "true_negative_rate": 0.993758,
+          "false_positive_rate": 0.006242,
+          "false_negative_rate": 0.060606,
+          "f1": 0.953846,
+          "pr_auc_average_precision": 0.985331,
+          "mean_risk_score": 0.180799,
+          "high_risk_alert_rate": 0.165631,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": 0.000984,
+            "absolute_gap_vs_overall": 0.000984,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": -0.003119,
+            "absolute_gap_vs_overall": 0.003119,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": 0.003119,
+            "absolute_gap_vs_overall": 0.003119,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": -0.00574,
+            "absolute_gap_vs_overall": 0.00574,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "NEW",
+        "metrics": {
+          "sample_count": 41,
+          "fraud_count": 12,
+          "legitimate_count": 29,
+          "fraud_prevalence": 0.292683,
+          "true_positives": 12,
+          "false_positives": 0,
+          "true_negatives": 29,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "true_positive_rate": 1.0,
+          "specificity": 1.0,
+          "true_negative_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.0,
+          "f1": 1.0,
+          "pr_auc_average_precision": 1.0,
+          "mean_risk_score": 0.290556,
+          "high_risk_alert_rate": 0.292683,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.005258,
+            "absolute_gap_vs_overall": 0.005258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": -0.063725,
+            "absolute_gap_vs_overall": 0.063725,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": 0.063725,
+            "absolute_gap_vs_overall": 0.063725,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.02551,
+            "absolute_gap_vs_overall": 0.02551,
+            "reliable": true
+          }
+        }
+      }
+    ],
+    "transaction_activity_bucket": [
+      {
+        "segment": "HIGH",
+        "metrics": {
+          "sample_count": 380,
+          "fraud_count": 130,
+          "legitimate_count": 250,
+          "fraud_prevalence": 0.342105,
+          "true_positives": 121,
+          "false_positives": 1,
+          "true_negatives": 249,
+          "false_negatives": 9,
+          "precision": 0.991803,
+          "recall": 0.930769,
+          "true_positive_rate": 0.930769,
+          "specificity": 0.996,
+          "true_negative_rate": 0.996,
+          "false_positive_rate": 0.004,
+          "false_negative_rate": 0.069231,
+          "f1": 0.960317,
+          "pr_auc_average_precision": 0.994994,
+          "mean_risk_score": 0.348043,
+          "high_risk_alert_rate": 0.321053,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.001258,
+            "absolute_gap_vs_overall": 0.001258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": 0.005506,
+            "absolute_gap_vs_overall": 0.005506,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": -0.005506,
+            "absolute_gap_vs_overall": 0.005506,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.017313,
+            "absolute_gap_vs_overall": 0.017313,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "LOW",
+        "metrics": {
+          "sample_count": 496,
+          "fraud_count": 0,
+          "legitimate_count": 496,
+          "fraud_prevalence": 0.0,
+          "true_positives": 0,
+          "false_positives": 0,
+          "true_negatives": 496,
+          "false_negatives": 0,
+          "precision": null,
+          "recall": null,
+          "true_positive_rate": null,
+          "specificity": 1.0,
+          "true_negative_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": null,
+          "f1": null,
+          "pr_auc_average_precision": null,
+          "mean_risk_score": 0.000248,
+          "high_risk_alert_rate": 0.0,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": false,
+            "negative_support_sufficient": true,
+            "status": "unreliable_small_or_one_class_sample",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": false,
+              "true_positive_rate": false,
+              "recall": false,
+              "precision": false,
+              "f1": false,
+              "pr_auc_average_precision": false,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.005258,
+            "absolute_gap_vs_overall": 0.005258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          },
+          "precision": {
+            "signed_gap_vs_overall": null,
+            "absolute_gap_vs_overall": null,
+            "reliable": false
+          }
+        }
+      },
+      {
+        "segment": "MEDIUM",
+        "metrics": {
+          "sample_count": 279,
+          "fraud_count": 74,
+          "legitimate_count": 205,
+          "fraud_prevalence": 0.265233,
+          "true_positives": 70,
+          "false_positives": 4,
+          "true_negatives": 201,
+          "false_negatives": 4,
+          "precision": 0.945946,
+          "recall": 0.945946,
+          "true_positive_rate": 0.945946,
+          "specificity": 0.980488,
+          "true_negative_rate": 0.980488,
+          "false_positive_rate": 0.019512,
+          "false_negative_rate": 0.054054,
+          "f1": 0.945946,
+          "pr_auc_average_precision": 0.974787,
+          "mean_risk_score": 0.291662,
+          "high_risk_alert_rate": 0.265233,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": 0.014254,
+            "absolute_gap_vs_overall": 0.014254,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": -0.009671,
+            "absolute_gap_vs_overall": 0.009671,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": 0.009671,
+            "absolute_gap_vs_overall": 0.009671,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": -0.028544,
+            "absolute_gap_vs_overall": 0.028544,
+            "reliable": true
+          }
+        }
+      }
+    ],
+    "amount_profile_bucket": [
+      {
+        "segment": "HIGH_VALUE",
+        "metrics": {
+          "sample_count": 394,
+          "fraud_count": 120,
+          "legitimate_count": 274,
+          "fraud_prevalence": 0.304569,
+          "true_positives": 116,
+          "false_positives": 3,
+          "true_negatives": 271,
+          "false_negatives": 4,
+          "precision": 0.97479,
+          "recall": 0.966667,
+          "true_positive_rate": 0.966667,
+          "specificity": 0.989051,
+          "true_negative_rate": 0.989051,
+          "false_positive_rate": 0.010949,
+          "false_negative_rate": 0.033333,
+          "f1": 0.970711,
+          "pr_auc_average_precision": 0.996749,
+          "mean_risk_score": 0.325104,
+          "high_risk_alert_rate": 0.30203,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": 0.005691,
+            "absolute_gap_vs_overall": 0.005691,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": -0.030392,
+            "absolute_gap_vs_overall": 0.030392,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": 0.030392,
+            "absolute_gap_vs_overall": 0.030392,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.0003,
+            "absolute_gap_vs_overall": 0.0003,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "LOW_VALUE",
+        "metrics": {
+          "sample_count": 391,
+          "fraud_count": 12,
+          "legitimate_count": 379,
+          "fraud_prevalence": 0.030691,
+          "true_positives": 10,
+          "false_positives": 0,
+          "true_negatives": 379,
+          "false_negatives": 2,
+          "precision": 1.0,
+          "recall": 0.833333,
+          "true_positive_rate": 0.833333,
+          "specificity": 1.0,
+          "true_negative_rate": 1.0,
+          "false_positive_rate": 0.0,
+          "false_negative_rate": 0.166667,
+          "f1": 0.909091,
+          "pr_auc_average_precision": 1.0,
+          "mean_risk_score": 0.028358,
+          "high_risk_alert_rate": 0.025575,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": -0.005258,
+            "absolute_gap_vs_overall": 0.005258,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": 0.102942,
+            "absolute_gap_vs_overall": 0.102942,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": -0.102942,
+            "absolute_gap_vs_overall": 0.102942,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": 0.02551,
+            "absolute_gap_vs_overall": 0.02551,
+            "reliable": true
+          }
+        }
+      },
+      {
+        "segment": "MEDIUM_VALUE",
+        "metrics": {
+          "sample_count": 370,
+          "fraud_count": 72,
+          "legitimate_count": 298,
+          "fraud_prevalence": 0.194595,
+          "true_positives": 65,
+          "false_positives": 2,
+          "true_negatives": 296,
+          "false_negatives": 7,
+          "precision": 0.970149,
+          "recall": 0.902778,
+          "true_positive_rate": 0.902778,
+          "specificity": 0.993289,
+          "true_negative_rate": 0.993289,
+          "false_positive_rate": 0.006711,
+          "false_negative_rate": 0.097222,
+          "f1": 0.935252,
+          "pr_auc_average_precision": 0.975336,
+          "mean_risk_score": 0.201552,
+          "high_risk_alert_rate": 0.181081,
+          "reliability": {
+            "minimum_group_size": 20,
+            "minimum_class_support": 5,
+            "positive_support_sufficient": true,
+            "negative_support_sufficient": true,
+            "status": "meets_exploratory_minimums",
+            "metric_reliable": {
+              "false_positive_rate": true,
+              "specificity": true,
+              "false_negative_rate": true,
+              "true_positive_rate": true,
+              "recall": true,
+              "precision": true,
+              "f1": true,
+              "pr_auc_average_precision": true,
+              "mean_risk_score": true,
+              "high_risk_alert_rate": true
+            },
+            "caveat": "Minimum support flags are screening rules, not confidence intervals, significance tests, or evidence of fairness."
+          }
+        },
+        "gaps_vs_overall": {
+          "false_positive_rate": {
+            "signed_gap_vs_overall": 0.001453,
+            "absolute_gap_vs_overall": 0.001453,
+            "reliable": true
+          },
+          "false_negative_rate": {
+            "signed_gap_vs_overall": 0.033497,
+            "absolute_gap_vs_overall": 0.033497,
+            "reliable": true
+          },
+          "true_positive_rate": {
+            "signed_gap_vs_overall": -0.033497,
+            "absolute_gap_vs_overall": 0.033497,
+            "reliable": true
+          },
+          "precision": {
+            "signed_gap_vs_overall": -0.004341,
+            "absolute_gap_vs_overall": 0.004341,
+            "reliable": true
+          }
+        }
+      }
+    ]
+  },
+  "gap_comparisons": {
+    "customer_type": {
+      "false_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.005258,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "agent",
+            "value": 0.0,
+            "signed_gap": -0.005258,
+            "absolute_gap": 0.005258
+          },
+          {
+            "segment": "individual",
+            "value": 0.005772,
+            "signed_gap": 0.000514,
+            "absolute_gap": 0.000514
+          },
+          {
+            "segment": "merchant",
+            "value": 0.004386,
+            "signed_gap": -0.000872,
+            "absolute_gap": 0.000872
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "agent",
+          "value": 0.0,
+          "gap_vs_overall": -0.005258
+        },
+        "worst_observed_segment": {
+          "segment": "individual",
+          "value": 0.005772,
+          "gap_vs_overall": 0.000514
+        },
+        "best_to_worst_absolute_gap": 0.005772
+      },
+      "false_negative_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.063725,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "individual",
+            "value": 0.0625,
+            "signed_gap": -0.001225,
+            "absolute_gap": 0.001225
+          },
+          {
+            "segment": "merchant",
+            "value": 0.083333,
+            "signed_gap": 0.019608,
+            "absolute_gap": 0.019608
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "individual",
+          "value": 0.0625,
+          "gap_vs_overall": -0.001225
+        },
+        "worst_observed_segment": {
+          "segment": "merchant",
+          "value": 0.083333,
+          "gap_vs_overall": 0.019608
+        },
+        "best_to_worst_absolute_gap": 0.020833
+      },
+      "true_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.936275,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "individual",
+            "value": 0.9375,
+            "signed_gap": 0.001225,
+            "absolute_gap": 0.001225
+          },
+          {
+            "segment": "merchant",
+            "value": 0.916667,
+            "signed_gap": -0.019608,
+            "absolute_gap": 0.019608
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "individual",
+          "value": 0.9375,
+          "gap_vs_overall": 0.001225
+        },
+        "worst_observed_segment": {
+          "segment": "merchant",
+          "value": 0.916667,
+          "gap_vs_overall": -0.019608
+        },
+        "best_to_worst_absolute_gap": 0.020833
+      },
+      "precision": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.97449,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "individual",
+            "value": 0.978261,
+            "signed_gap": 0.003771,
+            "absolute_gap": 0.003771
+          },
+          {
+            "segment": "merchant",
+            "value": 0.916667,
+            "signed_gap": -0.057823,
+            "absolute_gap": 0.057823
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "individual",
+          "value": 0.978261,
+          "gap_vs_overall": 0.003771
+        },
+        "worst_observed_segment": {
+          "segment": "merchant",
+          "value": 0.916667,
+          "gap_vs_overall": -0.057823
+        },
+        "best_to_worst_absolute_gap": 0.061594
+      }
+    },
+    "account_age_bucket": {
+      "false_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.005258,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "ESTABLISHED",
+            "value": 0.0,
+            "signed_gap": -0.005258,
+            "absolute_gap": 0.005258
+          },
+          {
+            "segment": "LONG_TENURE",
+            "value": 0.006242,
+            "signed_gap": 0.000984,
+            "absolute_gap": 0.000984
+          },
+          {
+            "segment": "NEW",
+            "value": 0.0,
+            "signed_gap": -0.005258,
+            "absolute_gap": 0.005258
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "ESTABLISHED",
+          "value": 0.0,
+          "gap_vs_overall": -0.005258
+        },
+        "worst_observed_segment": {
+          "segment": "LONG_TENURE",
+          "value": 0.006242,
+          "gap_vs_overall": 0.000984
+        },
+        "best_to_worst_absolute_gap": 0.006242
+      },
+      "false_negative_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.063725,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "ESTABLISHED",
+            "value": 0.111111,
+            "signed_gap": 0.047386,
+            "absolute_gap": 0.047386
+          },
+          {
+            "segment": "LONG_TENURE",
+            "value": 0.060606,
+            "signed_gap": -0.003119,
+            "absolute_gap": 0.003119
+          },
+          {
+            "segment": "NEW",
+            "value": 0.0,
+            "signed_gap": -0.063725,
+            "absolute_gap": 0.063725
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "NEW",
+          "value": 0.0,
+          "gap_vs_overall": -0.063725
+        },
+        "worst_observed_segment": {
+          "segment": "ESTABLISHED",
+          "value": 0.111111,
+          "gap_vs_overall": 0.047386
+        },
+        "best_to_worst_absolute_gap": 0.111111
+      },
+      "true_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.936275,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "ESTABLISHED",
+            "value": 0.888889,
+            "signed_gap": -0.047386,
+            "absolute_gap": 0.047386
+          },
+          {
+            "segment": "LONG_TENURE",
+            "value": 0.939394,
+            "signed_gap": 0.003119,
+            "absolute_gap": 0.003119
+          },
+          {
+            "segment": "NEW",
+            "value": 1.0,
+            "signed_gap": 0.063725,
+            "absolute_gap": 0.063725
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "NEW",
+          "value": 1.0,
+          "gap_vs_overall": 0.063725
+        },
+        "worst_observed_segment": {
+          "segment": "ESTABLISHED",
+          "value": 0.888889,
+          "gap_vs_overall": -0.047386
+        },
+        "best_to_worst_absolute_gap": 0.111111
+      },
+      "precision": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.97449,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "ESTABLISHED",
+            "value": 1.0,
+            "signed_gap": 0.02551,
+            "absolute_gap": 0.02551
+          },
+          {
+            "segment": "LONG_TENURE",
+            "value": 0.96875,
+            "signed_gap": -0.00574,
+            "absolute_gap": 0.00574
+          },
+          {
+            "segment": "NEW",
+            "value": 1.0,
+            "signed_gap": 0.02551,
+            "absolute_gap": 0.02551
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "ESTABLISHED",
+          "value": 1.0,
+          "gap_vs_overall": 0.02551
+        },
+        "worst_observed_segment": {
+          "segment": "LONG_TENURE",
+          "value": 0.96875,
+          "gap_vs_overall": -0.00574
+        },
+        "best_to_worst_absolute_gap": 0.03125
+      }
+    },
+    "transaction_activity_bucket": {
+      "false_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.005258,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH",
+            "value": 0.004,
+            "signed_gap": -0.001258,
+            "absolute_gap": 0.001258
+          },
+          {
+            "segment": "LOW",
+            "value": 0.0,
+            "signed_gap": -0.005258,
+            "absolute_gap": 0.005258
+          },
+          {
+            "segment": "MEDIUM",
+            "value": 0.019512,
+            "signed_gap": 0.014254,
+            "absolute_gap": 0.014254
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "LOW",
+          "value": 0.0,
+          "gap_vs_overall": -0.005258
+        },
+        "worst_observed_segment": {
+          "segment": "MEDIUM",
+          "value": 0.019512,
+          "gap_vs_overall": 0.014254
+        },
+        "best_to_worst_absolute_gap": 0.019512
+      },
+      "false_negative_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.063725,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH",
+            "value": 0.069231,
+            "signed_gap": 0.005506,
+            "absolute_gap": 0.005506
+          },
+          {
+            "segment": "MEDIUM",
+            "value": 0.054054,
+            "signed_gap": -0.009671,
+            "absolute_gap": 0.009671
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "MEDIUM",
+          "value": 0.054054,
+          "gap_vs_overall": -0.009671
+        },
+        "worst_observed_segment": {
+          "segment": "HIGH",
+          "value": 0.069231,
+          "gap_vs_overall": 0.005506
+        },
+        "best_to_worst_absolute_gap": 0.015177
+      },
+      "true_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.936275,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH",
+            "value": 0.930769,
+            "signed_gap": -0.005506,
+            "absolute_gap": 0.005506
+          },
+          {
+            "segment": "MEDIUM",
+            "value": 0.945946,
+            "signed_gap": 0.009671,
+            "absolute_gap": 0.009671
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "MEDIUM",
+          "value": 0.945946,
+          "gap_vs_overall": 0.009671
+        },
+        "worst_observed_segment": {
+          "segment": "HIGH",
+          "value": 0.930769,
+          "gap_vs_overall": -0.005506
+        },
+        "best_to_worst_absolute_gap": 0.015177
+      },
+      "precision": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.97449,
+        "eligible_segment_count": 2,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH",
+            "value": 0.991803,
+            "signed_gap": 0.017313,
+            "absolute_gap": 0.017313
+          },
+          {
+            "segment": "MEDIUM",
+            "value": 0.945946,
+            "signed_gap": -0.028544,
+            "absolute_gap": 0.028544
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "HIGH",
+          "value": 0.991803,
+          "gap_vs_overall": 0.017313
+        },
+        "worst_observed_segment": {
+          "segment": "MEDIUM",
+          "value": 0.945946,
+          "gap_vs_overall": -0.028544
+        },
+        "best_to_worst_absolute_gap": 0.045857
+      }
+    },
+    "amount_profile_bucket": {
+      "false_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.005258,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH_VALUE",
+            "value": 0.010949,
+            "signed_gap": 0.005691,
+            "absolute_gap": 0.005691
+          },
+          {
+            "segment": "LOW_VALUE",
+            "value": 0.0,
+            "signed_gap": -0.005258,
+            "absolute_gap": 0.005258
+          },
+          {
+            "segment": "MEDIUM_VALUE",
+            "value": 0.006711,
+            "signed_gap": 0.001453,
+            "absolute_gap": 0.001453
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "LOW_VALUE",
+          "value": 0.0,
+          "gap_vs_overall": -0.005258
+        },
+        "worst_observed_segment": {
+          "segment": "HIGH_VALUE",
+          "value": 0.010949,
+          "gap_vs_overall": 0.005691
+        },
+        "best_to_worst_absolute_gap": 0.010949
+      },
+      "false_negative_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "lower_is_better",
+        "overall_value": 0.063725,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH_VALUE",
+            "value": 0.033333,
+            "signed_gap": -0.030392,
+            "absolute_gap": 0.030392
+          },
+          {
+            "segment": "LOW_VALUE",
+            "value": 0.166667,
+            "signed_gap": 0.102942,
+            "absolute_gap": 0.102942
+          },
+          {
+            "segment": "MEDIUM_VALUE",
+            "value": 0.097222,
+            "signed_gap": 0.033497,
+            "absolute_gap": 0.033497
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "HIGH_VALUE",
+          "value": 0.033333,
+          "gap_vs_overall": -0.030392
+        },
+        "worst_observed_segment": {
+          "segment": "LOW_VALUE",
+          "value": 0.166667,
+          "gap_vs_overall": 0.102942
+        },
+        "best_to_worst_absolute_gap": 0.133334
+      },
+      "true_positive_rate": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.936275,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH_VALUE",
+            "value": 0.966667,
+            "signed_gap": 0.030392,
+            "absolute_gap": 0.030392
+          },
+          {
+            "segment": "LOW_VALUE",
+            "value": 0.833333,
+            "signed_gap": -0.102942,
+            "absolute_gap": 0.102942
+          },
+          {
+            "segment": "MEDIUM_VALUE",
+            "value": 0.902778,
+            "signed_gap": -0.033497,
+            "absolute_gap": 0.033497
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "HIGH_VALUE",
+          "value": 0.966667,
+          "gap_vs_overall": 0.030392
+        },
+        "worst_observed_segment": {
+          "segment": "LOW_VALUE",
+          "value": 0.833333,
+          "gap_vs_overall": -0.102942
+        },
+        "best_to_worst_absolute_gap": 0.133334
+      },
+      "precision": {
+        "status": "exploratory_comparison_only",
+        "direction_for_reference": "higher_is_better",
+        "overall_value": 0.97449,
+        "eligible_segment_count": 3,
+        "segment_minus_overall": [
+          {
+            "segment": "HIGH_VALUE",
+            "value": 0.97479,
+            "signed_gap": 0.0003,
+            "absolute_gap": 0.0003
+          },
+          {
+            "segment": "LOW_VALUE",
+            "value": 1.0,
+            "signed_gap": 0.02551,
+            "absolute_gap": 0.02551
+          },
+          {
+            "segment": "MEDIUM_VALUE",
+            "value": 0.970149,
+            "signed_gap": -0.004341,
+            "absolute_gap": 0.004341
+          }
+        ],
+        "best_observed_segment": {
+          "segment": "LOW_VALUE",
+          "value": 1.0,
+          "gap_vs_overall": 0.02551
+        },
+        "worst_observed_segment": {
+          "segment": "MEDIUM_VALUE",
+          "value": 0.970149,
+          "gap_vs_overall": -0.004341
+        },
+        "best_to_worst_absolute_gap": 0.029851
+      }
+    }
+  },
+  "false_positive_impact": {
+    "false_positive_count": 5,
+    "false_positive_rate": 0.005258,
+    "legitimate_value_affected_bdt": 103550.0,
+    "affected_legitimate_transaction_count": 6,
+    "cases_per_segment": {
+      "customer_type": {
+        "agent": 0,
+        "individual": 4,
+        "merchant": 1
+      },
+      "account_age_bucket": {
+        "ESTABLISHED": 0,
+        "LONG_TENURE": 5,
+        "NEW": 0
+      },
+      "transaction_activity_bucket": {
+        "HIGH": 1,
+        "LOW": 0,
+        "MEDIUM": 4
+      },
+      "amount_profile_bucket": {
+        "HIGH_VALUE": 3,
+        "LOW_VALUE": 0,
+        "MEDIUM_VALUE": 2
+      }
+    },
+    "value_per_segment": {
+      "customer_type": {
+        "agent": 0.0,
+        "individual": 70628.0,
+        "merchant": 32922.0
+      },
+      "account_age_bucket": {
+        "ESTABLISHED": 0.0,
+        "LONG_TENURE": 103550.0,
+        "NEW": 0.0
+      },
+      "transaction_activity_bucket": {
+        "HIGH": 555.0,
+        "LOW": 0.0,
+        "MEDIUM": 102995.0
+      },
+      "amount_profile_bucket": {
+        "HIGH_VALUE": 60578.0,
+        "LOW_VALUE": 0.0,
+        "MEDIUM_VALUE": 42972.0
+      }
+    }
+  },
+  "intervention_policy_comparison": {
+    "evaluation_split": "test",
+    "threshold_source": "validation-selected model threshold; test set was not used for selection",
+    "estimated_exposure_proxy": "min(reported_amount_bdt, observed_outgoing_amount_bdt) at analysis_at, used only as a synthetic policy input; not ground-truth taint or recoverable funds",
+    "next_move_urgency_cutoff": {
+      "value": 0.024566,
+      "source": "75th percentile of calibrated cash-out probabilities on validation split only"
+    },
+    "evidence_rule": {
+      "minimum_signals": 2,
+      "listed_signals": [
+        "amount ratio >=2 with a prior relationship",
+        "observed outgoing count >=1",
+        "graph evidence: (observed outgoing count >0 and distinct counterparties >=2) or an observed cash-out",
+        "calibrated cash-out probability >= the validation urgency cutoff",
+        "observed cash-out count >0"
+      ],
+      "requires_positive_estimated_exposure": true,
+      "requires_graph_evidence": true,
+      "requires_validation_urgency_cutoff": true,
+      "human_review_required": true,
+      "automatic_execution": false,
+      "warning": "Signals are overlapping heuristics, not statistically independent evidence or validated operational rules."
+    },
+    "results": [
+      {
+        "strategy": "aggressive",
+        "label": "Aggressive intervention",
+        "definition": "Counterfactual intervention on every risk score at or above the validation-selected threshold; no additional evidence gate.",
+        "risk_threshold": 0.739618,
+        "risk_threshold_source": "fraud_model.decision_threshold selected on validation split by ml.train.py; not chosen from test results",
+        "candidate_wallet_case_recommendations": 196,
+        "high_risk_fraud_recall": 0.936275,
+        "true_positive_rate": 0.936275,
+        "false_negative_count": 13,
+        "missed_fraud_rate": 0.063725,
+        "precision": 0.97449,
+        "false_positive_count": 5,
+        "false_positive_rate": 0.005258,
+        "simulated_legitimate_value_affected_bdt": 103550.0,
+        "affected_legitimate_transaction_count": 6,
+        "explanation_strength_distribution": {
+          "0": 29,
+          "1": 72,
+          "2": 46,
+          "3": 49,
+          "4": 0,
+          "5": 0
+        },
+        "customer_impact_exposure_is_actual": false,
+        "analyst_workload": {
+          "review_case_count": 104,
+          "review_wallet_count": 196,
+          "unique_transactions_in_review_scope": 217,
+          "estimated_analyst_workload_minutes": 888.5,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        },
+        "human_review_required_before_any_action": false,
+        "automatic_execution": false,
+        "synthetic_only": true
+      },
+      {
+        "strategy": "evidence_based",
+        "label": "Evidence-based with analyst review",
+        "definition": "Risk threshold plus at least two listed behavior/explanation signals, positive estimated-exposure proxy, validation-derived cash-out urgency cutoff, and graph/cash-out evidence; candidate remains subject to human analyst review.",
+        "risk_threshold": 0.739618,
+        "risk_threshold_source": "fraud_model.decision_threshold selected on validation split by ml.train.py; not chosen from test results",
+        "candidate_wallet_case_recommendations": 31,
+        "high_risk_fraud_recall": 0.147059,
+        "true_positive_rate": 0.147059,
+        "false_negative_count": 174,
+        "missed_fraud_rate": 0.852941,
+        "precision": 0.967742,
+        "false_positive_count": 1,
+        "false_positive_rate": 0.001052,
+        "simulated_legitimate_value_affected_bdt": 36889.0,
+        "affected_legitimate_transaction_count": 2,
+        "explanation_strength_distribution": {
+          "0": 0,
+          "1": 0,
+          "2": 0,
+          "3": 31,
+          "4": 0,
+          "5": 0
+        },
+        "customer_impact_exposure_is_actual": false,
+        "analyst_workload": {
+          "review_case_count": 30,
+          "review_wallet_count": 31,
+          "unique_transactions_in_review_scope": 63,
+          "estimated_analyst_workload_minutes": 237.75,
+          "workload_formula": "4 intake min/case + 1.5 min/unique associated transaction + 0.75 min/wallet; synthetic assumption, not measured analyst time"
+        },
+        "human_review_required_before_any_action": true,
+        "automatic_execution": false,
+        "synthetic_only": true
+      }
+    ],
+    "warning": "Both strategies are decision counterfactuals only. Evidence-based candidates still need a human analyst; no action was executed and no real customer impact was measured."
+  },
+  "sample_size_policy": {
+    "minimum_segment_population": 20,
+    "minimum_positive_and_negative_class_support": 5,
+    "description": "Metrics failing a relevant minimum are marked unreliable and omitted from reliable-segment gap comparisons; these minimums do not prove statistical significance."
+  },
+  "limitations": [
+    "Synthetic fairness evaluation does not establish fairness on real MFS customers.",
+    "These segments are evaluation cohorts, not protected-attribute proxies, and should not be interpreted as evidence of fairness across protected demographic groups.",
+    "The generated cases repeat eleven scenario families across splits; this test does not measure new-family or real-world generalization.",
+    "No confidence intervals, hypothesis tests, causal conclusions, subgroup representativeness claim, or production validation is provided.",
+    "False-positive value is synthetic legitimate transaction volume potentially exposed to interruption, not actual financial/customer harm."
+  ]
+}

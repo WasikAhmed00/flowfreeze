@@ -1,0 +1,14 @@
+segment_dimension,segment,legitimate_wallet_population,false_positive_wallets,affected_case_count,affected_legitimate_transaction_count,simulated_legitimate_value_affected_bdt,average_legitimate_value_affected_bdt,median_legitimate_value_affected_bdt,false_positive_rate
+overall,all_test_wallet_cases,951,5,104,6,103550.0,17258.33,16592.0,0.005258
+customer_type,agent,30,0,0,0,0.0,,,0.0
+customer_type,individual,693,4,4,5,70628.0,,,0.005772
+customer_type,merchant,228,1,1,1,32922.0,,,0.004386
+account_age_bucket,ESTABLISHED,121,0,0,0,0.0,,,0.0
+account_age_bucket,LONG_TENURE,801,5,5,6,103550.0,,,0.006242
+account_age_bucket,NEW,29,0,0,0,0.0,,,0.0
+transaction_activity_bucket,HIGH,250,1,1,1,555.0,,,0.004
+transaction_activity_bucket,LOW,496,0,0,0,0.0,,,0.0
+transaction_activity_bucket,MEDIUM,205,4,4,5,102995.0,,,0.019512
+amount_profile_bucket,HIGH_VALUE,274,3,3,4,60578.0,,,0.010949
+amount_profile_bucket,LOW_VALUE,379,0,0,0,0.0,,,0.0
+amount_profile_bucket,MEDIUM_VALUE,298,2,2,2,42972.0,,,0.006711

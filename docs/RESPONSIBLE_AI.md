@@ -20,6 +20,7 @@ FlowFreeze is an early synthetic-data hackathon prototype. Its machine-learning 
 - Inference features use events visible at the recorded analysis time; generated future labels are kept out of inference.
 - Model selection, decision threshold choice, and next-move calibration use validation data; reported final metrics use a held-out case split.
 - Scores and estimated taint remain distinct from the policy recommendation and evidence transaction list.
+- The dashboard includes exploratory subgroup error and false-positive exposure metrics for generated operational cohorts only; see `docs/FAIRNESS_AND_HARM.md`. These are not demographic-fairness evidence or a customer-impact measurement.
 - Missing score artifacts remain unavailable instead of silently defaulting to a zero-risk score.
 - Analyst approve/reject/modify decisions are recorded in the local audit workflow; this does not connect to a provider ledger.
 
