@@ -53,6 +53,8 @@ def predict_scenario(scenario_id: str, *, data_dir: str | Path = DEFAULT_DATA_DI
     synthetic_fraud_path = artifacts / "fraud_model.joblib"
     next_path = artifacts / "next_move_model.joblib"
     real = joblib.load(real_path) if real_path.exists() else None
+    real_metadata_path = artifacts / "real_model_metadata.json"
+    real_metadata = json.loads(real_metadata_path.read_text(encoding="utf-8")) if real_metadata_path.exists() else {}
     synthetic_fraud = joblib.load(synthetic_fraud_path) if synthetic_fraud_path.exists() else None
     next_move = joblib.load(next_path) if next_path.exists() else None
     if real is None and synthetic_fraud is None:
@@ -94,6 +96,7 @@ def predict_scenario(scenario_id: str, *, data_dir: str | Path = DEFAULT_DATA_DI
         "scenario_id": scenario_id, "as_of": incident["analysis_at"], "synthetic": True,
         "model_status": "available", "fraud_model": fraud_model, "fraud_threshold": threshold,
         "fraud_model_source": fraud_source, "scenario_data_source": "synthetic_flowfreeze_scenario",
+        "fraud_model_sample_rows": real_metadata.get("rows_loaded") if real is not None else None,
         "next_move_model_source": "synthetic_flowfreeze_data" if next_move is not None else "unavailable",
         "wallet_predictions": wallet_predictions,
         "wallet_risk_aggregation": "0.6 * max(transaction_probability) + 0.4 * mean(transaction_probability), per wallet",

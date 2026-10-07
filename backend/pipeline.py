@@ -55,6 +55,7 @@ def analyze_scenario(
                 "scenario_data_source": predictions.get("scenario_data_source", "synthetic_flowfreeze_scenario"),
                 "fraud_model": predictions.get("fraud_model"),
                 "fraud_threshold": predictions.get("fraud_threshold"),
+                "fraud_model_sample_rows": predictions.get("fraud_model_sample_rows"),
                 "next_move_model_source": predictions.get("next_move_model_source", "unavailable"),
                 "wallet_risk_aggregation": predictions.get("wallet_risk_aggregation"),
                 "message": predictions.get("warning"),
